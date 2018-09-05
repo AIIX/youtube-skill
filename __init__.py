@@ -71,7 +71,7 @@ class YoutubeSkill(MycroftSkill):
         self.enclosure.bus.emit(Message("metadata", {"type": "video", "status": str("resume")}))
 
     def stop(self):
-        self.enclosure.bus.emit(Message("metadata", {"type": ""}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
         if self.process:
             self.process.terminate()
             self.process.wait()
