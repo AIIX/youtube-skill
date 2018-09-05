@@ -29,6 +29,14 @@ class YoutubeSkill(MycroftSkill):
         youtube = IntentBuilder("YoutubeKeyword"). \
             require("YoutubeKeyword").build()
         self.register_intent(youtube, self.youtube)
+        
+        youtubepause = IntentBuilder("YoutubePauseKeyword"). \
+            require("YoutubePauseKeyword").build()
+        self.register_intent(youtubepause, self.youtubepause)
+        
+        youtuberesume = IntentBuilder("YoutubeResumeKeyword"). \
+            require("YoutubeResumeKeyword").build()
+        self.register_intent(youtuberesume, self.youtuberesume)
 
     def search(self, text):
         query = quote(text)
@@ -54,9 +62,16 @@ class YoutubeSkill(MycroftSkill):
         video = pafy.new(urlvideo)
         best = video.getbest()
         playurl = best.url
-        self.enclosure.bus.emit(Message("metadata", {"type": "video", "title": "text", "video": str(playurl)}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "video", "title": "text", "video": str(playurl), "status": str("none")}))
+        
+    def youtubepause(self, message):
+        self.enclosure.bus.emit(Message("metadata", {"type": "video", "status": str("pause")}))
+
+    def youtuberesume(self, message):
+        self.enclosure.bus.emit(Message("metadata", {"type": "video", "status": str("resume")}))
 
     def stop(self):
+        self.enclosure.bus.emit(Message("metadata", {"type": "video", "status": str("stop")}))
         if self.process:
             self.process.terminate()
             self.process.wait()
