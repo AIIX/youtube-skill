@@ -1,0 +1,23 @@
+{
+    "name": "Youtube Control",
+    "color": "#ff0000",
+    "skillMetadata": {
+        "sections": [
+            {
+                "name": "Code",
+                "fields": [
+                    {
+                        "type": "label",
+                        "label": "Please go to <a href='http://augustnmonteiro.github.io/YoutubeControl/'>Youtube Control</a> copy the code XXXX-XXXX."
+                    },
+                    {
+                        "name": "code",
+                        "type": "text",
+                        "label": "XXXX-XXXX",
+                        "value": ""
+                    }
+                ]
+            }
+        ]
+    }
+}
