@@ -13,14 +13,10 @@ else:
     from urllib.parse import quote
 from adapt.intent import IntentBuilder
 from bs4 import BeautifulSoup
-from firebase import firebase
 from mycroft.skills.core import MycroftSkill
 from mycroft.messagebus.message import Message
 
 __author__ = 'augustnmonteiro'
-
-firebase = firebase.FirebaseApplication(
-    'https://youtubecontrol.firebaseio.com', None)
  
 class YoutubeSkill(MycroftSkill):
     def __init__(self):
@@ -52,12 +48,6 @@ class YoutubeSkill(MycroftSkill):
         utterance = utterance.replace(
             message.data.get('YoutubeKeyword'), '')
         vid = self.search(utterance)
-        i = firebase.get('/i/' + self.settings.get("code"), None)
-        if not i["connected"]:
-            i["connected"] = True
-            firebase.put('/i', self.settings.get("code"), i)
-            self.speak("Connecting")
-            time.sleep(2)
 
         self.speak("Playing")
         urlvideo = "http://www.youtube.com/watch?v={0}".format(vid)
