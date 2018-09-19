@@ -56,8 +56,6 @@ class YoutubeSkill(MycroftSkill):
         utterance = utterance.replace(
             message.data.get('YoutubeKeyword'), '')
         vid = self.search(utterance)
-
-        self.speak("Playing")
         urlvideo = "http://www.youtube.com/watch?v={0}".format(vid)
         video = pafy.new(urlvideo)
         best = video.getbest()
