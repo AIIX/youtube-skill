@@ -62,13 +62,13 @@ class YoutubeSkill(MycroftSkill):
         video = pafy.new(urlvideo)
         best = video.getbest()
         playurl = best.url
-        self.enclosure.bus.emit(Message("metadata", {"type": "video", "title": "text", "video": str(playurl), "status": str("none")}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("none")}))
         
     def youtubepause(self, message):
-        self.enclosure.bus.emit(Message("metadata", {"type": "video", "status": str("pause")}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("pause")}))
 
     def youtuberesume(self, message):
-        self.enclosure.bus.emit(Message("metadata", {"type": "video", "status": str("resume")}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("resume")}))
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
