@@ -73,7 +73,7 @@ Item {
                 id: button
                 implicitWidth: Kirigami.Units.iconSizes.medium
                 implicitHeight: implicitWidth
-                icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
+                icon.source: videoControl.playbackState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
                 onClicked: {
                     video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                     hideTimer.restart();
