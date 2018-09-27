@@ -60,35 +60,26 @@ Item {
                 fill: parent
                 margins: Kirigami.Units.largeSpacing
             }
-            Templates.ToolButton {
-                id: button
-                hoverEnabled: true
+            Controls.RoundButton {
+                id: backButton
                 implicitWidth: Kirigami.Units.iconSizes.medium
                 implicitHeight: implicitWidth
-                Kirigami.Theme.inherit: true
+                icon.name: "go-previous-symbolic"
+                onClicked: {
+                    root.backRequested();
+                }
+            }
+            Controls.RoundButton {
+                id: button
+                implicitWidth: Kirigami.Units.iconSizes.medium
+                implicitHeight: implicitWidth
+                icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
                 onClicked: {
                     video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                     hideTimer.restart();
                 }
-                //text: "bah"
-                //FIXME: do we really want those completely custom controls? as soon as plasma style can follow correctly colorSet it should use that
-                contentItem: Rectangle {
-                    radius: width
-                    color: button.hovered ? Kirigami.Theme.textColor : Kirigami.Theme.backgroundColor
-                    Image {
-                        id: playIcon
-                        anchors.fill: parent
-                        source: videoControl.playbackState === MediaPlayer.PlayingState ? "images/media-playback-pause.svg" : "images/media-playback-start.svg"
-                    }
-
-                    ColorOverlay {
-                        id: coverlayplay
-                        anchors.fill: playIcon
-                        source: playIcon
-                        color: button.hovered ? Kirigami.Theme.backgroundColor : Kirigami.Theme.textColor
-                    }
-                }
             }
+
             Templates.Slider {
                 id: slider
                 Layout.fillWidth: true
@@ -125,7 +116,7 @@ Item {
                                 bottom: parent.bottom
                             }
                             radius: height
-                            color: Kirigami.Theme.textColor
+                            color: Kirigami.Theme.highlightColor
                             width: slider.position * (parent.width - slider.handle.width/2) + slider.handle.width/2
                         }
                     }

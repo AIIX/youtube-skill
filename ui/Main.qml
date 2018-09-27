@@ -7,14 +7,30 @@ import QtGraphicalEffects 1.0
 
 import Mycroft 1.0 as Mycroft
 
-Rectangle {
+Mycroft.DelegateBase {
+    id: root
 
     property alias video: video.source
     property alias status: video.currentStatus
 
-    color: "black"
-    Kirigami.Theme.inherit: false
-    Kirigami.Theme.colorSet: Kirigami.Theme.Complementary
+    graceTime: Infinity
+
+    background: Rectangle {
+        color: "black"
+    }
+
+    controlBar: SeekControl {
+        id: seekControl
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
+        videoControl: video
+        duration: video.duration
+        playPosition: video.position
+        onSeekPositionChanged: video.seek(seekPosition);
+    }
 
     Video {
         id: video
@@ -42,19 +58,7 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: seekControl.opened = !seekControl.opened
-        }
-        SeekControl {
-            id: seekControl
-            anchors {
-                left: parent.left
-                right: parent.right
-                bottom: parent.bottom
-            }
-            videoControl: video
-            duration: video.duration
-            playPosition: video.position
-            onSeekPositionChanged: video.seek(seekPosition);
+            onClicked: controlBarItem.opened = !controlBarItem.opened
         }
     }
 }
