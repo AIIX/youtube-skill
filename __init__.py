@@ -42,6 +42,8 @@ class YoutubeSkill(MycroftSkill):
             require("YoutubeSearchPageKeyword").build()
         self.register_intent(youtubesearchpage, self.youtubesearchpage)
         
+        self.add_event('aiix.youtube-skill.playvideo_id', self.play_event)
+        
     def search(self, text):
         query = quote(text)
         url = "https://www.youtube.com/results?search_query=" + query
@@ -123,6 +125,33 @@ class YoutubeSkill(MycroftSkill):
             self.process.wait()
         pass
 
+    def play_event(self, message):
+        urlvideo = "http://www.youtube.com/watch?v={0}".format(message.data['vidID'])
+        video = pafy.new(urlvideo)
+        print(video.streams)
+        for vid_type in video.streams:
+            if (vid_type._extension == 'mp4'):
+                try:
+                    if(vid_type._resolution == '480x360'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '426x240'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '320x180'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '640x342'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '640x360'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '256x144'):
+                        playurl = vid_type.url
+                    elif (vid_type._resolution == '176x144'):
+                        playurl = vid_type.url
+                except:
+                    playstream = video.getbest(preftype="mp4", ftypestrict=True)
+                    playurl = playstream.url
+            
+        self.speak("Playing")
+        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("none")}))
 
 def create_skill():
     return YoutubeSkill()
