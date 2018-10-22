@@ -7,6 +7,8 @@ import QtGraphicalEffects 1.0
 
 import Mycroft 1.0 as Mycroft
 
+import "." as Local
+
 Mycroft.DelegateBase {
     id: root
 
@@ -19,7 +21,7 @@ Mycroft.DelegateBase {
         color: "black"
     }
 
-    controlBar: SeekControl {
+    controlBar: Local.SeekControl {
         id: seekControl
         anchors {
             left: parent.left
