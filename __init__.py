@@ -58,8 +58,29 @@ class YoutubeSkill(MycroftSkill):
         vid = self.search(utterance)
         urlvideo = "http://www.youtube.com/watch?v={0}".format(vid)
         video = pafy.new(urlvideo)
-        best = video.getbest()
-        playurl = best.url
+        print(video.streams)
+        for vid_type in video.streams:
+            if (vid_type._extension == 'mp4'):
+                try:
+                    if(vid_type._resolution == '480x360'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '426x240'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '320x180'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '640x342'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '640x360'):
+                        playurl = vid_type._url
+                    elif (vid_type._resolution == '256x144'):
+                        playurl = vid_type.url
+                    elif (vid_type._resolution == '176x144'):
+                        playurl = vid_type.url
+                except:
+                    playstream = video.getbest(preftype="mp4", ftypestrict=True)
+                    playurl = playstream.url
+            
+        self.speak("Playing")
         self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("none")}))
         
     def youtubepause(self, message):
