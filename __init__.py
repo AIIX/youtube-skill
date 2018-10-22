@@ -37,7 +37,11 @@ class YoutubeSkill(MycroftSkill):
         youtuberesume = IntentBuilder("YoutubeResumeKeyword"). \
             require("YoutubeResumeKeyword").build()
         self.register_intent(youtuberesume, self.youtuberesume)
-
+        
+        youtubesearchpage = IntentBuilder("YoutubeSearchPageKeyword"). \
+            require("YoutubeSearchPageKeyword").build()
+        self.register_intent(youtubesearchpage, self.youtubesearchpage)
+        
     def search(self, text):
         query = quote(text)
         url = "https://www.youtube.com/results?search_query=" + query
@@ -88,6 +92,29 @@ class YoutubeSkill(MycroftSkill):
 
     def youtuberesume(self, message):
         self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("resume")}))
+
+    def youtubesearchpage(self, message):
+        self.stop()
+        videoList = []
+        videoList.clear()
+        videoPageObject = {}
+        utterance = message.data.get('utterance').lower()
+        utterance = utterance.replace(
+            message.data.get('YoutubeSearchPageKeyword'), '')
+        vid = self.search(utterance)
+        url = "https://www.youtube.com/results?search_query=" + vid
+        response = urlopen(url)
+        html = response.read()
+        soup = BeautifulSoup(html)            
+        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
+            if "googleads" not in vid['href'] and not vid['href'].startswith(
+                    u"/user") and not vid['href'].startswith(u"/channel"):
+                videoID = vid['href'].split("v=")[1].split("&")[0]
+                videoTitle = vid['title']
+                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
+                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+        videoPageObject['videoList'] = videoList
+        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill/search-page", "videoListBlob": videoPageObject}))
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
