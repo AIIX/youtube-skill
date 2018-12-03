@@ -87,14 +87,21 @@ class YoutubeSkill(MycroftSkill):
                     playurl = playstream.url
             
         self.speak("Playing")
-        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("none")}))
+        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("none")}))
+        self.gui["video"] = str(playurl)
+        self.gui["status"] = str("none")
+        self.gui.show_page("YoutubePlayer.qml")
         
     def youtubepause(self, message):
-        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("pause")}))
-
+        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("pause")}))
+        self.gui["status"] = str("pause")
+        self.gui.show_page("YoutubePlayer.qml")
+    
     def youtuberesume(self, message):
-        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("resume")}))
-
+        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("resume")}))
+        self.gui["status"] = str("resume")
+        self.gui.show_page("YoutubePlayer.qml")
+        
     def youtubesearchpage(self, message):
         self.stop()
         videoList = []
@@ -116,7 +123,9 @@ class YoutubeSkill(MycroftSkill):
                 videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
                 videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
         videoPageObject['videoList'] = videoList
-        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill/search-page", "videoListBlob": videoPageObject}))
+        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill/search-page", "videoListBlob": videoPageObject}))
+        self.gui["videoListBlob"] = videoPageObject
+        self.gui.show_page("YoutubeSearch.qml")
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
@@ -151,7 +160,10 @@ class YoutubeSkill(MycroftSkill):
                     playurl = playstream.url
             
         self.speak("Playing")
-        self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("none")}))
-
+        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("none")}))
+        self.gui["video"] = str(playurl)
+        self.gui["status"] = str("none")
+        self.gui.show_page("YoutubePlayer.qml")
+        
 def create_skill():
     return YoutubeSkill()
