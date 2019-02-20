@@ -27,11 +27,10 @@ import Mycroft 1.0 as Mycroft
 Mycroft.ScrollableDelegate {
     id: delegate
 
-    property var videoListBlob
-    property var videoListModel: videoListBlob.videoList
+    property var videoListModel: sessionData.videoListBlob.videoList
 
-    backgroundImage: "https://source.unsplash.com/1920x1080/?+music"
-    graceTime: 280000
+    skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+music"
+    //graceTime: 280000
 
     Kirigami.CardsListView {
         model: videoListModel

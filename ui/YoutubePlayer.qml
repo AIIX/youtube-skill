@@ -9,13 +9,13 @@ import Mycroft 1.0 as Mycroft
 
 import "." as Local
 
-Mycroft.DelegateBase {
+Mycroft.Delegate {
     id: root
 
-    property alias video: video.source
-    property alias status: video.currentStatus
+    property var videoSource: sessionData.video
+    property var videoStatus: sessionData.status
 
-    graceTime: Infinity
+    //graceTime: Infinity
 
     background: Rectangle {
         color: "black"
@@ -42,7 +42,8 @@ Mycroft.DelegateBase {
         Keys.onSpacePressed: video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
         Keys.onLeftPressed: video.seek(video.position - 5000)
         Keys.onRightPressed: video.seek(video.position + 5000)
-        property var currentStatus
+        source: videoSource
+        property var currentStatus: videoStatus
 
         onCurrentStatusChanged: {
             switch(currentStatus){
