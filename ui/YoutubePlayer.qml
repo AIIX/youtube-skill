@@ -21,11 +21,20 @@ Mycroft.Delegate {
         color: "black"
     }
 
-    onVisibleChanged: {
-        if (visible) {
-            video.play();
+    onEnabledChanged: {
+        if (enabled && status == "play") {
+            player.play();
         } else {
-            video.pause();
+            player.pause();
+        }
+    }
+    Component.onCompleted: {
+        if (enabled && status == "play") {
+            player.play();
+        } else if (status == "stop") {
+            player.stop();
+        } else {
+            player.pause();
         }
     }
 
@@ -51,7 +60,7 @@ Mycroft.Delegate {
         Keys.onLeftPressed: video.seek(video.position - 5000)
         Keys.onRightPressed: video.seek(video.position + 5000)
         source: videoSource
-        property var currentStatus: videoStatus
+        readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
 
         onCurrentStatusChanged: {
             switch(currentStatus){
@@ -61,7 +70,7 @@ Mycroft.Delegate {
                 case "pause":
                     video.pause()
                     break;
-                case "resume":
+                case "play":
                     video.play()
                     break;
             }

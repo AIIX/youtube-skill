@@ -98,8 +98,8 @@ class YoutubeSkill(MycroftSkill):
         self.gui.show_page("YoutubePlayer.qml")
     
     def youtuberesume(self, message):
-        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("resume")}))
-        self.gui["status"] = str("resume")
+        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("play")}))
+        self.gui["status"] = str("play")
         self.gui.show_page("YoutubePlayer.qml")
         
     def youtubesearchpage(self, message):
