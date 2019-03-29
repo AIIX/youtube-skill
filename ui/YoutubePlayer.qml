@@ -21,23 +21,24 @@ Mycroft.Delegate {
         color: "black"
     }
 
-    onEnabledChanged: {
-        if (enabled && videoStatus == "play") {
-            video.play();
-        } else {
-            video.pause();
-        }
-    }
-    Component.onCompleted: {
-        if (enabled && videoStatus == "play") {
-            video.play();
-        } else if (videoStatus == "stop") {
-            video.stop();
-        } else {
-            video.pause();
-        }
-    }
+    onEnabledChanged: syncStatusTimer.restart()
+    onVideoSourceChanged: syncStatusTimer.restart()
+    Component.onCompleted: syncStatusTimer.restart()
 
+    // Sometimes can't be restarted reliably immediately, put it in a timer
+    Timer {
+        id: syncStatusTimer
+        interval: 0
+        onTriggered: {
+            if (enabled && videoStatus == "play") {
+                video.play();
+            } else if (videoStatus == "stop") {
+                video.stop();
+            } else {
+                video.pause();
+            }
+        }
+    }
     controlBar: Local.SeekControl {
         id: seekControl
         anchors {
@@ -55,6 +56,7 @@ Mycroft.Delegate {
         id: video
         anchors.fill: parent
         focus: true
+        autoLoad: true
         autoPlay: false
         Keys.onSpacePressed: video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
         Keys.onLeftPressed: video.seek(video.position - 5000)
@@ -62,7 +64,7 @@ Mycroft.Delegate {
         source: videoSource
         readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
 
-        onCurrentStatusChanged: {
+        onCurrentStatusChanged: {print("OOO"+currentStatus)
             switch(currentStatus){
                 case "stop":
                     video.stop();
