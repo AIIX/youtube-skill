@@ -5,6 +5,7 @@ import QtQuick.Templates 2.2 as Templates
 import QtGraphicalEffects 1.0
 import QtMultimedia 5.9
 import org.kde.kirigami 2.4 as Kirigami
+import Mycroft 1.0 as Mycroft
 
 Item {
     id: seekControl
@@ -65,8 +66,11 @@ Item {
                 implicitWidth: Kirigami.Units.iconSizes.medium
                 implicitHeight: implicitWidth
                 icon.name: "go-previous-symbolic"
+                z: 10000
                 onClicked: {
-                    root.backRequested();
+                        console.log("quit")
+                        Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {})
+                        video.stop()
                 }
             }
             Controls.RoundButton {
@@ -74,6 +78,7 @@ Item {
                 implicitWidth: Kirigami.Units.iconSizes.medium
                 implicitHeight: implicitWidth
                 icon.source: videoControl.playbackState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
+                z: 10000
                 onClicked: {
                     video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                     hideTimer.restart();
@@ -88,6 +93,7 @@ Item {
                 value: seekControl.playPosition
                 from: 0
                 to: seekControl.duration
+                z: 10000
                 onMoved: {
                     seekControl.seekPosition = value;
                     hideTimer.restart();
