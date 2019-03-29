@@ -15,8 +15,18 @@ Mycroft.Delegate {
     property var videoSource: sessionData.video
     property var videoStatus: sessionData.status
 
+    //graceTime: Infinity
+
     background: Rectangle {
         color: "black"
+    }
+
+    onVisibleChanged: {
+        if (visible) {
+            video.play();
+        } else {
+            video.pause();
+        }
     }
 
     controlBar: Local.SeekControl {
@@ -30,7 +40,6 @@ Mycroft.Delegate {
         duration: video.duration
         playPosition: video.position
         onSeekPositionChanged: video.seek(seekPosition);
-        z: 100
     }
 
     Video {
@@ -57,10 +66,9 @@ Mycroft.Delegate {
                     break;
             }
         }
-        
+
         MouseArea {
             anchors.fill: parent
-            propagateComposedEvents: true
             onClicked: controlBarItem.opened = !controlBarItem.opened
         }
     }

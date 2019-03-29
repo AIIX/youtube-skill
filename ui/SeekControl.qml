@@ -5,7 +5,6 @@ import QtQuick.Templates 2.2 as Templates
 import QtGraphicalEffects 1.0
 import QtMultimedia 5.9
 import org.kde.kirigami 2.4 as Kirigami
-import Mycroft 1.0 as Mycroft
 
 Item {
     id: seekControl
@@ -63,22 +62,18 @@ Item {
             }
             Controls.RoundButton {
                 id: backButton
-                implicitWidth: Kirigami.Units.iconSizes.medium
-                implicitHeight: implicitWidth
+                Layout.preferredWidth: Kirigami.Units.iconSizes.large
+                Layout.preferredHeight: Layout.preferredWidth
                 icon.name: "go-previous-symbolic"
-                z: 10000
                 onClicked: {
-                        console.log("quit")
-                        Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {})
-                        video.stop()
+                    root.backRequested();
                 }
             }
             Controls.RoundButton {
                 id: button
-                implicitWidth: Kirigami.Units.iconSizes.medium
-                implicitHeight: implicitWidth
-                icon.source: videoControl.playbackState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
-                z: 10000
+                Layout.preferredWidth: Kirigami.Units.iconSizes.large
+                Layout.preferredHeight: Layout.preferredWidth
+                icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause-symbolic" : "media-playback-start-symbolic"
                 onClicked: {
                     video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                     hideTimer.restart();
@@ -93,7 +88,6 @@ Item {
                 value: seekControl.playPosition
                 from: 0
                 to: seekControl.duration
-                z: 10000
                 onMoved: {
                     seekControl.seekPosition = value;
                     hideTimer.restart();
