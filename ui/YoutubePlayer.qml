@@ -22,16 +22,16 @@ Mycroft.Delegate {
     }
 
     onEnabledChanged: {
-        if (enabled && status == "play") {
+        if (enabled && videoStatus == "play") {
             video.play();
         } else {
             video.pause();
         }
     }
     Component.onCompleted: {
-        if (enabled && status == "play") {
+        if (enabled && videoStatus == "play") {
             video.play();
-        } else if (status == "stop") {
+        } else if (videoStatus == "stop") {
             video.stop();
         } else {
             video.pause();
