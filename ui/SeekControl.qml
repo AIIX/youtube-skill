@@ -5,6 +5,7 @@ import QtQuick.Templates 2.2 as Templates
 import QtGraphicalEffects 1.0
 import QtMultimedia 5.9
 import org.kde.kirigami 2.4 as Kirigami
+import Mycroft 1.0 as Mycroft
 
 Item {
     id: seekControl
@@ -66,7 +67,8 @@ Item {
                 Layout.preferredHeight: Layout.preferredWidth
                 icon.name: "go-previous-symbolic"
                 onClicked: {
-                    root.backRequested();
+                    Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
+                    video.stop();
                 }
             }
             Controls.RoundButton {
