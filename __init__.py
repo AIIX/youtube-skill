@@ -87,9 +87,9 @@ class YoutubeSkill(MycroftSkill):
                     playurl = playstream.url
             
         self.speak("Playing")
-        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("none")}))
+        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("play")}))
         self.gui["video"] = str(playurl)
-        self.gui["status"] = str("none")
+        self.gui["status"] = str("play")
         self.gui.show_page("YoutubePlayer.qml")
         
     def youtubepause(self, message):
@@ -160,9 +160,9 @@ class YoutubeSkill(MycroftSkill):
                     playurl = playstream.url
             
         self.speak("Playing")
-        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("none")}))
+        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("play")}))
         self.gui["video"] = str(playurl)
-        self.gui["status"] = str("none")
+        self.gui["status"] = str("play")
         self.gui.show_page("YoutubePlayer.qml")
         
 def create_skill():

@@ -75,7 +75,9 @@ Mycroft.Delegate {
                     break;
             }
         }
-
+Label {
+    text: videoStatus
+}
         MouseArea {
             anchors.fill: parent
             onClicked: controlBarItem.opened = !controlBarItem.opened
