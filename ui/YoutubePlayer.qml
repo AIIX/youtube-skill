@@ -50,6 +50,7 @@ Mycroft.Delegate {
         duration: video.duration
         playPosition: video.position
         onSeekPositionChanged: video.seek(seekPosition);
+        z: 1000
     }
 
     Video {

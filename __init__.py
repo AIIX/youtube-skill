@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 from mycroft.skills.core import MycroftSkill
 from mycroft.messagebus.message import Message
 
-__author__ = 'augustnmonteiro'
+__author__ = 'aix'
  
 class YoutubeSkill(MycroftSkill):
     def __init__(self):
@@ -55,6 +55,18 @@ class YoutubeSkill(MycroftSkill):
                     u"/user") and not vid['href'].startswith(u"/channel"):
                 id = vid['href'].split("v=")[1].split("&")[0]
                 return id
+            
+    def getTitle(self, text):
+        query = quote(text)
+        url = "https://www.youtube.com/results?search_query=" + query
+        response = urlopen(url)
+        html = response.read()
+        soup = BeautifulSoup(html)
+        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
+            if "googleads" not in vid['href'] and not vid['href'].startswith(
+                    u"/user") and not vid['href'].startswith(u"/channel"):
+                videoTitle = vid['title']
+                return videoTitle
 
     def youtube(self, message):
         self.stop()
@@ -87,18 +99,18 @@ class YoutubeSkill(MycroftSkill):
                     playurl = playstream.url
             
         self.speak("Playing")
-        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("play")}))
         self.gui["video"] = str(playurl)
         self.gui["status"] = str("play")
-        self.gui.show_page("YoutubePlayer.qml")
-        
+        self.gui["currenturl"] = str(vid)
+        self.gui["currenttitle"] = self.getTitle(utterance)
+        self.youtubesearchpagesimple(utterance)
+        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+                
     def youtubepause(self, message):
-        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("pause")}))
         self.gui["status"] = str("pause")
         self.gui.show_page("YoutubePlayer.qml")
     
     def youtuberesume(self, message):
-        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "status": str("play")}))
         self.gui["status"] = str("play")
         self.gui.show_page("YoutubePlayer.qml")
         
@@ -123,9 +135,27 @@ class YoutubeSkill(MycroftSkill):
                 videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
                 videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
         videoPageObject['videoList'] = videoList
-        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill/search-page", "videoListBlob": videoPageObject}))
         self.gui["videoListBlob"] = videoPageObject
         self.gui.show_page("YoutubeSearch.qml")
+        
+    def youtubesearchpagesimple(self, query):
+        videoList = []
+        videoList.clear()
+        videoPageObject = {}
+        vid = self.search(query)
+        url = "https://www.youtube.com/results?search_query=" + vid
+        response = urlopen(url)
+        html = response.read()
+        soup = BeautifulSoup(html)            
+        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
+            if "googleads" not in vid['href'] and not vid['href'].startswith(
+                    u"/user") and not vid['href'].startswith(u"/channel"):
+                videoID = vid['href'].split("v=")[1].split("&")[0]
+                videoTitle = vid['title']
+                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
+                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+        videoPageObject['videoList'] = videoList
+        self.gui["videoListBlob"] = videoPageObject
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
@@ -160,10 +190,13 @@ class YoutubeSkill(MycroftSkill):
                     playurl = playstream.url
             
         self.speak("Playing")
-        #self.enclosure.bus.emit(Message("metadata", {"type": "youtube-skill", "title": "text", "video": str(playurl), "status": str("play")}))
         self.gui["video"] = str(playurl)
         self.gui["status"] = str("play")
-        self.gui.show_page("YoutubePlayer.qml")
-        
+        self.gui["currenturl"] = str(message.data['vidID'])
+        self.gui["currenttitle"] = str(message.data['vidTitle'])
+        videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
+        self.youtubesearchpagesimple(videoTitleSearch)
+        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+
 def create_skill():
     return YoutubeSkill()

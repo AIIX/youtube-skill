@@ -66,6 +66,7 @@ Item {
                 Layout.preferredWidth: Kirigami.Units.iconSizes.large
                 Layout.preferredHeight: Layout.preferredWidth
                 icon.name: "go-previous-symbolic"
+                z: 1000
                 onClicked: {
                     Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
                     video.stop();
@@ -76,6 +77,7 @@ Item {
                 Layout.preferredWidth: Kirigami.Units.iconSizes.large
                 Layout.preferredHeight: Layout.preferredWidth
                 icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause-symbolic" : "media-playback-start-symbolic"
+                z: 1000
                 onClicked: {
                     video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                     hideTimer.restart();
@@ -90,6 +92,7 @@ Item {
                 value: seekControl.playPosition
                 from: 0
                 to: seekControl.duration
+                z: 1000
                 onMoved: {
                     seekControl.seekPosition = value;
                     hideTimer.restart();

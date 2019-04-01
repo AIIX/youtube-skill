@@ -28,6 +28,8 @@ Mycroft.ScrollableDelegate {
     id: delegate
 
     property var videoListModel: sessionData.videoListBlob.videoList
+    property var currentSongUrl: sessionData.currenturl
+    property var currenttitle: sessionData.currenttitle
 
     skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+music"
     //graceTime: 280000
@@ -38,10 +40,10 @@ Mycroft.ScrollableDelegate {
         bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
 
         delegate: Kirigami.AbstractCard {
-
+            showClickFeedback: true
             Layout.fillWidth: true
             implicitHeight: delegateItem.implicitHeight + Kirigami.Units.largeSpacing * 3
-
+            highlighted: modelData.videoID == currentSongUrl && modelData.videoTitle == currenttitle ? 1 : 0
             contentItem: Item {
                 implicitWidth: parent.implicitWidth
                 implicitHeight: parent.implicitHeight
@@ -77,7 +79,7 @@ Mycroft.ScrollableDelegate {
                 }
             }
                 onClicked: {
-                    Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID})
+                    Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle})
             }
         }
     }
