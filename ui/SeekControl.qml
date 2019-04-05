@@ -76,7 +76,7 @@ Item {
                 id: button
                 Layout.preferredWidth: Kirigami.Units.iconSizes.large
                 Layout.preferredHeight: Layout.preferredWidth
-                icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause-symbolic" : "media-playback-start-symbolic"
+                icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
                 z: 1000
                 onClicked: {
                     video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
