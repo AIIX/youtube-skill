@@ -17,9 +17,15 @@ Mycroft.Delegate {
 
     //graceTime: Infinity
 
+    //The player is always fullscreen
+    fillWidth: true
     background: Rectangle {
         color: "black"
     }
+    leftPadding: 0
+    topPadding: 0
+    rightPadding: 0
+    bottomPadding: 0
 
     onEnabledChanged: syncStatusTimer.restart()
     onVideoSourceChanged: syncStatusTimer.restart()
