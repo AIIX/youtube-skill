@@ -42,7 +42,14 @@ class YoutubeSkill(MycroftSkill):
             require("YoutubeSearchPageKeyword").build()
         self.register_intent(youtubesearchpage, self.youtubesearchpage)
         
+        youtubelivesearchpage = IntentBuilder("YoutubeLiveSearchPage"). \
+            require("YoutubeLiveSearchPageKeyword").build()
+        self.register_intent(youtubelivesearchpage, self.youtubelivesearchpage)
+        
         self.add_event('aiix.youtube-skill.playvideo_id', self.play_event)
+        
+        self.gui.register_handler('YoutubeSkill.SearchLive',
+                                  self.searchLive)
         
     def search(self, text):
         query = quote(text)
@@ -55,6 +62,28 @@ class YoutubeSkill(MycroftSkill):
                     u"/user") and not vid['href'].startswith(u"/channel"):
                 id = vid['href'].split("v=")[1].split("&")[0]
                 return id
+            
+    def searchLive(self, message):
+        videoList = []
+        videoList.clear()
+        videoPageObject = {}
+        query = message.data["Query"]
+        print(query)
+        url = "https://www.youtube.com/results?search_query=" + query
+        response = urlopen(url)
+        html = response.read()
+        print(html)
+        soup = BeautifulSoup(html)            
+        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
+            if "googleads" not in vid['href'] and not vid['href'].startswith(
+                    u"/user") and not vid['href'].startswith(u"/channel"):
+                videoID = vid['href'].split("v=")[1].split("&")[0]
+                videoTitle = vid['title']
+                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
+                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+        videoPageObject['videoList'] = videoList
+        self.gui["videoListBlob"] = videoPageObject
+        self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
             
     def getTitle(self, text):
         query = quote(text)
@@ -156,6 +185,28 @@ class YoutubeSkill(MycroftSkill):
                 videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
+        
+    def youtubelivesearchpage(self, message):
+        self.gui.clear()
+        self.enclosure.display_manager.remove_active()
+        videoList = []
+        videoList.clear()
+        videoPageObject = {}
+        url = "https://www.youtube.com/results?search_query=news" 
+        response = urlopen(url)
+        html = response.read()
+        print(html)
+        soup = BeautifulSoup(html)            
+        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
+            if "googleads" not in vid['href'] and not vid['href'].startswith(
+                    u"/user") and not vid['href'].startswith(u"/channel"):
+                videoID = vid['href'].split("v=")[1].split("&")[0]
+                videoTitle = vid['title']
+                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
+                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+        videoPageObject['videoList'] = videoList
+        self.gui["videoListBlob"] = videoPageObject
+        self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
