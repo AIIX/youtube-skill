@@ -10,7 +10,7 @@ if sys.version_info[0] < 3:
     from urllib2 import urlopen
 else:
     from urllib.request import urlopen
-    from urllib.parse import quote
+    from urllib.parse import quote, urlencode
 from adapt.intent import IntentBuilder
 from bs4 import BeautifulSoup
 from mycroft.skills.core import MycroftSkill
@@ -22,7 +22,10 @@ class YoutubeSkill(MycroftSkill):
     def __init__(self):
         super(YoutubeSkill, self).__init__(name="YoutubeSkill")
         self.process = None
-
+        self.nextpage_url = None
+        self.previouspage_url = None
+        self.live_category = None
+        
     def initialize(self):
         self.load_data_files(dirname(__file__))
 
@@ -46,14 +49,24 @@ class YoutubeSkill(MycroftSkill):
             require("YoutubeLiveSearchPageKeyword").build()
         self.register_intent(youtubelivesearchpage, self.youtubelivesearchpage)
         
+        youtubelauncherId = IntentBuilder("YoutubeLauncherId"). \
+            require("YoutubeLauncherIdKeyword").build()
+        self.register_intent(youtubelauncherId, self.launcherId)
+        
         self.add_event('aiix.youtube-skill.playvideo_id', self.play_event)
         
         self.gui.register_handler('YoutubeSkill.SearchLive',
                                   self.searchLive)
         
+        self.gui.register_handler('YoutubeSkill.NextPage', self.searchNextPage)
+        self.gui.register_handler('YoutubeSkill.PreviousPage', self.searchPreviousPage)
+        
+    def launcherId(self, message):
+        self.youtubelivesearchpage({})
+        
     def search(self, text):
         query = quote(text)
-        url = "https://www.youtube.com/results?search_query=" + query
+        url = "https://www.youtube.com/results?search_query=" + quote(query)
         response = urlopen(url)
         html = response.read()
         soup = BeautifulSoup(html)
@@ -68,26 +81,59 @@ class YoutubeSkill(MycroftSkill):
         videoList.clear()
         videoPageObject = {}
         query = message.data["Query"]
-        print(query)
-        url = "https://www.youtube.com/results?search_query=" + query
+        url = "https://www.youtube.com/results?search_query=" + quote(query)
         response = urlopen(url)
         html = response.read()
-        print(html)
-        soup = BeautifulSoup(html)            
-        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
-            if "googleads" not in vid['href'] and not vid['href'].startswith(
-                    u"/user") and not vid['href'].startswith(u"/channel"):
-                videoID = vid['href'].split("v=")[1].split("&")[0]
-                videoTitle = vid['title']
-                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
-                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+        buttons = self.process_additional_pages(html)
+        nextbutton = buttons[-1]
+        prevbutton = "results?search_query=" + quote(query)
+        self.nextpage_url = "https://www.youtube.com/" + nextbutton['href']
+        self.previouspage_url = "https://www.youtube.com/" + prevbutton
+        videoList = self.process_soup(html)
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
+        self.gui["previousAvailable"] = False
+        self.gui["nextAvailable"] = True
+        self.gui["bgImage"] = quote(query)
+        self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
+        
+    def searchNextPage(self, message):
+        self.gui.clear()
+        self.enclosure.display_manager.remove_active()
+        videoList = []
+        videoList.clear()
+        videoPageObject = {}
+        url = self.nextpage_url 
+        response = urlopen(url)
+        html = response.read()
+        videoList = self.process_soup(html)
+        videoPageObject['videoList'] = videoList
+        self.gui["videoListBlob"] = videoPageObject
+        self.gui["previousAvailable"] = True
+        self.gui["nextAvailable"] = False
+        self.gui["bgImage"] = self.live_category
+        self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
+        
+    def searchPreviousPage(self, message):
+        self.gui.clear()
+        self.enclosure.display_manager.remove_active()
+        videoList = []
+        videoList.clear()
+        videoPageObject = {}
+        url = self.previouspage_url
+        response = urlopen(url)
+        html = response.read()
+        videoList = self.process_soup(html)
+        videoPageObject['videoList'] = videoList
+        self.gui["videoListBlob"] = videoPageObject
+        self.gui["previousAvailable"] = False
+        self.gui["nextAvailable"] = True
+        self.gui["bgImage"] = self.live_category
         self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
             
     def getTitle(self, text):
         query = quote(text)
-        url = "https://www.youtube.com/results?search_query=" + query
+        url = "https://www.youtube.com/results?search_query=" + quote(query)
         response = urlopen(url)
         html = response.read()
         soup = BeautifulSoup(html)
@@ -105,7 +151,6 @@ class YoutubeSkill(MycroftSkill):
         vid = self.search(utterance)
         urlvideo = "http://www.youtube.com/watch?v={0}".format(vid)
         video = pafy.new(urlvideo)
-        print(video.streams)
         for vid_type in video.streams:
             if (vid_type._extension == 'mp4'):
                 try:
@@ -155,14 +200,7 @@ class YoutubeSkill(MycroftSkill):
         url = "https://www.youtube.com/results?search_query=" + vid
         response = urlopen(url)
         html = response.read()
-        soup = BeautifulSoup(html)            
-        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
-            if "googleads" not in vid['href'] and not vid['href'].startswith(
-                    u"/user") and not vid['href'].startswith(u"/channel"):
-                videoID = vid['href'].split("v=")[1].split("&")[0]
-                videoTitle = vid['title']
-                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
-                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+        videoList = self.process_soup(html)
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
         self.gui.show_page("YoutubeSearch.qml")
@@ -175,50 +213,33 @@ class YoutubeSkill(MycroftSkill):
         url = "https://www.youtube.com/results?search_query=" + vid
         response = urlopen(url)
         html = response.read()
-        soup = BeautifulSoup(html)            
-        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
-            if "googleads" not in vid['href'] and not vid['href'].startswith(
-                    u"/user") and not vid['href'].startswith(u"/channel"):
-                videoID = vid['href'].split("v=")[1].split("&")[0]
-                videoTitle = vid['title']
-                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
-                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+        videoList = self.process_soup(html)        
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
         
     def youtubelivesearchpage(self, message):
         self.gui.clear()
         self.enclosure.display_manager.remove_active()
-        videoList = []
-        videoList.clear()
         videoPageObject = {}
         url = "https://www.youtube.com/results?search_query=news" 
         response = urlopen(url)
         html = response.read()
-        print(html)
-        soup = BeautifulSoup(html)            
-        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
-            if "googleads" not in vid['href'] and not vid['href'].startswith(
-                    u"/user") and not vid['href'].startswith(u"/channel"):
-                videoID = vid['href'].split("v=")[1].split("&")[0]
-                videoTitle = vid['title']
-                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
-                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+        buttons = self.process_additional_pages(html)
+        nextbutton = buttons[-1]
+        prevbutton = "results?search_query=news"
+        self.nextpage_url = "https://www.youtube.com/" + nextbutton['href']
+        self.previouspage_url = "https://www.youtube.com/" + prevbutton
+        videoList = self.process_soup(html)
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
+        self.gui["previousAvailable"] = False
+        self.gui["nextAvailable"] = True
+        self.gui["bgImage"] = self.live_category
         self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
-
-    def stop(self):
-        self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
-        if self.process:
-            self.process.terminate()
-            self.process.wait()
-        pass
 
     def play_event(self, message):
         urlvideo = "http://www.youtube.com/watch?v={0}".format(message.data['vidID'])
         video = pafy.new(urlvideo)
-        print(video.streams)
         for vid_type in video.streams:
             if (vid_type._extension == 'mp4'):
                 try:
@@ -249,5 +270,30 @@ class YoutubeSkill(MycroftSkill):
         self.youtubesearchpagesimple(videoTitleSearch)
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
 
+    def stop(self):
+        self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
+        if self.process:
+            self.process.terminate()
+            self.process.wait()
+        pass
+    
+    def process_soup(self, htmltype):
+        videoList = []
+        videoList.clear()
+        soup = BeautifulSoup(htmltype)
+        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
+            if "googleads" not in vid['href'] and not vid['href'].startswith(
+                    u"/user") and not vid['href'].startswith(u"/channel"):
+                videoID = vid['href'].split("v=")[1].split("&")[0]
+                videoTitle = vid['title']
+                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
+                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+        return videoList
+    
+    def process_additional_pages(self, htmltype):
+        soup = BeautifulSoup(htmltype)
+        buttons = soup.findAll('a',attrs={'class':"yt-uix-button vve-check yt-uix-sessionlink yt-uix-button-default yt-uix-button-size-default"})
+        return buttons
+    
 def create_skill():
     return YoutubeSkill()

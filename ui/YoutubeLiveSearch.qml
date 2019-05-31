@@ -28,7 +28,7 @@ Mycroft.Delegate {
     id: delegate
     property var videoListModel: sessionData.videoListBlob.videoList
     
-    skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+music"
+    skillBackgroundSource: sessionData.bgImage ? "https://source.unsplash.com/1920x1080/?+" + sessionData.bgImage : "https://source.unsplash.com/1920x1080/?+music"
 
     function searchYoutubeLiveResults(query){
         triggerGuiEvent("YoutubeSkill.SearchLive", {"Query": query})
@@ -37,100 +37,148 @@ Mycroft.Delegate {
     onVideoListModelChanged: {
         videoListView.model = videoListModel
     }
+
+    RowLayout {
+        id: searchVideoInputBox
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: Kirigami.Units.gridUnit * 3
+
+        TextField {
+            id: videoQueryBox
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            onAccepted: {
+                searchYoutubeLiveResults(videoQueryBox.text)
+            }
+        }
+
+        Button {
+            id: searchVideoQuery
+            Layout.preferredWidth: Kirigami.Units.gridUnit * 4.5
+            text: "Search"
+            Layout.fillHeight: true
+            onClicked: {
+                searchYoutubeLiveResults(videoQueryBox.text)
+            }
+        }
+    }
+
+    Kirigami.Separator {
+        id: sept1
+        anchors.top: searchVideoInputBox.bottom
+        anchors.topMargin: Kirigami.Units.smallSpacing
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: 1
+    }
+
+    Kirigami.CardsGridView {
+        id: videoListView
+        anchors.top: sept1.bottom
+        anchors.topMargin: Kirigami.Units.smallSpacing
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        maximumColumnWidth: Kirigami.Units.gridUnit * 12
+        cellHeight: Kirigami.Units.gridUnit * 15
+        bottomMargin: Kirigami.Units.largeSpacing
+        visible: true
+        enabled: true
+        clip: true
+
+        delegate: Kirigami.AbstractCard {
+            showClickFeedback: true
+            Layout.fillWidth: true
+            implicitHeight: delegateItem.implicitHeight + Kirigami.Units.largeSpacing * 3
+            contentItem: Item {
+                implicitWidth: parent.implicitWidth
+                implicitHeight: parent.implicitHeight
+
+                ColumnLayout {
+                    id: delegateItem
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: parent.top
+                    }
+                    spacing: Kirigami.Units.largeSpacing
+
+                    Image {
+                        id: videoImage
+                        source: modelData.videoImage
+                        Layout.preferredHeight: Kirigami.Units.gridUnit * 3
+                        Layout.fillWidth: true
+                        fillMode: Image.PreserveAspectCrop
+                    }
+
+                    Kirigami.Separator {
+                        Layout.fillWidth: true
+                        color: Kirigami.Theme.linkColor
+                    }
+
+                    Label {
+                        id: videoLabel
+                        Layout.fillWidth: true
+                        text: modelData.videoTitle
+                        wrapMode: Text.WordWrap
+                        Component.onCompleted: {
+                            console.log(modelData.videoTitle)
+                        }
+                    }
+                }
+            }
+            onClicked: {
+                Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle})
+            }
+        }
+    }
+
+    controlBar: Control {
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
+        padding: Kirigami.Units.largeSpacing
+        background: LinearGradient {
+            start: Qt.point(0, 0)
+            end: Qt.point(0, height)
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "transparent" }
+                GradientStop { position: 0.5; color: "black" }
+                GradientStop { position: 1.0; color: "black" }
+            }
+        }
         
-        RowLayout {
-            id: searchVideoInputBox
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: Kirigami.Units.gridUnit * 3
-            
-            TextField {
-                id: videoQueryBox
-                Layout.fillWidth: true
+        contentItem: RowLayout {
+            Button {
+                id: previousButton
+                text: "Previous Page"
+                Layout.preferredWidth: nextButton.visible ? parent.width / 2 : parent.width
                 Layout.fillHeight: true
-                onAccepted: {
-                    searchYoutubeLiveResults(videoQueryBox.text)
+                icon.name: "go-previous-symbolic"
+                enabled: sessionData.previousAvailable
+                visible: sessionData.previousAvailable
+                onClicked: {
+                    triggerGuiEvent("YoutubeSkill.PreviousPage", {})
                 }
             }
             
             Button {
-                id: searchVideoQuery
-                Layout.preferredWidth: Kirigami.Units.gridUnit * 4.5
-                text: "Search"
+                id: nextButton
+                text: "Next Page"
+                enabled: sessionData.nextAvailable
+                visible: sessionData.nextAvailable
+                Layout.preferredWidth: previousButton.visible ? parent.width / 2 : parent.width
                 Layout.fillHeight: true
+                icon.name: "go-next-symbolic"
                 onClicked: {
-                    searchYoutubeLiveResults(videoQueryBox.text)
+                    triggerGuiEvent("YoutubeSkill.NextPage", {})
                 }
             }
         }
-        
-        Kirigami.Separator {
-            id: sept1
-            anchors.top: searchVideoInputBox.bottom
-            anchors.topMargin: Kirigami.Units.smallSpacing
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: 1
-        }
-        
-        Kirigami.CardsListView {
-            id: videoListView
-            anchors.top: sept1.bottom
-            anchors.topMargin: Kirigami.Units.smallSpacing
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            bottomMargin: Kirigami.Units.largeSpacing
-            visible: true
-            enabled: true
-            clip: true
-
-            delegate: Kirigami.AbstractCard {
-                showClickFeedback: true
-                Layout.fillWidth: true
-                implicitHeight: delegateItem.implicitHeight + Kirigami.Units.largeSpacing * 3
-                contentItem: Item {
-                    implicitWidth: parent.implicitWidth
-                    implicitHeight: parent.implicitHeight
-
-                    RowLayout {
-                        id: delegateItem
-                        anchors {
-                            left: parent.left
-                            right: parent.right
-                            top: parent.top
-                        }
-                        spacing: Kirigami.Units.largeSpacing
-
-                        Image {
-                            id: videoImage
-                            source: modelData.videoImage
-                            Layout.preferredHeight: Kirigami.Units.gridUnit * 3
-                            Layout.preferredWidth: Kirigami.Units.gridUnit * 3
-                            fillMode: Image.Stretch
-                        }
-
-                        Kirigami.Separator {
-                            Layout.fillHeight: true
-                            color: Kirigami.Theme.linkColor
-                        }
-
-                        Label {
-                            id: videoLabel
-                            Layout.fillWidth: true
-                            text: modelData.videoTitle
-                            wrapMode: Text.WordWrap
-                            Component.onCompleted: {
-                                console.log(modelData.videoTitle)
-                            }
-                        }
-                    }
-                }
-                    onClicked: {
-                        Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle})
-                }
-            }
-        }
+    }
 }
 
