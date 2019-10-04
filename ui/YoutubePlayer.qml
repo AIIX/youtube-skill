@@ -14,6 +14,7 @@ Mycroft.Delegate {
 
     property var videoSource: sessionData.video
     property var videoStatus: sessionData.status
+    property var videoThumb: sessionData.videoThumb
 
     //graceTime: Infinity
 
@@ -57,6 +58,15 @@ Mycroft.Delegate {
         playPosition: video.position
         onSeekPositionChanged: video.seek(seekPosition);
         z: 1000
+    }
+
+    Image {
+        id: thumbart
+        anchors.fill: parent
+        fillMode: Image.PreserveAspectFit
+        source: root.videoThumb 
+        enabled: root.videoStatus == stop ? 0 : 1
+        visible: root.videoStatus == stop ? 0 : 1
     }
 
     Video {

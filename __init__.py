@@ -12,12 +12,13 @@ else:
     from urllib.request import urlopen
     from urllib.parse import quote, urlencode
 from adapt.intent import IntentBuilder
-from bs4 import BeautifulSoup
-from mycroft.skills.core import MycroftSkill
+from bs4 import BeautifulSoup, SoupStrainer
+from mycroft.skills.core import MycroftSkill, intent_handler, intent_file_handler
 from mycroft.messagebus.message import Message
+from mycroft.util.log import LOG
 
 __author__ = 'aix'
- 
+
 class YoutubeSkill(MycroftSkill):
     def __init__(self):
         super(YoutubeSkill, self).__init__(name="YoutubeSkill")
@@ -25,18 +26,14 @@ class YoutubeSkill(MycroftSkill):
         self.nextpage_url = None
         self.previouspage_url = None
         self.live_category = None
-        
+
     def initialize(self):
         self.load_data_files(dirname(__file__))
 
-        youtube = IntentBuilder("YoutubeKeyword"). \
-            require("YoutubeKeyword").build()
-        self.register_intent(youtube, self.youtube)
-        
         youtubepause = IntentBuilder("YoutubePauseKeyword"). \
             require("YoutubePauseKeyword").build()
         self.register_intent(youtubepause, self.youtubepause)
-        
+
         youtuberesume = IntentBuilder("YoutubeResumeKeyword"). \
             require("YoutubeResumeKeyword").build()
         self.register_intent(youtuberesume, self.youtuberesume)
@@ -64,18 +61,19 @@ class YoutubeSkill(MycroftSkill):
     def launcherId(self, message):
         self.youtubelivesearchpage({})
         
-    def search(self, text):
+    def getListSearch(self, text):
         query = quote(text)
         url = "https://www.youtube.com/results?search_query=" + quote(query)
         response = urlopen(url)
         html = response.read()
-        soup = BeautifulSoup(html)
+        a_tag = SoupStrainer('a')
+        soup = BeautifulSoup(html, 'lxml', parse_only=a_tag)
         for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
             if "googleads" not in vid['href'] and not vid['href'].startswith(
                     u"/user") and not vid['href'].startswith(u"/channel"):
                 id = vid['href'].split("v=")[1].split("&")[0]
                 return id
-            
+
     def searchLive(self, message):
         videoList = []
         videoList.clear()
@@ -143,43 +141,40 @@ class YoutubeSkill(MycroftSkill):
                 videoTitle = vid['title']
                 return videoTitle
 
+
+    @intent_file_handler('youtube.intent')
     def youtube(self, message):
         self.stop()
-        utterance = message.data.get('utterance').lower()
-        utterance = utterance.replace(
-            message.data.get('YoutubeKeyword'), '')
-        vid = self.search(utterance)
-        urlvideo = "http://www.youtube.com/watch?v={0}".format(vid)
-        video = pafy.new(urlvideo)
-        for vid_type in video.streams:
-            if (vid_type._extension == 'mp4'):
-                try:
-                    if(vid_type._resolution == '480x360'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '426x240'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '320x180'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '640x342'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '640x360'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '256x144'):
-                        playurl = vid_type.url
-                    elif (vid_type._resolution == '176x144'):
-                        playurl = vid_type.url
-                except:
-                    playstream = video.getbest(preftype="mp4", ftypestrict=True)
-                    playurl = playstream.url
-            
-        self.speak("Playing")
+        utterance = message.data['videoname'].lower()
+        url = "https://www.youtube.com/results?search_query=" + quote(utterance)
+        response = urlopen(url)
+        html = response.read()
+        a_tag = SoupStrainer('a')
+        soup = BeautifulSoup(html, 'lxml', parse_only=a_tag)
+        self.gui["video"] = ""
+        self.gui["status"] = "stop"
+        self.gui["currenturl"] = ""
+        self.gui["videoListBlob"] = ""
+        self.gui["videoThumb"] = ""
+        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True) 
+        rfind = soup.findAll(attrs={'class': 'yt-uix-tile-link'})
+        vid = str(rfind[0].attrs['href'])
+        veid = "https://www.youtube.com{0}".format(vid)
+        getvid = vid.split("v=")[1].split("&")[0]
+        thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(getvid)
+        self.gui["videoThumb"] = thumb
+        video = pafy.new(veid)
+        playstream = video.streams[0]
+        playurl = playstream.url
         self.gui["video"] = str(playurl)
         self.gui["status"] = str("play")
         self.gui["currenturl"] = str(vid)
+        self.gui["currenttitle"] = ""
+        self.gui["videoListBlob"] = ""
+        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
         self.youtubesearchpagesimple(utterance)
-        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
-                
+
     def youtubepause(self, message):
         self.gui["status"] = str("pause")
         self.gui.show_page("YoutubePlayer.qml")
@@ -196,7 +191,7 @@ class YoutubeSkill(MycroftSkill):
         utterance = message.data.get('utterance').lower()
         utterance = utterance.replace(
             message.data.get('YoutubeSearchPageKeyword'), '')
-        vid = self.search(utterance)
+        vid = self.getListSearch(utterance)
         url = "https://www.youtube.com/results?search_query=" + vid
         response = urlopen(url)
         html = response.read()
@@ -209,7 +204,7 @@ class YoutubeSkill(MycroftSkill):
         videoList = []
         videoList.clear()
         videoPageObject = {}
-        vid = self.search(query)
+        vid = self.getListSearch(query)
         url = "https://www.youtube.com/results?search_query=" + vid
         response = urlopen(url)
         html = response.read()
