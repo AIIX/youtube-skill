@@ -67,7 +67,7 @@ class YoutubeSkill(MycroftSkill):
         response = urlopen(url)
         html = response.read()
         a_tag = SoupStrainer('a')
-        soup = BeautifulSoup(html, 'lxml', parse_only=a_tag)
+        soup = BeautifulSoup(html, 'html', parse_only=a_tag)
         for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
             if "googleads" not in vid['href'] and not vid['href'].startswith(
                     u"/user") and not vid['href'].startswith(u"/channel"):
@@ -150,7 +150,7 @@ class YoutubeSkill(MycroftSkill):
         response = urlopen(url)
         html = response.read()
         a_tag = SoupStrainer('a')
-        soup = BeautifulSoup(html, 'lxml', parse_only=a_tag)
+        soup = BeautifulSoup(html, 'html', parse_only=a_tag)
         self.gui["video"] = ""
         self.gui["status"] = "stop"
         self.gui["currenturl"] = ""
