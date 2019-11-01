@@ -16,58 +16,74 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.4
+import QtQuick 2.9
 import QtQuick.Layouts 1.4
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.2
-import org.kde.kirigami 2.4 as Kirigami
-
+import org.kde.kirigami 2.8 as Kirigami
+import org.kde.plasma.core 2.0 as PlasmaCore
+import org.kde.plasma.components 2.0 as PlasmaComponents
 import Mycroft 1.0 as Mycroft
 
-Mycroft.ScrollableDelegate {
+Mycroft.Delegate {
     id: delegate
 
     property var videoListModel: sessionData.videoListBlob.videoList
     property var currentSongUrl: sessionData.currenturl
     property var currenttitle: sessionData.currenttitle
 
-    skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+music"
-    //graceTime: 280000
-
-    Kirigami.CardsListView {
+    skillBackgroundSource: "https://source.unsplash.com/weekly?music"
+            
+   ListView {
+        id: leftSearchView
+        keyNavigationEnabled: true
+        keyNavigationWraps: true
+        ///highlightFollowsCurrentItem: true
+        highlight: HighlightType{}
         model: videoListModel
-
+        interactive: true
         bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
+        anchors.fill: parent
+        spacing: Kirigami.Units.largeSpacing
+        currentIndex: 0
+        highlightRangeMode: ListView.StrictlyEnforceRange
+        snapMode: ListView.SnapToItem
+        
+        delegate: Control {
+            width: parent.width
+            height: Kirigami.Units.gridUnit * 4
+            
+            background: PlasmaCore.FrameSvgItem {
+            id: frame
+            anchors {
+                fill: parent
+                margins: background.extraMargin
+            }
+            imagePath: "widgets/background"
+            
+            width: parent.width
+            height: parent.height
+            opacity: 0.9
+            }
 
-        delegate: Kirigami.AbstractCard {
-            showClickFeedback: true
-            Layout.fillWidth: true
-            implicitHeight: delegateItem.implicitHeight + Kirigami.Units.largeSpacing * 3
-            highlighted: modelData.videoID == currentSongUrl && modelData.videoTitle == currenttitle ? 1 : 0
+            
             contentItem: Item {
-                implicitWidth: parent.implicitWidth
-                implicitHeight: parent.implicitHeight
+                width: parent.width
+                height: parent.height
 
                 RowLayout {
                     id: delegateItem
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                        top: parent.top
-                    }
+                    anchors.fill: parent
+                    anchors.margins: Kirigami.Units.smallSpacing
                     spacing: Kirigami.Units.largeSpacing
 
                     Image {
                         id: videoImage
                         source: modelData.videoImage
-                        Layout.preferredHeight: Kirigami.Units.gridUnit * 3
-                        Layout.preferredWidth: Kirigami.Units.gridUnit * 3
+                        Layout.preferredHeight: parent.height
+                        Layout.preferredWidth: Kirigami.Units.gridUnit * 4
+                        Layout.alignment: Qt.AlignHCenter
                         fillMode: Image.Stretch
-                    }
-
-                    Kirigami.Separator {
-                        Layout.fillHeight: true
-                        color: Kirigami.Theme.linkColor
                     }
 
                     Label {
@@ -78,10 +94,21 @@ Mycroft.ScrollableDelegate {
                     }
                 }
             }
-                onClicked: {
-                    Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle})
+            
+            Keys.onReturnPressed: {
+                Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle})
             }
         }
+        
+        Item {
+            id:fcItem
+            width: 0
+            height: 0
+        }
+    }
+    
+    Component.onCompleted: {
+        leftSearchView.forceActiveFocus()
     }
 }
 

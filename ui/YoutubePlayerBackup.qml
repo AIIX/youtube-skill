@@ -2,7 +2,7 @@ import QtMultimedia 5.9
 import QtQuick.Layouts 1.4
 import QtQuick 2.9
 import QtQuick.Controls 2.0 as Controls
-import org.kde.kirigami 2.8 as Kirigami
+import org.kde.kirigami 2.4 as Kirigami
 import QtGraphicalEffects 1.0
 
 import Mycroft 1.0 as Mycroft
@@ -14,7 +14,6 @@ Mycroft.Delegate {
 
     property var videoSource: sessionData.video
     property var videoStatus: sessionData.status
-    property var videoThumb: sessionData.videoThumb
 
     //graceTime: Infinity
 
@@ -60,15 +59,6 @@ Mycroft.Delegate {
         z: 1000
     }
 
-    Image {
-        id: thumbart
-        anchors.fill: parent
-        fillMode: Image.PreserveAspectFit
-        source: root.videoThumb 
-        enabled: root.videoStatus == stop ? 0 : 1
-        visible: root.videoStatus == stop ? 0 : 1
-    }
-
     Video {
         id: video
         anchors.fill: parent
@@ -76,8 +66,8 @@ Mycroft.Delegate {
         autoLoad: true
         autoPlay: false
         Keys.onSpacePressed: video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
-        //Keys.onLeftPressed: video.seek(video.position - 5000)
-        //Keys.onRightPressed: video.seek(video.position + 5000)
+        Keys.onLeftPressed: video.seek(video.position - 5000)
+        Keys.onRightPressed: video.seek(video.position + 5000)
         source: videoSource
         readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
 
@@ -94,17 +84,7 @@ Mycroft.Delegate {
                     break;
             }
         }
-        
-        Keys.onUpPressed: {
-            controlBarItem.opened = true
-            controlBarItem.forceActiveFocus()
-        }
-        
-        Keys.onDownPressed: {
-            controlBarItem.opened = false
-            video.forceActiveFocus()
-        }
-        
+
         MouseArea {
             anchors.fill: parent
             onClicked: controlBarItem.opened = !controlBarItem.opened

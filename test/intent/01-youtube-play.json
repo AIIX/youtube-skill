@@ -1,4 +1,4 @@
 {
   "utterance": "youtube metalica",
-  "intent_type": "YoutubeKeyword"
+  "intent_type": "youtube.intent"
 }

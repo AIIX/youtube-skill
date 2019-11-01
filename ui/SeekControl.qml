@@ -4,7 +4,7 @@ import QtQuick.Controls 2.2 as Controls
 import QtQuick.Templates 2.2 as Templates
 import QtGraphicalEffects 1.0
 import QtMultimedia 5.9
-import org.kde.kirigami 2.4 as Kirigami
+import org.kde.kirigami 2.8 as Kirigami
 import Mycroft 1.0 as Mycroft
 
 Item {
@@ -33,12 +33,22 @@ Item {
             hideTimer.restart();
         }
     }
+    
+    onFocusChanged: {
+        if(focus) {
+            backButton.forceActiveFocus()
+        }
+    }
 
     Timer {
         id: hideTimer
         interval: 5000
-        onTriggered: seekControl.opened = false;
+        onTriggered: { 
+            seekControl.opened = false;
+            video.forceActiveFocus();
+        }
     }
+    
     Rectangle {
         anchors {
             left: parent.left
@@ -65,21 +75,41 @@ Item {
                 id: backButton
                 Layout.preferredWidth: Kirigami.Units.iconSizes.large
                 Layout.preferredHeight: Layout.preferredWidth
+                highlighted: focus ? 1 : 0
                 icon.name: "go-previous-symbolic"
                 z: 1000
                 onClicked: {
                     Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
                     video.stop();
                 }
+                KeyNavigation.right: button
+                Keys.onReturnPressed: {
+                    hideTimer.restart();
+                    Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
+                    video.stop(); 
+                }
+                onFocusChanged: {
+                    hideTimer.restart();
+                }
             }
             Controls.RoundButton {
                 id: button
                 Layout.preferredWidth: Kirigami.Units.iconSizes.large
                 Layout.preferredHeight: Layout.preferredWidth
+                highlighted: focus ? 1 : 0
                 icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
                 z: 1000
                 onClicked: {
                     video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
+                    hideTimer.restart();
+                }
+                KeyNavigation.left: backButton
+                KeyNavigation.right: slider
+                Keys.onReturnPressed: {
+                    video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
+                    hideTimer.restart();
+                }
+                onFocusChanged: {
                     hideTimer.restart();
                 }
             }
@@ -93,15 +123,37 @@ Item {
                 from: 0
                 to: seekControl.duration
                 z: 1000
+                property bool navSliderItem
+                property int minimumValue: 0
+                property int maximumValue: 20
                 onMoved: {
                     seekControl.seekPosition = value;
                     hideTimer.restart();
                 }
+                
+                onNavSliderItemChanged: {
+                    if(slider.navSliderItem){
+                        recthandler.color = "red"
+                    } else if (slider.focus) {
+                        recthandler.color = Kirigami.Theme.linkColor
+                    }
+                }
+                
+                onFocusChanged: {
+                    if(!slider.focus){
+                        recthandler.color = Kirigami.Theme.textColor
+                    } else {
+                        recthandler.color = Kirigami.Theme.linkColor
+                    }
+                }
+                
                 handle: Rectangle {
+                    id: recthandler
                     x: slider.position * (parent.width - width)
                     implicitWidth: Kirigami.Units.gridUnit
                     implicitHeight: implicitWidth
                     radius: width
+                    color: Kirigami.Theme.textColor
                 }
                 background: Item {
                     Rectangle {
@@ -147,6 +199,32 @@ Item {
                         horizontalAlignment: Text.AlignRight
                         verticalAlignment: Text.AlignVCenter
                         text: formatTime(duration)
+                    }
+                }
+               KeyNavigation.left: button
+               Keys.onReturnPressed: {
+                   hideTimer.restart();
+                   if(!navSliderItem){
+                        navSliderItem = true   
+                    } else {
+                        navSliderItem = false
+                    }
+                }
+            
+               Keys.onLeftPressed: {
+                    console.log("leftPressedonSlider")
+                    hideTimer.restart();
+                    if(navSliderItem) {
+                        video.seek(video.position - 5000)
+                    } else {
+                        button.forceActiveFocus()
+                    }
+               }
+               
+               Keys.onRightPressed: {
+                    hideTimer.restart();
+                    if(navSliderItem) {
+                        video.seek(video.position + 5000)
                     }
                 }
             }

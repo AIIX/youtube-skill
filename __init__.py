@@ -78,22 +78,25 @@ class YoutubeSkill(MycroftSkill):
         videoList = []
         videoList.clear()
         videoPageObject = {}
-        query = message.data["Query"]
-        url = "https://www.youtube.com/results?search_query=" + quote(query)
-        response = urlopen(url)
-        html = response.read()
-        buttons = self.process_additional_pages(html)
-        nextbutton = buttons[-1]
-        prevbutton = "results?search_query=" + quote(query)
-        self.nextpage_url = "https://www.youtube.com/" + nextbutton['href']
-        self.previouspage_url = "https://www.youtube.com/" + prevbutton
-        videoList = self.process_soup(html)
-        videoPageObject['videoList'] = videoList
-        self.gui["videoListBlob"] = videoPageObject
-        self.gui["previousAvailable"] = False
-        self.gui["nextAvailable"] = True
-        self.gui["bgImage"] = quote(query)
-        self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
+        try:
+            query = message.data["Query"]
+            url = "https://www.youtube.com/results?search_query=" + quote(query)
+            response = urlopen(url)
+            html = response.read()
+            buttons = self.process_additional_pages(html)
+            nextbutton = buttons[-1]
+            prevbutton = "results?search_query=" + quote(query)
+            self.nextpage_url = "https://www.youtube.com/" + nextbutton['href']
+            self.previouspage_url = "https://www.youtube.com/" + prevbutton
+            videoList = self.process_soup(html)
+            videoPageObject['videoList'] = videoList
+            self.gui["videoListBlob"] = videoPageObject
+            self.gui["previousAvailable"] = False
+            self.gui["nextAvailable"] = True
+            self.gui["bgImage"] = quote(query)
+            self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
+        except:
+            LOG.debug("error")
         
     def searchNextPage(self, message):
         self.gui.clear()
@@ -262,8 +265,8 @@ class YoutubeSkill(MycroftSkill):
         self.gui["currenturl"] = str(message.data['vidID'])
         self.gui["currenttitle"] = str(message.data['vidTitle'])
         videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
-        self.youtubesearchpagesimple(videoTitleSearch)
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+        #self.youtubesearchpagesimple(videoTitleSearch)
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
