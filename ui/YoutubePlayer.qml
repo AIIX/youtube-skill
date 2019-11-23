@@ -76,6 +76,7 @@ Mycroft.Delegate {
         autoLoad: true
         autoPlay: false
         Keys.onSpacePressed: video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
+        KeyNavigation.up: closeButton
         //Keys.onLeftPressed: video.seek(video.position - 5000)
         //Keys.onRightPressed: video.seek(video.position + 5000)
         source: videoSource
@@ -94,15 +95,10 @@ Mycroft.Delegate {
                     break;
             }
         }
-        
-        Keys.onUpPressed: {
+                
+        Keys.onDownPressed: {
             controlBarItem.opened = true
             controlBarItem.forceActiveFocus()
-        }
-        
-        Keys.onDownPressed: {
-            controlBarItem.opened = false
-            video.forceActiveFocus()
         }
         
         MouseArea {

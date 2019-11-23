@@ -62,6 +62,7 @@ Mycroft.Delegate {
                 searchYoutubeLiveResults(videoQueryBox.text)
             }
             
+            KeyNavigation.up: closeButton
             KeyNavigation.down: videoListView
             KeyNavigation.right: searchVideoQuery
         }
