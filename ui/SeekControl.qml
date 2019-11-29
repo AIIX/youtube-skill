@@ -16,6 +16,7 @@ Item {
     property bool enabled: true
     property bool seeking: false
     property Video videoControl
+    property string title
 
     clip: true
     implicitHeight: mainLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
@@ -64,167 +65,181 @@ Item {
                 easing.type: Easing.OutCubic
             }
         }
-
-        RowLayout {
+        
+        ColumnLayout {
             id: mainLayout
             anchors {
                 fill: parent
                 margins: Kirigami.Units.largeSpacing
             }
-            Controls.RoundButton {
-                id: backButton
-                Layout.preferredWidth: Kirigami.Units.iconSizes.large
-                Layout.preferredHeight: Layout.preferredWidth
-                highlighted: focus ? 1 : 0
-                icon.name: "go-previous-symbolic"
-                z: 1000
-                onClicked: {
-                    Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
-                    video.stop();
-                }
-                KeyNavigation.right: button
-                Keys.onReturnPressed: {
-                    hideTimer.restart();
-                    Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
-                    video.stop(); 
-                }
-                onFocusChanged: {
-                    hideTimer.restart();
-                }
-            }
-            Controls.RoundButton {
-                id: button
-                Layout.preferredWidth: Kirigami.Units.iconSizes.large
-                Layout.preferredHeight: Layout.preferredWidth
-                highlighted: focus ? 1 : 0
-                icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
-                z: 1000
-                onClicked: {
-                    video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
-                    hideTimer.restart();
-                }
-                KeyNavigation.left: backButton
-                KeyNavigation.right: slider
-                Keys.onReturnPressed: {
-                    video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
-                    hideTimer.restart();
-                }
-                onFocusChanged: {
-                    hideTimer.restart();
-                }
-            }
-
-            Templates.Slider {
-                id: slider
+            
+            Kirigami.Heading {
+                id: videoHeading
+                level: 2
                 Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter
-                implicitHeight: Kirigami.Units.gridUnit
-                value: seekControl.playPosition
-                from: 0
-                to: seekControl.duration
-                z: 1000
-                property bool navSliderItem
-                property int minimumValue: 0
-                property int maximumValue: 20
-                onMoved: {
-                    seekControl.seekPosition = value;
-                    hideTimer.restart();
-                }
-                
-                onNavSliderItemChanged: {
-                    if(slider.navSliderItem){
-                        recthandler.color = "red"
-                    } else if (slider.focus) {
-                        recthandler.color = Kirigami.Theme.linkColor
+                Layout.fillHeight: true
+                text: title
+            }
+            
+            RowLayout {
+                id: mainLayout2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Controls.RoundButton {
+                    id: backButton
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.large
+                    Layout.preferredHeight: Layout.preferredWidth
+                    highlighted: focus ? 1 : 0
+                    icon.name: "go-previous-symbolic"
+                    z: 1000
+                    onClicked: {
+                        Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
+                        video.stop();
+                    }
+                    KeyNavigation.right: button
+                    Keys.onReturnPressed: {
+                        hideTimer.restart();
+                        Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
+                        video.stop(); 
+                    }
+                    onFocusChanged: {
+                        hideTimer.restart();
                     }
                 }
-                
-                onFocusChanged: {
-                    if(!slider.focus){
-                        recthandler.color = Kirigami.Theme.textColor
-                    } else {
-                        recthandler.color = Kirigami.Theme.linkColor
+                Controls.RoundButton {
+                    id: button
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.large
+                    Layout.preferredHeight: Layout.preferredWidth
+                    highlighted: focus ? 1 : 0
+                    icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
+                    z: 1000
+                    onClicked: {
+                        video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
+                        hideTimer.restart();
+                    }
+                    KeyNavigation.left: backButton
+                    KeyNavigation.right: slider
+                    Keys.onReturnPressed: {
+                        video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
+                        hideTimer.restart();
+                    }
+                    onFocusChanged: {
+                        hideTimer.restart();
                     }
                 }
-                
-                handle: Rectangle {
-                    id: recthandler
-                    x: slider.position * (parent.width - width)
-                    implicitWidth: Kirigami.Units.gridUnit
-                    implicitHeight: implicitWidth
-                    radius: width
-                    color: Kirigami.Theme.textColor
-                }
-                background: Item {
-                    Rectangle {
-                        id: groove
-                        anchors {
-                            verticalCenter: parent.verticalCenter
-                            left: parent.left
-                            right: parent.right
+
+                Templates.Slider {
+                    id: slider
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    implicitHeight: Kirigami.Units.gridUnit
+                    value: seekControl.playPosition
+                    from: 0
+                    to: seekControl.duration
+                    z: 1000
+                    property bool navSliderItem
+                    property int minimumValue: 0
+                    property int maximumValue: 20
+                    onMoved: {
+                        seekControl.seekPosition = value;
+                        hideTimer.restart();
+                    }
+                    
+                    onNavSliderItemChanged: {
+                        if(slider.navSliderItem){
+                            recthandler.color = "red"
+                        } else if (slider.focus) {
+                            recthandler.color = Kirigami.Theme.linkColor
                         }
-                        radius: height
-                        height: Math.round(Kirigami.Units.gridUnit/3)
-                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3)
+                    }
+                    
+                    onFocusChanged: {
+                        if(!slider.focus){
+                            recthandler.color = Kirigami.Theme.textColor
+                        } else {
+                            recthandler.color = Kirigami.Theme.linkColor
+                        }
+                    }
+                    
+                    handle: Rectangle {
+                        id: recthandler
+                        x: slider.position * (parent.width - width)
+                        implicitWidth: Kirigami.Units.gridUnit
+                        implicitHeight: implicitWidth
+                        radius: width
+                        color: Kirigami.Theme.textColor
+                    }
+                    background: Item {
                         Rectangle {
+                            id: groove
                             anchors {
+                                verticalCenter: parent.verticalCenter
                                 left: parent.left
-                                top: parent.top
-                                bottom: parent.bottom
+                                right: parent.right
                             }
                             radius: height
-                            color: Kirigami.Theme.highlightColor
-                            width: slider.position * (parent.width - slider.handle.width/2) + slider.handle.width/2
+                            height: Math.round(Kirigami.Units.gridUnit/3)
+                            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3)
+                            Rectangle {
+                                anchors {
+                                    left: parent.left
+                                    top: parent.top
+                                    bottom: parent.bottom
+                                }
+                                radius: height
+                                color: Kirigami.Theme.highlightColor
+                                width: slider.position * (parent.width - slider.handle.width/2) + slider.handle.width/2
+                            }
                         }
-                    }
 
-                    Controls.Label {
-                        anchors {
-                            left: parent.left
-                            top: groove.bottom
-                            topMargin: Kirigami.Units.smallSpacing
+                        Controls.Label {
+                            anchors {
+                                left: parent.left
+                                top: groove.bottom
+                                topMargin: Kirigami.Units.smallSpacing
+                            }
+                            horizontalAlignment: Text.AlignLeft
+                            verticalAlignment: Text.AlignVCenter
+                            text: formatTime(playPosition)
+                            color: "white"
                         }
-                        horizontalAlignment: Text.AlignLeft
-                        verticalAlignment: Text.AlignVCenter
-                        text: formatTime(playPosition)
-                        color: "white"
-                    }
 
-                    Controls.Label {
-                        anchors {
-                            right: parent.right
-                            top: groove.bottom
-                            topMargin: Kirigami.Units.smallSpacing
+                        Controls.Label {
+                            anchors {
+                                right: parent.right
+                                top: groove.bottom
+                                topMargin: Kirigami.Units.smallSpacing
+                            }
+                            horizontalAlignment: Text.AlignRight
+                            verticalAlignment: Text.AlignVCenter
+                            text: formatTime(duration)
                         }
-                        horizontalAlignment: Text.AlignRight
-                        verticalAlignment: Text.AlignVCenter
-                        text: formatTime(duration)
                     }
-                }
-               KeyNavigation.left: button
-               Keys.onReturnPressed: {
-                   hideTimer.restart();
-                   if(!navSliderItem){
-                        navSliderItem = true   
-                    } else {
-                        navSliderItem = false
-                    }
-                }
-            
-               Keys.onLeftPressed: {
-                    console.log("leftPressedonSlider")
+                KeyNavigation.left: button
+                Keys.onReturnPressed: {
                     hideTimer.restart();
-                    if(navSliderItem) {
-                        video.seek(video.position - 5000)
-                    } else {
-                        button.forceActiveFocus()
+                    if(!navSliderItem){
+                            navSliderItem = true   
+                        } else {
+                            navSliderItem = false
+                        }
                     }
-               }
-               
-               Keys.onRightPressed: {
-                    hideTimer.restart();
-                    if(navSliderItem) {
-                        video.seek(video.position + 5000)
+                
+                Keys.onLeftPressed: {
+                        console.log("leftPressedonSlider")
+                        hideTimer.restart();
+                        if(navSliderItem) {
+                            video.seek(video.position - 5000)
+                        } else {
+                            button.forceActiveFocus()
+                        }
+                }
+                
+                Keys.onRightPressed: {
+                        hideTimer.restart();
+                        if(navSliderItem) {
+                            video.seek(video.position + 5000)
+                        }
                     }
                 }
             }

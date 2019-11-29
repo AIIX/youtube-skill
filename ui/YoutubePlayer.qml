@@ -15,6 +15,7 @@ Mycroft.Delegate {
     property var videoSource: sessionData.video
     property var videoStatus: sessionData.status
     property var videoThumb: sessionData.videoThumb
+    property var videoTitle: sessionData.currenttitle
 
     //graceTime: Infinity
 
@@ -46,6 +47,18 @@ Mycroft.Delegate {
             }
         }
     }
+    
+    Timer {
+        id: delaytimer
+    }
+
+    function delay(delayTime, cb) {
+            delaytimer.interval = delayTime;
+            delaytimer.repeat = false;
+            delaytimer.triggered.connect(cb);
+            delaytimer.start();
+    }
+    
     controlBar: Local.SeekControl {
         id: seekControl
         anchors {
@@ -53,11 +66,24 @@ Mycroft.Delegate {
             right: parent.right
             bottom: parent.bottom
         }
+        title: videoTitle  
         videoControl: video
         duration: video.duration
         playPosition: video.position
         onSeekPositionChanged: video.seek(seekPosition);
         z: 1000
+    }
+    
+    Kirigami.Heading {
+        id: vidTitle
+        level: 2
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: Kirigami.Units.largeSpacing
+        height: Kirigami.Units.gridUnit * 2
+        visible: true
+        text: videoTitle
+        z: 100
     }
 
     Image {
@@ -65,8 +91,8 @@ Mycroft.Delegate {
         anchors.fill: parent
         fillMode: Image.PreserveAspectFit
         source: root.videoThumb 
-        enabled: root.videoStatus == stop ? 0 : 1
-        visible: root.videoStatus == stop ? 0 : 1
+        enabled: root.videoStatus == "stop" ? 1 : 0
+        visible: root.videoStatus == "stop" ? 1 : 0
     }
 
     Video {
@@ -92,6 +118,9 @@ Mycroft.Delegate {
                     break;
                 case "play":
                     video.play()
+                    delay(6000, function() {
+                        vidTitle.visible = false;
+                    })
                     break;
             }
         }

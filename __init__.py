@@ -162,6 +162,8 @@ class YoutubeSkill(MycroftSkill):
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True) 
         rfind = soup.findAll(attrs={'class': 'yt-uix-tile-link'})
         vid = str(rfind[0].attrs['href'])
+        videoTitle = str(rfind[0].attrs['title'])
+        LOG.info(videoTitle)
         veid = "https://www.youtube.com{0}".format(vid)
         getvid = vid.split("v=")[1].split("&")[0]
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(getvid)
@@ -172,7 +174,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["video"] = str(playurl)
         self.gui["status"] = str("play")
         self.gui["currenturl"] = str(vid)
-        self.gui["currenttitle"] = ""
+        self.gui["currenttitle"] = str(videoTitle)
         self.gui["videoListBlob"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
