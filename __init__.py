@@ -26,6 +26,8 @@ class YoutubeSkill(MycroftSkill):
         self.nextpage_url = None
         self.previouspage_url = None
         self.live_category = None
+        self.recentList = []
+        self.recentPageObject = {}
 
     def initialize(self):
         self.load_data_files(dirname(__file__))
@@ -158,6 +160,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["status"] = "stop"
         self.gui["currenturl"] = ""
         self.gui["videoListBlob"] = ""
+        self.gui["recentListBlob"] = ""
         self.gui["videoThumb"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True) 
         rfind = soup.findAll(attrs={'class': 'yt-uix-tile-link'})
@@ -176,8 +179,10 @@ class YoutubeSkill(MycroftSkill):
         self.gui["currenturl"] = str(vid)
         self.gui["currenttitle"] = str(videoTitle)
         self.gui["videoListBlob"] = ""
+        self.gui["recentListBlob"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
+        self.recentList.append({"videoID": getvid, "videoTitle": str(videoTitle), "videoImage": thumb})
         self.youtubesearchpagesimple(utterance)
 
     def youtubepause(self, message):
@@ -202,7 +207,9 @@ class YoutubeSkill(MycroftSkill):
         html = response.read()
         videoList = self.process_soup(html)
         videoPageObject['videoList'] = videoList
+        self.recentPageObject['recentList'] = self.recentList
         self.gui["videoListBlob"] = videoPageObject
+        self.gui["recentListBlob"] = self.recentPageObject
         self.gui.show_page("YoutubeSearch.qml")
         
     def youtubesearchpagesimple(self, query):
@@ -216,6 +223,9 @@ class YoutubeSkill(MycroftSkill):
         videoList = self.process_soup(html)        
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
+        self.recentPageObject['recentList'] = self.recentList
+        LOG.info(self.recentList)
+        self.gui["recentListBlob"] = self.recentPageObject
         
     def youtubelivesearchpage(self, message):
         self.gui.clear()
@@ -268,6 +278,10 @@ class YoutubeSkill(MycroftSkill):
         self.gui["currenttitle"] = str(message.data['vidTitle'])
         videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+        thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(message.data['vidID'])
+        self.recentList.append({"videoID": str(message.data['vidID']), "videoTitle": str(message.data['vidTitle']), "videoImage": thumb})
+        self.recentPageObject['recentList'] = self.recentList
+        self.gui["recentListBlob"] = self.recentPageObject
         #self.youtubesearchpagesimple(videoTitleSearch)
 
     def stop(self):
