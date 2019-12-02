@@ -165,8 +165,6 @@ class YoutubeSkill(MycroftSkill):
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True) 
         rfind = soup.findAll(attrs={'class': 'yt-uix-tile-link'})
         vid = str(rfind[0].attrs['href'])
-        videoTitle = str(rfind[0].attrs['title'])
-        LOG.info(videoTitle)
         veid = "https://www.youtube.com{0}".format(vid)
         getvid = vid.split("v=")[1].split("&")[0]
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(getvid)
@@ -177,12 +175,15 @@ class YoutubeSkill(MycroftSkill):
         self.gui["video"] = str(playurl)
         self.gui["status"] = str("play")
         self.gui["currenturl"] = str(vid)
-        self.gui["currenttitle"] = str(videoTitle)
+        self.gui["currenttitle"] = video.title
+        self.gui["viewCount"] = video.viewcount
+        self.gui["publishedDate"] = video.published
+        self.gui["videoAuthor"] = video.username
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
-        self.recentList.append({"videoID": getvid, "videoTitle": str(videoTitle), "videoImage": thumb})
+        self.recentList.append({"videoID": getvid, "videoTitle": video.title, "videoImage": thumb})
         self.youtubesearchpagesimple(utterance)
 
     def youtubepause(self, message):
