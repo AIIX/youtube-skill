@@ -20,7 +20,7 @@ Mycroft.Delegate {
     property var videoViewCount: sessionData.viewCount
     property var videoPublishDate: sessionData.publishedDate
     property var videoListModel: sessionData.videoListBlob.videoList
-    
+
     //The player is always fullscreen
     fillWidth: true
     background: Rectangle {
@@ -34,17 +34,26 @@ Mycroft.Delegate {
     onEnabledChanged: syncStatusTimer.restart()
     onVideoSourceChanged: syncStatusTimer.restart()
     Component.onCompleted: syncStatusTimer.restart()
-    
+
+    Connections {
+	target: window
+	onVisibleChanged: {
+	    if(MediaPlayer.PlayingState){
+		video.pause()
+	    }
+	}
+    }
+
     function getViewCount(value){
         return value.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
     }
-    
+
     function setPublishedDate(publishDate){
         var date1 = new Date(publishDate).getTime();
         var date2 = new Date().getTime();
         console.log(date1)
         console.log(date2)
-        
+
         var msec = date2 - date1;
         var mins = Math.floor(msec / 60000);
         var hrs = Math.floor(mins / 60);
@@ -71,7 +80,7 @@ Mycroft.Delegate {
             }
         }
     }
-    
+
     Timer {
         id: delaytimer
     }
@@ -82,7 +91,7 @@ Mycroft.Delegate {
             delaytimer.triggered.connect(cb);
             delaytimer.start();
     }
-    
+
     controlBar: Local.SeekControl {
         id: seekControl
         anchors {
@@ -90,44 +99,44 @@ Mycroft.Delegate {
             right: parent.right
             bottom: parent.bottom
         }
-        title: videoTitle  
+        title: videoTitle
         videoControl: video
         duration: video.duration
         playPosition: video.position
         onSeekPositionChanged: video.seek(seekPosition);
         z: 1000
     }
-    
+
     Item {
         id: videoRoot
-        anchors.fill: parent 
+        anchors.fill: parent
         focus: true
-        
-        Rectangle { 
-            id: infomationBar 
+
+        Rectangle {
+            id: infomationBar
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
             color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
             implicitHeight: infoLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
             z: 1001
-            
+
             onVisibleChanged: {
                 delay(15000, function() {
                     infomationBar.visible = false;
                 })
             }
-            
+
             RowLayout {
                 id: infoLayout
                 anchors.fill: parent
-                
+
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Layout.alignment: Qt.AlignLeft
                     Layout.leftMargin: Kirigami.Units.largeSpacing
-                    
+
                     Kirigami.Heading {
                         id: vidTitle
                         level: 2
@@ -136,7 +145,7 @@ Mycroft.Delegate {
                         text: "Title: " + videoTitle
                         z: 100
                     }
-                    
+
                     Kirigami.Heading {
                         id: vidAuthor
                         level: 2
@@ -146,13 +155,13 @@ Mycroft.Delegate {
                         z: 100
                     }
                 }
-                
+
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Layout.alignment: Qt.AlignRight
                     Layout.rightMargin: Kirigami.Units.largeSpacing
-                    
+
                     Kirigami.Heading {
                         id: vidCount
                         level: 2
@@ -161,7 +170,7 @@ Mycroft.Delegate {
                         text: "Views: " + getViewCount(videoViewCount)
                         z: 100
                     }
-                    
+
                     Kirigami.Heading {
                         id: vidPublishDate
                         level: 2
@@ -173,23 +182,16 @@ Mycroft.Delegate {
                 }
             }
         }
-        
-        SuggestionArea {
-            id: suggestArea
-            videoSuggestionList: sessionData.videoListBlob.videoList
-            z: 2000
-            visible: false
-        }
-        
+
         Image {
             id: thumbart
             anchors.fill: parent
             fillMode: Image.PreserveAspectFit
-            source: root.videoThumb 
+            source: root.videoThumb
             enabled: root.videoStatus == "stop" ? 1 : 0
             visible: root.videoStatus == "stop" ? 1 : 0
         }
-        
+
         VideoOutput2 {
             opengl: true
             fillMode: VideoOutput.PreserveAspectFit
@@ -202,11 +204,12 @@ Mycroft.Delegate {
             autoLoad: true
             autoPlay: false
             source: videoSource
-            videoCodecPriority: ["FFmpeg", "VAAPI"]
+            //videoCodecPriority: ["MMAL","FFmpeg"]
 
             readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
 
-            onCurrentStatusChanged: {print("OOO"+currentStatus)
+            onCurrentStatusChanged: {
+	    console.log(currentStatus)
             switch(currentStatus){
                 case "stop":
                     video.stop();
@@ -222,10 +225,16 @@ Mycroft.Delegate {
                     break;
                 }
             }
+
+	    onStatusChanged: {
+		if(status == MediaPlayer.EndOfMedia){
+		  thumbart.visible = true
+		}
+	    }
         }
-        
+
         KeyNavigation.up: closeButton
-        Keys.onSpacePressed: { 
+        Keys.onSpacePressed: {
             video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
             infomationBar.visible = true
         }
@@ -233,12 +242,12 @@ Mycroft.Delegate {
             controlBarItem.opened = true
             controlBarItem.forceActiveFocus()
         }
-        
+
         MouseArea {
             anchors.fill: parent
             onClicked: {
                 infomationBar.visible = true;
-                controlBarItem.opened = !controlBarItem.opened 
+                controlBarItem.opened = !controlBarItem.opened
             }
         }
     }

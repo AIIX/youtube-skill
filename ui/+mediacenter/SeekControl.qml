@@ -112,10 +112,11 @@ Item {
                     Layout.preferredWidth: Kirigami.Units.iconSizes.large
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
+                    icon.name: "media-playback-start" //videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
                     z: 1000
                     onClicked: {
-                        video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
+			video.play()
+                        //video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                         hideTimer.restart();
                     }
                     KeyNavigation.up: videoRoot

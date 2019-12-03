@@ -39,15 +39,15 @@ class YoutubeSkill(MycroftSkill):
         youtuberesume = IntentBuilder("YoutubeResumeKeyword"). \
             require("YoutubeResumeKeyword").build()
         self.register_intent(youtuberesume, self.youtuberesume)
-        
+
         youtubesearchpage = IntentBuilder("YoutubeSearchPageKeyword"). \
             require("YoutubeSearchPageKeyword").build()
         self.register_intent(youtubesearchpage, self.youtubesearchpage)
-        
+
         youtubelivesearchpage = IntentBuilder("YoutubeLiveSearchPage"). \
             require("YoutubeLiveSearchPageKeyword").build()
         self.register_intent(youtubelivesearchpage, self.youtubelivesearchpage)
-        
+
         youtubelauncherId = IntentBuilder("YoutubeLauncherId"). \
             require("YoutubeLauncherIdKeyword").build()
         self.register_intent(youtubelauncherId, self.launcherId)
@@ -62,7 +62,7 @@ class YoutubeSkill(MycroftSkill):
         
     def launcherId(self, message):
         self.youtubelivesearchpage({})
-        
+
     def getListSearch(self, text):
         query = quote(text)
         url = "https://www.youtube.com/results?search_query=" + quote(query)
@@ -162,7 +162,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
         self.gui["videoThumb"] = ""
-        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True) 
+        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         rfind = soup.findAll(attrs={'class': 'yt-uix-tile-link'})
         vid = str(rfind[0].attrs['href'])
         veid = "https://www.youtube.com{0}".format(vid)
@@ -170,15 +170,15 @@ class YoutubeSkill(MycroftSkill):
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(getvid)
         self.gui["videoThumb"] = thumb
         video = pafy.new(veid)
-        playstream = video.streams[0]
+        playstream = video.getbest() #video.streams[0]
         playurl = playstream.url
-        self.gui["video"] = str(playurl)
-        self.gui["status"] = str("play")
-        self.gui["currenturl"] = str(vid)
         self.gui["currenttitle"] = video.title
         self.gui["viewCount"] = video.viewcount
         self.gui["publishedDate"] = video.published
         self.gui["videoAuthor"] = video.username
+        self.gui["status"] = str("play")
+        self.gui["video"] = str(playurl)
+        self.gui["currenturl"] = str(vid)
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
