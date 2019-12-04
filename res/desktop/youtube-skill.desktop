@@ -7,5 +7,5 @@ Type=Application
 Name=Youtube
 Exec=/usr/bin/mycroft-skill-launcher.py "ID01"
 Icon=yandex-browser
-Category=Utility
+Categories=VoiceApp
 StartupNotify=false
