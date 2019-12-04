@@ -1,8 +1,8 @@
-import QtAV 1.7
+import QtMultimedia 5.13
 import QtQuick.Layouts 1.4
 import QtQuick 2.9
-import QtQuick.Controls 2.0 as Controls
-import org.kde.kirigami 2.8 as Kirigami
+import QtQuick.Controls 2.12 as Controls
+import org.kde.kirigami 2.10 as Kirigami
 import QtGraphicalEffects 1.0
 
 import Mycroft 1.0 as Mycroft
@@ -15,12 +15,12 @@ Mycroft.Delegate {
     property var videoSource: sessionData.video
     property var videoStatus: sessionData.status
     property var videoThumb: sessionData.videoThumb
-    property var videoTitle: sessionData.currenttitle
+    property var videoTitle: sessionData.setTitle
     property var videoAuthor: sessionData.videoAuthor
     property var videoViewCount: sessionData.viewCount
     property var videoPublishDate: sessionData.publishedDate
     property var videoListModel: sessionData.videoListBlob.videoList
-
+    
     //The player is always fullscreen
     fillWidth: true
     background: Rectangle {
@@ -34,26 +34,17 @@ Mycroft.Delegate {
     onEnabledChanged: syncStatusTimer.restart()
     onVideoSourceChanged: syncStatusTimer.restart()
     Component.onCompleted: syncStatusTimer.restart()
-
-    Connections {
-	target: window
-	onVisibleChanged: {
-	    if(MediaPlayer.PlayingState){
-		video.pause()
-	    }
-	}
-    }
-
+    
     function getViewCount(value){
         return value.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
     }
-
+    
     function setPublishedDate(publishDate){
         var date1 = new Date(publishDate).getTime();
         var date2 = new Date().getTime();
         console.log(date1)
         console.log(date2)
-
+        
         var msec = date2 - date1;
         var mins = Math.floor(msec / 60000);
         var hrs = Math.floor(mins / 60);
@@ -80,7 +71,7 @@ Mycroft.Delegate {
             }
         }
     }
-
+    
     Timer {
         id: delaytimer
     }
@@ -91,7 +82,7 @@ Mycroft.Delegate {
             delaytimer.triggered.connect(cb);
             delaytimer.start();
     }
-
+    
     controlBar: Local.SeekControl {
         id: seekControl
         anchors {
@@ -99,44 +90,43 @@ Mycroft.Delegate {
             right: parent.right
             bottom: parent.bottom
         }
-        title: videoTitle
+        title: videoTitle  
         videoControl: video
         duration: video.duration
         playPosition: video.position
         onSeekPositionChanged: video.seek(seekPosition);
         z: 1000
     }
-
+    
     Item {
         id: videoRoot
-        anchors.fill: parent
-        focus: true
-
-        Rectangle {
-            id: infomationBar
+        anchors.fill: parent 
+        
+        Rectangle { 
+            id: infomationBar 
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
             color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
             implicitHeight: infoLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
             z: 1001
-
+            
             onVisibleChanged: {
                 delay(15000, function() {
                     infomationBar.visible = false;
                 })
             }
-
+            
             RowLayout {
                 id: infoLayout
                 anchors.fill: parent
-
+                
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Layout.alignment: Qt.AlignLeft
                     Layout.leftMargin: Kirigami.Units.largeSpacing
-
+                    
                     Kirigami.Heading {
                         id: vidTitle
                         level: 2
@@ -145,7 +135,7 @@ Mycroft.Delegate {
                         text: "Title: " + videoTitle
                         z: 100
                     }
-
+                    
                     Kirigami.Heading {
                         id: vidAuthor
                         level: 2
@@ -155,13 +145,13 @@ Mycroft.Delegate {
                         z: 100
                     }
                 }
-
+                
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Layout.alignment: Qt.AlignRight
                     Layout.rightMargin: Kirigami.Units.largeSpacing
-
+                    
                     Kirigami.Heading {
                         id: vidCount
                         level: 2
@@ -170,7 +160,7 @@ Mycroft.Delegate {
                         text: "Views: " + getViewCount(videoViewCount)
                         z: 100
                     }
-
+                    
                     Kirigami.Heading {
                         id: vidPublishDate
                         level: 2
@@ -182,72 +172,62 @@ Mycroft.Delegate {
                 }
             }
         }
-
+    
         Image {
             id: thumbart
             anchors.fill: parent
             fillMode: Image.PreserveAspectFit
-            source: root.videoThumb
+            source: root.videoThumb 
             enabled: root.videoStatus == "stop" ? 1 : 0
             visible: root.videoStatus == "stop" ? 1 : 0
         }
-
-        VideoOutput2 {
-            opengl: true
-            fillMode: VideoOutput.PreserveAspectFit
-            source: video
-            anchors.fill: parent
-        }
-
-        AVPlayer {
+        
+        Video {
             id: video
+            anchors.fill: parent
+            focus: true
             autoLoad: true
             autoPlay: false
+            Keys.onSpacePressed: video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
+            KeyNavigation.up: closeButton
+            //Keys.onLeftPressed: video.seek(video.position - 5000)
+            //Keys.onRightPressed: video.seek(video.position + 5000)
             source: videoSource
-            //videoCodecPriority: ["MMAL","FFmpeg"]
-
             readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
 
-            onCurrentStatusChanged: {
-	    console.log(currentStatus)
-            switch(currentStatus){
-                case "stop":
-                    video.stop();
-                    break;
-                case "pause":
-                    video.pause()
-                    break;
-                case "play":
-                    video.play()
-                    delay(15000, function() {
-                        infomationBar.visible = false;
-                    })
-                    break;
+            onCurrentStatusChanged: {print("OOO"+currentStatus)
+                switch(currentStatus){
+                    case "stop":
+                        video.stop();
+                        break;
+                    case "pause":
+                        video.pause()
+                        break;
+                    case "play":
+                        video.play()
+                        delay(6000, function() {
+                            infomationBar.visible = false;
+                        })
+                        break;
                 }
             }
-
-	    onStatusChanged: {
-		if(status == MediaPlayer.EndOfMedia){
-		  thumbart.visible = true
-		}
-	    }
-        }
-
-        KeyNavigation.up: closeButton
-        Keys.onSpacePressed: {
-            video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
-            infomationBar.visible = true
-        }
-        Keys.onDownPressed: {
-            controlBarItem.opened = true
-            controlBarItem.forceActiveFocus()
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
+            
+            Keys.onReturnPressed: {
                 infomationBar.visible = true;
-                controlBarItem.opened = !controlBarItem.opened
+                video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
+            }
+                    
+            Keys.onDownPressed: {
+                controlBarItem.opened = true
+                controlBarItem.forceActiveFocus()
+            }
+            
+            MouseArea {
+                anchors.fill: parent
+                onClicked: { 
+                    infomationBar.visible = true;
+                    controlBarItem.opened = !controlBarItem.opened 
+                }
             }
         }
     }

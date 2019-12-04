@@ -1,10 +1,11 @@
-import QtQuick 2.4
+import QtMultimedia 5.13
 import QtQuick.Layouts 1.4
-import QtQuick.Controls 2.2 as Controls
+import QtQuick 2.9
+import QtQuick.Controls 2.12 as Controls
+import org.kde.kirigami 2.10 as Kirigami
 import QtQuick.Templates 2.2 as Templates
 import QtGraphicalEffects 1.0
-import QtMultimedia 5.9
-import org.kde.kirigami 2.8 as Kirigami
+
 import Mycroft 1.0 as Mycroft
 
 Item {
@@ -15,7 +16,7 @@ Item {
     property int seekPosition: 0
     property bool enabled: true
     property bool seeking: false
-    property Video videoControl
+    property var videoControl
     property string title
 
     clip: true
@@ -112,11 +113,10 @@ Item {
                     Layout.preferredWidth: Kirigami.Units.iconSizes.large
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    icon.name: "media-playback-start" //videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
+                    icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
                     z: 1000
                     onClicked: {
-			video.play()
-                        //video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
+                        video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                         hideTimer.restart();
                     }
                     KeyNavigation.up: videoRoot
