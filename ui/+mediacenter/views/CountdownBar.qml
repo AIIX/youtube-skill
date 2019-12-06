@@ -1,77 +1,69 @@
-import QtAV 1.6
-import QtQuick.Layouts 1.4
 import QtQuick 2.9
+import QtQuick.Layouts 1.4
 import QtQuick.Controls 2.0 as Controls
 import org.kde.kirigami 2.8 as Kirigami
 import QtGraphicalEffects 1.0
 import Mycroft 1.0 as Mycroft
 
-import QtQuick 2.8
-import QtGraphicalEffects 1.0
 
-Rectangle{
-    property int imgRadius: Math.min(imgContainer.width, imgContainer.height) / 2
-    property int borderWidth: 3
-
-    id: imgContainer
-    color: "#f2f2f2"
-    border.color: "#385d8a"
-    border.width: borderWidth
-    radius: imgRadius
-
-    Image {
-        id: img
-        anchors.fill: parent
-        source: "https://www.gnu.org/graphics/nu-gnu.svg"
-        layer.enabled: true
-        layer.effect: OpacityMask {
-            maskSource: Item {
-                width: imgContainer.width
-                height: imgContainer.height
-                Rectangle{
-                    id: rectContainer
-                    width: parent.width
-                    anchors.bottom: parent.bottom
-                    clip: true
-                    color: "transparent"
-                    Rectangle {
-                        id: rectMask
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.margins: imgContainer.borderWidth
-                        height: img.height - imgContainer.borderWidth * 2
-                        radius: Math.max(0, imgContainer.imgRadius-imgContainer.borderWidth)
-                    }
-                    SequentialAnimation{
-                        running: img.status == Image.Ready
-                        loops: Animation.Infinite
-
-                        NumberAnimation{
-                            target: rectContainer
-                            properties: "height"
-                            from: 0
-                            to: img.height
-                            duration: 5000
-                        }
-                        PauseAnimation{
-                            duration: 1000
-                        }
-
-                        NumberAnimation{
-                            target: rectContainer
-                            properties: "height"
-                            from: img.height
-                            to: 0
-                            duration: 5000
-                        }
-
-                        PauseAnimation{
-                            duration: 1000
-                        }
-                    }
-                }
+RowLayout {
+    id: countdownArea
+    Layout.leftMargin: Kirigami.Units.largeSpacing
+    Layout.bottomMargin: Kirigami.Units.largeSpacing
+    property alias imageSource: img.source
+    property alias nextSongTitle: nextSongLabel.text
+    spacing: Kirigami.Units.largeSpacing
+    
+    Kirigami.Heading {
+        level: 3
+        Layout.alignment: Qt.AlignLeft
+        wrapMode: Text.WordWrap
+        elide: Text.ElideRight
+        color: Kirigami.Theme.textColor
+        text: "Next:"
+    }
+    
+    Rectangle {
+        Layout.preferredWidth: Kirigami.Units.iconSizes.huge + Kirigami.Units.smallSpacing
+        Layout.preferredHeight: Kirigami.Units.iconSizes.huge + Kirigami.Units.smallSpacing
+        Layout.alignment: Qt.AlignLeft
+        color: Kirigami.Theme.backgroundColor
+        border.color: Kirigami.Theme.linkColor
+        border.width: Kirigami.Units.smallSpacing
+        radius: 250
+        
+        Image {
+            id: img
+            width: Kirigami.Units.iconSizes.huge
+            height: Kirigami.Units.iconSizes.huge
+            fillMode: Image.PreserveAspectCrop
+            anchors.centerIn: parent
+            layer.enabled: true
+            layer.effect: OpacityMask {
+                maskSource: imgContainer
             }
         }
+        
+        Rectangle{
+            id: imgContainer
+            property int borderWidth: 3
+            color: Kirigami.Theme.backgroundColor
+            width: Kirigami.Units.iconSizes.huge
+            height: Kirigami.Units.iconSizes.huge
+            anchors.centerIn: parent
+            border.color: Kirigami.Theme.linkColor
+            border.width: borderWidth
+            radius: 250
+            visible: false
+        }
+    }
+    
+    Kirigami.Heading {
+        id: nextSongLabel
+        level: 3
+        Layout.fillWidth: true
+        wrapMode: Text.WordWrap
+        elide: Text.ElideRight
+        color: Kirigami.Theme.textColor
     }
 }

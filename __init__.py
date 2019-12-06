@@ -30,6 +30,8 @@ class YoutubeSkill(MycroftSkill):
         self.live_category = None
         self.recentList = deque()
         self.recentPageObject = {}
+        self.nextSongList = None
+        self.lastSong = None
 
     def initialize(self):
         self.load_data_files(dirname(__file__))
@@ -61,6 +63,8 @@ class YoutubeSkill(MycroftSkill):
         
         self.gui.register_handler('YoutubeSkill.NextPage', self.searchNextPage)
         self.gui.register_handler('YoutubeSkill.PreviousPage', self.searchPreviousPage)
+        self.gui.register_handler('YoutubeSkill.NextAutoPlaySong', self.nextSongForAutoPlay)
+        self.gui.register_handler('YoutubeSkill.RefreshWatchList', self.refreshWatchList)
         
     def launcherId(self, message):
         self.youtubelivesearchpage({})
@@ -77,6 +81,21 @@ class YoutubeSkill(MycroftSkill):
                     u"/user") and not vid['href'].startswith(u"/channel"):
                 id = vid['href'].split("v=")[1].split("&")[0]
                 return id
+
+    def moreRandomListSearch(self, text):
+        query = quote(text)
+        try:
+            querySplit = text.split()
+            LOG.info(querySplit)
+            searchQuery = "*," + quote(querySplit[0]) + quote(querySplit[1]) + ",*"
+        
+        except:
+            LOG.info("fail")
+            searchQuery = "*," + quote(query) + ",*"
+
+        LOG.info(searchQuery)
+        return searchQuery    
+    
 
     def searchLive(self, message):
         videoList = []
@@ -171,6 +190,7 @@ class YoutubeSkill(MycroftSkill):
         getvid = vid.split("v=")[1].split("&")[0]
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(getvid)
         self.gui["videoThumb"] = thumb
+        self.lastSong = veid
         video = pafy.new(veid)
         playstream = video.streams[0]
         playurl = playstream.url
@@ -184,6 +204,9 @@ class YoutubeSkill(MycroftSkill):
         self.gui["videoAuthor"] = video.username
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
+        self.gui["nextSongTitle"] = ""
+        self.gui["nextSongImage"] = ""
+        self.gui["nextSongID"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
         self.recentList.appendleft({"videoID": getvid, "videoTitle": video.title, "videoImage": thumb})
@@ -220,7 +243,7 @@ class YoutubeSkill(MycroftSkill):
         videoList = []
         videoList.clear()
         videoPageObject = {}
-        vid = self.getListSearch(query)
+        vid = self.moreRandomListSearch(query)
         url = "https://www.youtube.com/results?search_query=" + vid
         response = urlopen(url)
         html = response.read()
@@ -252,6 +275,7 @@ class YoutubeSkill(MycroftSkill):
 
     def play_event(self, message):
         urlvideo = "http://www.youtube.com/watch?v={0}".format(message.data['vidID'])
+        self.lastSong = message.data['vidID']
         video = pafy.new(urlvideo)
         for vid_type in video.streams:
             if (vid_type._extension == 'mp4'):
@@ -283,6 +307,9 @@ class YoutubeSkill(MycroftSkill):
         self.gui["viewCount"] = video.viewcount
         self.gui["publishedDate"] = video.published
         self.gui["videoAuthor"] = video.username
+        self.gui["nextSongTitle"] = ""
+        self.gui["nextSongImage"] = ""
+        self.gui["nextSongID"] = ""
         videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(message.data['vidID'])
@@ -309,12 +336,48 @@ class YoutubeSkill(MycroftSkill):
                 videoTitle = vid['title']
                 videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
                 videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage})
+                
+        if len(videoList) > 1:
+            self.nextSongList = videoList[1]
+        else:
+            self.nextSongList = videoList[0]
+            
         return videoList
     
     def process_additional_pages(self, htmltype):
         soup = BeautifulSoup(htmltype)
         buttons = soup.findAll('a',attrs={'class':"yt-uix-button vve-check yt-uix-sessionlink yt-uix-button-default yt-uix-button-size-default"})
         return buttons
+    
+    def nextSongForAutoPlay(self):
+        self.gui["nextSongTitle"] = self.nextSongList["videoTitle"]
+        self.gui["nextSongImage"] = self.nextSongList["videoImage"]
+        self.gui["nextSongID"] = self.nextSongList["videoID"]
+    
+    def refreshWatchList(self, message):
+        self.youtubesearchpagesimple(message.data["title"])
+        
+    @intent_file_handler('youtube-repeat.intent')
+    def youtube_repeat_last(self):
+        video = pafy.new(self.lastSong)
+        thumb = video.thumb
+        playstream = video.streams[0]
+        playurl = playstream.url
+        self.gui["status"] = str("play")
+        self.gui["video"] = str(playurl)
+        self.gui["currenturl"] = ""
+        self.gui["currenttitle"] = video.title
+        self.gui["setTitle"] = video.title
+        self.gui["viewCount"] = video.viewcount
+        self.gui["publishedDate"] = video.published
+        self.gui["videoAuthor"] = video.username
+        self.gui["videoListBlob"] = ""
+        self.gui["recentListBlob"] = ""
+        self.gui["nextSongTitle"] = ""
+        self.gui["nextSongImage"] = ""
+        self.gui["nextSongID"] = ""
+        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+        self.youtubesearchpagesimple(video.title)
     
 def create_skill():
     return YoutubeSkill()

@@ -20,6 +20,9 @@ Mycroft.Delegate {
     property var videoViewCount: sessionData.viewCount
     property var videoPublishDate: sessionData.publishedDate
     property var videoListModel: sessionData.videoListBlob.videoList
+    property var nextSongTitle: sessionData.nextSongTitle
+    property var nextSongImage: sessionData.nextSongImage
+    property var nextSongID: sessionData.nextSongID
     
     //The player is always fullscreen
     fillWidth: true
@@ -33,7 +36,13 @@ Mycroft.Delegate {
 
     onEnabledChanged: syncStatusTimer.restart()
     onVideoSourceChanged: syncStatusTimer.restart()
-    Component.onCompleted: syncStatusTimer.restart()
+    Component.onCompleted: {
+        syncStatusTimer.restart()
+    }
+    
+    onVideoTitleChanged: {
+        triggerGuiEvent("YoutubeSkill.RefreshWatchList", {"title": videoTitle}) 
+    }
     
     onFocusChanged: {
         if(focus && suggestions.visible){
@@ -204,6 +213,9 @@ Mycroft.Delegate {
             id: suggestions
             visible: false
             videoSuggestionList: videoListModel
+            nxtSongTitle: nextSongTitle
+            nxtSongImage: nextSongImage
+            nxtSongID: nextSongID
             onVisibleChanged: {
                 if(visible) {
                     suggestionListFocus = true
@@ -273,6 +285,7 @@ Mycroft.Delegate {
             
             onStatusChanged: {
                 if(status == MediaPlayer.EndOfMedia) {
+                    triggerGuiEvent("YoutubeSkill.NextAutoPlaySong", {})
                     suggestions.visible = true
                 } else {
                     suggestions.visible = false
