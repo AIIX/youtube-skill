@@ -36,6 +36,10 @@ Mycroft.Delegate {
     property Component emptyHighlighter: Item{}
 
     skillBackgroundSource: "https://source.unsplash.com/weekly?music"
+    
+    onRecentPlayedModelChanged: {
+        console.log(JSON.stringify(recentPlayedModel))
+    }
 
     ColumnLayout {
         id: recentlyPlayerColumn
@@ -60,7 +64,6 @@ Mycroft.Delegate {
             keyNavigationEnabled: true
             highlight: focus ? highlighter : emptyHighlighter
             model: recentPlayedModel
-	    verticalLayoutDirection: ListView.BottomToTop
             interactive: true
             Layout.fillWidth: true
             focus: true

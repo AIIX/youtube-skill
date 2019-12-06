@@ -12,11 +12,18 @@ Rectangle {
     id: suggestionBox
     color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
     property var videoSuggestionList
+    property alias suggestionListFocus: suggestListView.focus
     property var nextSongInformation
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.verticalCenter: parent.verticalCenter
     implicitHeight: suggestBoxLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
+    
+    onFocusChanged: {
+        if(visible && focus){
+            suggestListView.forceActiveFocus()
+        }
+    }
     
     onVideoSuggestionListChanged: {
         console.log(JSON.stringify(videoSuggestionList))

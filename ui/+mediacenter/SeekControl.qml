@@ -97,7 +97,7 @@ Item {
                         Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
                         video.stop();
                     }
-                    KeyNavigation.up: videoRoot
+                    KeyNavigation.up: video
                     KeyNavigation.right: button
                     Keys.onReturnPressed: {
                         hideTimer.restart();
@@ -119,7 +119,7 @@ Item {
                         video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                         hideTimer.restart();
                     }
-                    KeyNavigation.up: videoRoot
+                    KeyNavigation.up: video
                     KeyNavigation.left: backButton
                     KeyNavigation.right: slider
                     Keys.onReturnPressed: {
@@ -218,7 +218,7 @@ Item {
                             text: formatTime(duration)
                         }
                     }
-                KeyNavigation.up: videoRoot
+                KeyNavigation.up: video
                 KeyNavigation.left: button
                 Keys.onReturnPressed: {
                     hideTimer.restart();

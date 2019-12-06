@@ -65,15 +65,10 @@ ItemDelegate {
             fillMode: Image.Stretch
         }
 
-        Kirigami.Separator {
-            Layout.fillWidth: true
-            Layout.topMargin: Kirigami.Units.smallSpacing
-            color: Kirigami.Theme.linkColor
-        }
-
         PlasmaComponents.Label {
             id: videoLabel
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
@@ -82,6 +77,10 @@ ItemDelegate {
             color: PlasmaCore.ColorScope.textColor
             text: modelData.videoTitle
         }
+    }
+    
+    Keys.onReturnPressed: {
+        Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle})
     }
         
     onClicked: {
