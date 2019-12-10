@@ -48,6 +48,10 @@ Mycroft.Delegate {
         }
     }
     
+    Keys.onBackPressed: {
+        parent.parent.parent.currentIndex++
+        parent.parent.parent.currentItem.contentItem.forceActiveFocus()
+    }
     
     ColumnLayout {
         id: colLay1

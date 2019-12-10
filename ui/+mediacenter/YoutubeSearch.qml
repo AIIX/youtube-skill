@@ -41,6 +41,11 @@ Mycroft.Delegate {
         console.log(JSON.stringify(recentPlayedModel))
     }
 
+    Keys.onBackPressed: {
+        parent.parent.parent.currentIndex--
+        parent.parent.parent.currentItem.contentItem.forceActiveFocus()
+    }
+    
     ColumnLayout {
         id: recentlyPlayerColumn
         anchors.fill: parent
