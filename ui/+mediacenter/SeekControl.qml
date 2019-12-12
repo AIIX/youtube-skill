@@ -74,12 +74,67 @@ Item {
                 margins: Kirigami.Units.largeSpacing
             }
             
-            Kirigami.Heading {
-                id: videoHeading
-                level: 2
+            RowLayout {
+                id: infoLayout
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                text: title
+                
+                ColumnLayout {
+                    Layout.preferredWidth: parent.width / 2
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignLeft
+                    Layout.leftMargin: Kirigami.Units.largeSpacing
+                    
+                    Kirigami.Heading {
+                        id: vidTitle
+                        level: 2
+                        height: Kirigami.Units.gridUnit * 2
+                        visible: true
+                        text: "Title: " + videoTitle
+                        z: 100
+                    }
+                    
+                    Kirigami.Heading {
+                        id: vidAuthor
+                        level: 2
+                        height: Kirigami.Units.gridUnit * 2
+                        visible: true
+                        text: "Published By: " + videoAuthor
+                        z: 100
+                    }
+                }
+                
+                ColumnLayout {
+                    Layout.preferredWidth: parent.width / 2
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignRight
+                    Layout.rightMargin: Kirigami.Units.largeSpacing
+                    
+                    Kirigami.Heading {
+                        id: vidCount
+                        level: 2
+                        height: Kirigami.Units.gridUnit * 2
+                        visible: true
+                        Layout.alignment: Qt.AlignRight
+                        text: "Views: " + getViewCount(videoViewCount)
+                        z: 100
+                    }
+                    
+                    Kirigami.Heading {
+                        id: vidPublishDate
+                        level: 2
+                        height: Kirigami.Units.gridUnit * 2
+                        visible: true
+                        Layout.alignment: Qt.AlignRight
+                        text: setPublishedDate(videoPublishDate)
+                        z: 100
+                    }
+                }
+            }
+            
+            Kirigami.Separator {
+                Layout.fillWidth: true
+                height: 1
             }
             
             RowLayout {

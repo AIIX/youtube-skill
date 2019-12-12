@@ -67,6 +67,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui.register_handler('YoutubeSkill.RefreshWatchList', self.refreshWatchList)
         
     def launcherId(self, message):
+        self.gui.show_page("YoutubeLogo.qml")
         self.youtubelivesearchpage({})
 
     def getListSearch(self, text):

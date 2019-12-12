@@ -40,11 +40,18 @@ Mycroft.Delegate {
         syncStatusTimer.restart()
     }
     
+    Keys.onDownPressed: {
+        controlBarItem.opened = true
+        controlBarItem.forceActiveFocus()
+    }
+        
     onVideoTitleChanged: {
-        triggerGuiEvent("YoutubeSkill.RefreshWatchList", {"title": videoTitle}) 
+        triggerGuiEvent("YoutubeSkill.RefreshWatchList", {"title": videoTitle})
+        infomationBar.visible = true
     }
     
     onFocusChanged: {
+        console.log("here")
         if(focus && suggestions.visible){
             console.log("in suggestFocus 1")
             suggestions.forceActiveFocus();
@@ -84,6 +91,15 @@ Mycroft.Delegate {
         return result
     }
 
+    function listProperty(item){
+        for (var p in item)
+        {
+            if( typeof item[p] != "function" )
+                if(p != "objectName")
+                    console.log(p + ":" + item[p]);
+        }
+    }
+    
     // Sometimes can't be restarted reliably immediately, put it in a timer
     Timer {
         id: syncStatusTimer
@@ -128,14 +144,14 @@ Mycroft.Delegate {
     Item {
         id: videoRoot
         anchors.fill: parent 
-        
-        Rectangle { 
+            
+         Rectangle { 
             id: infomationBar 
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
             color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
-            implicitHeight: infoLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
+            implicitHeight: vidTitle.implicitHeight + Kirigami.Units.largeSpacing * 2
             z: 1001
             
             onVisibleChanged: {
@@ -144,62 +160,17 @@ Mycroft.Delegate {
                 })
             }
             
-            RowLayout {
-                id: infoLayout
-                anchors.fill: parent
-                
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.alignment: Qt.AlignLeft
-                    Layout.leftMargin: Kirigami.Units.largeSpacing
-                    
-                    Kirigami.Heading {
-                        id: vidTitle
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
-                        visible: true
-                        text: "Title: " + videoTitle
-                        z: 100
-                    }
-                    
-                    Kirigami.Heading {
-                        id: vidAuthor
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
-                        visible: true
-                        text: "Published By: " + videoAuthor
-                        z: 100
-                    }
-                }
-                
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.alignment: Qt.AlignRight
-                    Layout.rightMargin: Kirigami.Units.largeSpacing
-                    
-                    Kirigami.Heading {
-                        id: vidCount
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
-                        visible: true
-                        text: "Views: " + getViewCount(videoViewCount)
-                        z: 100
-                    }
-                    
-                    Kirigami.Heading {
-                        id: vidPublishDate
-                        level: 2
-                            height: Kirigami.Units.gridUnit * 2
-                        visible: true
-                        text: setPublishedDate(videoPublishDate)
-                        z: 100
-                    }
-                }
+            Kirigami.Heading {
+                id: vidTitle
+                level: 2
+                height: Kirigami.Units.gridUnit * 2
+                visible: true
+                anchors.verticalCenter: parent.verticalCenter
+                text: "Title: " + videoTitle
+                z: 100
             }
-        }
-    
+         }
+            
         Image {
             id: thumbart
             anchors.fill: parent
@@ -266,7 +237,6 @@ Mycroft.Delegate {
             }
             
             Keys.onReturnPressed: {
-                infomationBar.visible = true;
                 video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
             }
                     
@@ -278,7 +248,6 @@ Mycroft.Delegate {
             MouseArea {
                 anchors.fill: parent
                 onClicked: { 
-                    infomationBar.visible = true;
                     controlBarItem.opened = !controlBarItem.opened 
                 }
             }

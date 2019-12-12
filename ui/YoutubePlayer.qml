@@ -32,6 +32,11 @@ Mycroft.Delegate {
     onEnabledChanged: syncStatusTimer.restart()
     onVideoSourceChanged: syncStatusTimer.restart()
     Component.onCompleted: syncStatusTimer.restart()
+    
+    //back Key Button Handle
+    Keys.onShiftPressed: {
+        console.log(parent.currentIndex)
+    }
 
     // Sometimes can't be restarted reliably immediately, put it in a timer
     Timer {
