@@ -35,6 +35,10 @@ Mycroft.Delegate {
     onVideoSourceChanged: syncStatusTimer.restart()
     Component.onCompleted: syncStatusTimer.restart()
     
+    Keys.onShiftPressed: {
+        console.log(parent.currentIndex)
+    }
+    
     function getViewCount(value){
         return value.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
     }
