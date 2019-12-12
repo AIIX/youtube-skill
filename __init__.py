@@ -35,7 +35,9 @@ class YoutubeSkill(MycroftSkill):
 
     def initialize(self):
         self.load_data_files(dirname(__file__))
-
+        
+        self.bus.on('youtube-skill.home', self.launcherId)
+        
         youtubepause = IntentBuilder("YoutubePauseKeyword"). \
             require("YoutubePauseKeyword").build()
         self.register_intent(youtubepause, self.youtubepause)
