@@ -32,6 +32,7 @@ class YoutubeSkill(MycroftSkill):
         self.recentPageObject = {}
         self.nextSongList = None
         self.lastSong = None
+        self.videoPageObject = {}
 
     def initialize(self):
         self.load_data_files(dirname(__file__))
@@ -69,7 +70,6 @@ class YoutubeSkill(MycroftSkill):
         self.gui.register_handler('YoutubeSkill.RefreshWatchList', self.refreshWatchList)
         
     def launcherId(self, message):
-        self.gui.show_page("YoutubeLogo.qml")
         self.youtubelivesearchpage({})
 
     def getListSearch(self, text):
@@ -257,8 +257,14 @@ class YoutubeSkill(MycroftSkill):
         self.gui["recentListBlob"] = self.recentPageObject
         
     def youtubelivesearchpage(self, message):
+        LOG.info("I AM IN SEARCH PAGE FUNCTION")
         self.gui.clear()
         self.enclosure.display_manager.remove_active()
+        self.process_search_page()
+
+    def process_search_page(self):
+        LOG.info("I AM IN SEARCH PROCESS PAGE FUNCTION")
+        self.gui.show_page("YoutubeLogo.qml")
         videoPageObject = {}
         url = "https://www.youtube.com/results?search_query=news" 
         response = urlopen(url)
@@ -269,38 +275,27 @@ class YoutubeSkill(MycroftSkill):
         self.nextpage_url = "https://www.youtube.com/" + nextbutton['href']
         self.previouspage_url = "https://www.youtube.com/" + prevbutton
         videoList = self.process_soup(html)
-        videoPageObject['videoList'] = videoList
-        self.gui["videoListBlob"] = videoPageObject
+        LOG.info("I AM NOW IN REMOVE LOGO PAGE FUNCTION")
+        self.gui.clear()
+        self.enclosure.display_manager.remove_active()
+        self.show_search_page(videoList)
+
+    def show_search_page(self, videoList):
+        LOG.info("I AM NOW IN SHOW SEARCH PAGE FUNCTION")
+        self.videoPageObject['videoList'] = videoList
+        self.gui["videoListBlob"] = self.videoPageObject
         self.gui["previousAvailable"] = False
         self.gui["nextAvailable"] = True
         self.gui["bgImage"] = self.live_category
         self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
+        
 
     def play_event(self, message):
         urlvideo = "http://www.youtube.com/watch?v={0}".format(message.data['vidID'])
         self.lastSong = message.data['vidID']
         video = pafy.new(urlvideo)
-        for vid_type in video.streams:
-            if (vid_type._extension == 'mp4'):
-                try:
-                    if(vid_type._resolution == '480x360'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '426x240'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '320x180'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '640x342'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '640x360'):
-                        playurl = vid_type._url
-                    elif (vid_type._resolution == '256x144'):
-                        playurl = vid_type.url
-                    elif (vid_type._resolution == '176x144'):
-                        playurl = vid_type.url
-                except:
-                    playstream = video.getbest(preftype="mp4", ftypestrict=True)
-                    playurl = playstream.url
-            
+        playstream = video.getbest(preftype="mp4", ftypestrict=True)
+        playurl = playstream.url
         self.speak("Playing")
         self.gui["video"] = str(playurl)
         self.gui["status"] = str("play")
