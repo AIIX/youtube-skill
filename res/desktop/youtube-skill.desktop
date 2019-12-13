@@ -5,7 +5,7 @@ Version=1.0
 Terminal=false
 Type=Application
 Name=Youtube
-Exec=mycroft-gui-app --hideTextInput --skill=youtube-skill.aiix
+Exec=mycroft-gui-app --hideTextInput --skill=youtube-skill.aiix.home
 Icon=yandex-browser
 Categories=VoiceApp
 StartupNotify=false
