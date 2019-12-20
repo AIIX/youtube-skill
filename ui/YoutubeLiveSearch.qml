@@ -25,10 +25,13 @@ import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 3.0 as PlasmaComponents3
 import org.kde.plasma.components 2.0 as PlasmaComponents
 import Mycroft 1.0 as Mycroft
+import "+mediacenter/views" as Views
+import "+mediacenter/delegates" as Delegates
 
 Mycroft.Delegate {
     id: delegate
     property var videoListModel: sessionData.videoListBlob.videoList
+    property bool busyIndicate: false
     
     skillBackgroundSource: sessionData.bgImage ? "https://source.unsplash.com/weekly?" + sessionData.bgImage : "https://source.unsplash.com/weekly?music"
 
@@ -36,138 +39,103 @@ Mycroft.Delegate {
         triggerGuiEvent("YoutubeSkill.SearchLive", {"Query": query})
     }
     
+    Connections {
+        target: Mycroft.MycroftController
+        onIntentRecevied: {
+            if(type == "speak") {
+                busyIndicatorPop.close()
+                busyIndicate = false
+            }
+        }
+    }
+    
     onVideoListModelChanged: {
         videoListView.model = videoListModel
     }
     
     onFocusChanged: {
+        busyIndicatorPop.close()
+        busyIndicate = false
         if(delegate.focus){
             console.log("focus is here")
         }
     }
     
-    RowLayout {
-        id: searchVideoInputBox
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.topMargin: Kirigami.Units.gridUnit * 1
-        height: Kirigami.Units.gridUnit * 3
-
-        TextField {
-            id: videoQueryBox
+    Keys.onBackPressed: {
+        parent.parent.parent.currentIndex++
+        parent.parent.parent.currentItem.contentItem.forceActiveFocus()
+    }
+    
+    ColumnLayout {
+        id: colLay1
+        anchors.fill: parent
+        
+        RowLayout {
+            id: searchVideoInputBox
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            onAccepted: {
-                searchYoutubeLiveResults(videoQueryBox.text)
-            }
-            
-            KeyNavigation.up: closeButton
-            KeyNavigation.down: videoListView
-            KeyNavigation.right: searchVideoQuery
-        }
+            Layout.alignment: Layout.AlignTop
+            Layout.maximumHeight: Kirigami.Units.gridUnit * 3
+            z: 120
 
-        Button {
-            id: searchVideoQuery
-            Layout.preferredWidth: Kirigami.Units.gridUnit * 4.5
-            text: "Search"
-            Layout.fillHeight: true
-            highlighted: focus ? 1 : 0
-            onClicked: {
-                searchYoutubeLiveResults(videoQueryBox.text)
-            }
-            
-            KeyNavigation.left: videoQueryBox
-            KeyNavigation.down: videoListView
-        }
-    }
-
-    Kirigami.Separator {
-        id: sept1
-        anchors.top: searchVideoInputBox.bottom
-        anchors.topMargin: Kirigami.Units.smallSpacing
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 1
-    }
-
-   GridView {
-        id: videoListView
-        anchors.top: sept1.bottom
-        anchors.topMargin: Kirigami.Units.smallSpacing
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        cellWidth: videoListView.width / 5
-        cellHeight: videoListView.height / 3
-        bottomMargin: Kirigami.Units.largeSpacing
-        visible: true
-        enabled: true
-        focus: true
-        highlight: PlasmaComponents.Highlight{}
-        highlightFollowsCurrentItem: true
-        clip: true
-        property string currentVideoTitle
-        property string currentVideoId
-        delegate: PlasmaComponents3.ItemDelegate {
-                    width: videoListView.cellWidth - Kirigami.Units.largeSpacing * 2
-                    height: videoListView.cellHeight - Kirigami.Units.largeSpacing * 2
-                    property string videoTitle: modelData.videoTitle
-                    property string videoID: modelData.videoID
-                    
-                    background: PlasmaCore.FrameSvgItem {
-                        id: frame
-                        imagePath: "widgets/background"
-                    }
-
-                    contentItem: ColumnLayout {
-                        Image {
-                            id: videoImage
-                            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                            source: modelData.videoImage
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: parent.height - Kirigami.Units.gridUnit * 3.5
-                            fillMode: Image.Stretch
-                        }
-
-                        Kirigami.Separator {
-                            Layout.fillWidth: true
-                            color: Kirigami.Theme.linkColor
-                        }
-
-                        PlasmaComponents.Label {
-                            id: videoLabel
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            wrapMode: Text.WordWrap
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignTop
-                            maximumLineCount: 2
-                            elide: Text.ElideRight
-                            color: PlasmaCore.ColorScope.textColor
-                            text: modelData.videoTitle
-                        }
-                    }
-                    
-                    onClicked: {
-                        Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle})
-                    }
+            TextField {
+                id: videoQueryBox
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                onAccepted: {
+                    searchYoutubeLiveResults(videoQueryBox.text)
                 }
                 
-        KeyNavigation.up: videoQueryBox
-        KeyNavigation.down: controlBarItem
+                KeyNavigation.up: closeButton
+                KeyNavigation.down: videoListView
+                KeyNavigation.right: searchVideoQuery
+            }
+
+            Button {
+                id: searchVideoQuery
+                Layout.preferredWidth: Kirigami.Units.gridUnit * 4.5
+                text: "Search"
+                Layout.fillHeight: true
+                highlighted: focus ? 1 : 0
+                onClicked: {
+                    searchYoutubeLiveResults(videoQueryBox.text)
+                }
                 
-        Keys.onReturnPressed: {
-            if(focus){
-                Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: currentVideoId, vidTitle: currentVideoTitle})
+                KeyNavigation.left: videoQueryBox
+                KeyNavigation.down: videoListView
             }
         }
-        
-        onCurrentItemChanged: {
-            currentVideoId = videoListView.currentItem.videoID
-            currentVideoTitle = videoListView.currentItem.videoTitle
-            console.log(videoListView.currentItem.videoTitle)
+                        
+        Kirigami.Separator {
+            id: sept1
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            z: 100
         }
+
+    Views.TileView {
+            id: videoListView
+            focus: true
+            clip: true
+            property string currentVideoTitle
+            property string currentVideoId
+            delegate: Delegates.VideoCard{}
+                    
+            KeyNavigation.up: videoQueryBox
+            KeyNavigation.down: controlBarItem
+                    
+            Keys.onReturnPressed: {
+                busyIndicatorPop.open()
+                if(focus){
+                    Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: currentVideoId, vidTitle: currentVideoTitle})
+                }
+            }
+            
+            onCurrentItemChanged: {
+                currentVideoId = videoListView.currentItem.videoID
+                currentVideoTitle = videoListView.currentItem.videoTitle
+                console.log(videoListView.currentItem.videoTitle)
+            }
+        }    
     }
 
     controlBar: Control {
@@ -238,6 +206,30 @@ Mycroft.Delegate {
                 KeyNavigation.up: videoListView
                 KeyNavigation.left: previousButton
             }
+        }
+    }
+    
+    Popup {
+        id: busyIndicatorPop
+        width: parent.width
+        height: parent.height
+        background: Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(0, 0, 0, 0.5)
+        }
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+        
+        BusyIndicator {
+            running: busyIndicate
+            anchors.centerIn: parent
+        }
+        
+        onOpened: {
+            busyIndicate = true
+        }
+        
+        onClosed: {
+            busyIndicate = false
         }
     }
 

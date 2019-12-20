@@ -9,6 +9,6 @@ Mycroft.Delegate {
  
     Image {
         anchors.fill: parent
-        source: "https://images5.alphacoders.com/795/thumb-1920-795970.jpg"
+        source: "./youtube-logo-page.jpg"
     } 
 }

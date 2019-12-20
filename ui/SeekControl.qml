@@ -1,10 +1,11 @@
-import QtQuick 2.4
+import QtMultimedia 5.13
 import QtQuick.Layouts 1.4
-import QtQuick.Controls 2.2 as Controls
+import QtQuick 2.9
+import QtQuick.Controls 2.12 as Controls
+import org.kde.kirigami 2.10 as Kirigami
 import QtQuick.Templates 2.2 as Templates
 import QtGraphicalEffects 1.0
-import QtMultimedia 5.9
-import org.kde.kirigami 2.8 as Kirigami
+
 import Mycroft 1.0 as Mycroft
 
 Item {
@@ -15,7 +16,7 @@ Item {
     property int seekPosition: 0
     property bool enabled: true
     property bool seeking: false
-    property Video videoControl
+    property var videoControl
     property string title
 
     clip: true
@@ -46,7 +47,7 @@ Item {
         interval: 5000
         onTriggered: { 
             seekControl.opened = false;
-            video.forceActiveFocus();
+            videoRoot.forceActiveFocus();
         }
     }
     
@@ -73,12 +74,67 @@ Item {
                 margins: Kirigami.Units.largeSpacing
             }
             
-            Kirigami.Heading {
-                id: videoHeading
-                level: 2
+            RowLayout {
+                id: infoLayout
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                text: title
+                
+                ColumnLayout {
+                    Layout.preferredWidth: parent.width / 2
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignLeft
+                    Layout.leftMargin: Kirigami.Units.largeSpacing
+                    
+                    Kirigami.Heading {
+                        id: vidTitle
+                        level: 2
+                        height: Kirigami.Units.gridUnit * 2
+                        visible: true
+                        text: "Title: " + videoTitle
+                        z: 100
+                    }
+                    
+                    Kirigami.Heading {
+                        id: vidAuthor
+                        level: 2
+                        height: Kirigami.Units.gridUnit * 2
+                        visible: true
+                        text: "Published By: " + videoAuthor
+                        z: 100
+                    }
+                }
+                
+                ColumnLayout {
+                    Layout.preferredWidth: parent.width / 2
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignRight
+                    Layout.rightMargin: Kirigami.Units.largeSpacing
+                    
+                    Kirigami.Heading {
+                        id: vidCount
+                        level: 2
+                        height: Kirigami.Units.gridUnit * 2
+                        visible: true
+                        Layout.alignment: Qt.AlignRight
+                        text: "Views: " + getViewCount(videoViewCount)
+                        z: 100
+                    }
+                    
+                    Kirigami.Heading {
+                        id: vidPublishDate
+                        level: 2
+                        height: Kirigami.Units.gridUnit * 2
+                        visible: true
+                        Layout.alignment: Qt.AlignRight
+                        text: setPublishedDate(videoPublishDate)
+                        z: 100
+                    }
+                }
+            }
+            
+            Kirigami.Separator {
+                Layout.fillWidth: true
+                height: 1
             }
             
             RowLayout {

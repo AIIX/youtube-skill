@@ -31,6 +31,7 @@ import "+mediacenter/delegates" as Delegates
 Mycroft.Delegate {
     id: delegate
     property var videoListModel: sessionData.videoListBlob.videoList
+    property bool busyIndicate: false
     
     skillBackgroundSource: sessionData.bgImage ? "https://source.unsplash.com/weekly?" + sessionData.bgImage : "https://source.unsplash.com/weekly?music"
 
@@ -38,11 +39,23 @@ Mycroft.Delegate {
         triggerGuiEvent("YoutubeSkill.SearchLive", {"Query": query})
     }
     
+    Connections {
+        target: Mycroft.MycroftController
+        onIntentRecevied: {
+            if(type == "speak") {
+                busyIndicatorPop.close()
+                busyIndicate = false
+            }
+        }
+    }
+    
     onVideoListModelChanged: {
         videoListView.model = videoListModel
     }
     
     onFocusChanged: {
+        busyIndicatorPop.close()
+        busyIndicate = false
         if(delegate.focus){
             console.log("focus is here")
         }
@@ -91,7 +104,7 @@ Mycroft.Delegate {
                 KeyNavigation.down: videoListView
             }
         }
-
+                        
         Kirigami.Separator {
             id: sept1
             Layout.fillWidth: true
@@ -111,6 +124,7 @@ Mycroft.Delegate {
             KeyNavigation.down: controlBarItem
                     
             Keys.onReturnPressed: {
+                busyIndicatorPop.open()
                 if(focus){
                     Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: currentVideoId, vidTitle: currentVideoTitle})
                 }
@@ -192,6 +206,30 @@ Mycroft.Delegate {
                 KeyNavigation.up: videoListView
                 KeyNavigation.left: previousButton
             }
+        }
+    }
+    
+    Popup {
+        id: busyIndicatorPop
+        width: parent.width
+        height: parent.height
+        background: Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(0, 0, 0, 0.5)
+        }
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+        
+        BusyIndicator {
+            running: busyIndicate
+            anchors.centerIn: parent
+        }
+        
+        onOpened: {
+            busyIndicate = true
+        }
+        
+        onClosed: {
+            busyIndicate = false
         }
     }
 

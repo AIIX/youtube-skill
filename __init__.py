@@ -86,6 +86,7 @@ class YoutubeSkill(MycroftSkill):
                 return id
 
     def moreRandomListSearch(self, text):
+        LOG.info(text)
         query = quote(text)
         try:
             querySplit = text.split()
@@ -188,9 +189,16 @@ class YoutubeSkill(MycroftSkill):
         self.gui["videoThumb"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         rfind = soup.findAll(attrs={'class': 'yt-uix-tile-link'})
-        vid = str(rfind[0].attrs['href'])
-        veid = "https://www.youtube.com{0}".format(vid)
-        getvid = vid.split("v=")[1].split("&")[0]
+        try:
+            vid = str(rfind[0].attrs['href'])
+            veid = "https://www.youtube.com{0}".format(vid)
+            LOG.info(veid)
+            getvid = vid.split("v=")[1].split("&")[0]
+        except:
+            vid = str(rfind[1].attrs['href'])
+            veid = "https://www.youtube.com{0}".format(vid)
+            LOG.info(veid)
+            getvid = vid.split("v=")[1].split("&")[0]
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(getvid)
         self.gui["videoThumb"] = thumb
         self.lastSong = veid
@@ -243,6 +251,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui.show_page("YoutubeSearch.qml")
         
     def youtubesearchpagesimple(self, query):
+        LOG.info(query)
         videoList = []
         videoList.clear()
         videoPageObject = {}
@@ -330,6 +339,7 @@ class YoutubeSkill(MycroftSkill):
         for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
             if "googleads" not in vid['href'] and not vid['href'].startswith(
                     u"/user") and not vid['href'].startswith(u"/channel"):
+                LOG.info(vid)
                 videoID = vid['href'].split("v=")[1].split("&")[0]
                 videoTitle = vid['title']
                 videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
@@ -353,7 +363,10 @@ class YoutubeSkill(MycroftSkill):
         self.gui["nextSongID"] = self.nextSongList["videoID"]
     
     def refreshWatchList(self, message):
-        self.youtubesearchpagesimple(message.data["title"])
+        try:
+            self.youtubesearchpagesimple(message.data["title"])
+        except:
+            self.youtubesearchpagesimple("news")
         
     @intent_file_handler('youtube-repeat.intent')
     def youtube_repeat_last(self):
