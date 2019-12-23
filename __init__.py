@@ -175,7 +175,19 @@ class YoutubeSkill(MycroftSkill):
     @intent_file_handler('youtube.intent')
     def youtube(self, message):
         self.stop()
+        self.gui.clear()
+        self.enclosure.display_manager.remove_active()
         utterance = message.data['videoname'].lower()
+        self.youtube_play_video(utterance)
+    
+    def youtube_play_video(self, utterance):
+        self.gui["setTitle"] = ""
+        self.gui["video"] = ""
+        self.gui["status"] = "stop"
+        self.gui["currenturl"] = ""
+        self.gui["videoListBlob"] = ""
+        self.gui["recentListBlob"] = ""
+        self.gui["videoThumb"] = ""
         url = "https://www.youtube.com/results?search_query=" + quote(utterance)
         response = urlopen(url)
         html = response.read()

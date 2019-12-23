@@ -47,7 +47,9 @@ Mycroft.Delegate {
         
     onVideoTitleChanged: {
         triggerGuiEvent("YoutubeSkill.RefreshWatchList", {"title": videoTitle})
-        infomationBar.visible = true
+        if(videoTitle != ""){
+            infomationBar.visible = true
+        }
     }
     
     onFocusChanged: {
@@ -150,6 +152,7 @@ Mycroft.Delegate {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
+            visible: false
             color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
             implicitHeight: vidTitle.implicitHeight + Kirigami.Units.largeSpacing * 2
             z: 1001
