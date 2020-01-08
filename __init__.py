@@ -33,6 +33,7 @@ class YoutubeSkill(MycroftSkill):
         self.nextSongList = None
         self.lastSong = None
         self.videoPageObject = {}
+        self.isTitle = None
 
     def initialize(self):
         self.load_data_files(dirname(__file__))
@@ -232,9 +233,10 @@ class YoutubeSkill(MycroftSkill):
         self.gui["nextSongID"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
-        self.recentList.appendleft({"videoID": getvid, "videoTitle": video.title, "videoImage": thumb})
+        self.recentList.appendleft({"videoID": getvid, "videoTitle": video.title, "videoImage": video.thumb})
         self.youtubesearchpagesimple(utterance)
-
+        self.isTitle = video.title
+        
     def youtubepause(self, message):
         self.gui["status"] = str("pause")
         self.gui.show_page("YoutubePlayer.qml")
@@ -332,9 +334,10 @@ class YoutubeSkill(MycroftSkill):
         videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(message.data['vidID'])
-        self.recentList.appendleft({"videoID": str(message.data['vidID']), "videoTitle": str(message.data['vidTitle']), "videoImage": thumb})
+        self.recentList.appendleft({"videoID": str(message.data['vidID']), "videoTitle": str(message.data['vidTitle']), "videoImage": video.thumb})
         self.recentPageObject['recentList'] = list(self.recentList)
         self.gui["recentListBlob"] = self.recentPageObject
+        self.isTitle = video.title
         #self.youtubesearchpagesimple(videoTitleSearch)
 
     def stop(self):
@@ -378,7 +381,7 @@ class YoutubeSkill(MycroftSkill):
         try:
             self.youtubesearchpagesimple(message.data["title"])
         except:
-            self.youtubesearchpagesimple("news")
+            self.youtubesearchpagesimple(self.isTitle)
         
     @intent_file_handler('youtube-repeat.intent')
     def youtube_repeat_last(self):
@@ -401,6 +404,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["nextSongID"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.youtubesearchpagesimple(video.title)
+        self.isTitle = video.title
     
 def create_skill():
     return YoutubeSkill()
