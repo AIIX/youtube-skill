@@ -26,8 +26,8 @@ import org.kde.kirigami 2.5 as Kirigami
 
 GridView {
     id: view
-    cellWidth: parent.width >= 1500 ? videoListView.width / 4 : videoListView.width / 3
-    cellHeight: parent.width >= 1500 ? videoListView.height / 2 : videoListView.height / 3
+    cellWidth: parent.width >= 1500 ? parent.width / 4 : parent.width / 3
+    cellHeight: parent.width >= 1500 ? parent.height / 2 : parent.height / 3
     
     Layout.fillWidth: true
     Layout.fillHeight: true
@@ -36,7 +36,7 @@ GridView {
     keyNavigationEnabled: true
     highlightFollowsCurrentItem: true
     snapMode: ListView.SnapToItem
-    cacheBuffer: widths
+    cacheBuffer: width
     highlightMoveDuration: Kirigami.Units.longDuration
     
     PlasmaComponents.ScrollBar.vertical: PlasmaComponents.ScrollBar {

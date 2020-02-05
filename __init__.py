@@ -24,7 +24,6 @@ __author__ = 'aix'
 class YoutubeSkill(MycroftSkill):
     def __init__(self):
         super(YoutubeSkill, self).__init__(name="YoutubeSkill")
-        self.process = None
         self.nextpage_url = None
         self.previouspage_url = None
         self.live_category = None
@@ -34,7 +33,13 @@ class YoutubeSkill(MycroftSkill):
         self.lastSong = None
         self.videoPageObject = {}
         self.isTitle = None
-
+        self.newsCategoryList = {}
+        self.musicCategoryList = {}
+        self.techCategoryList = {}
+        self.polCategoryList = {}
+        self.gamingCategoryList = {}
+        self.searchCategoryList = {}
+        
     def initialize(self):
         self.load_data_files(dirname(__file__))
         
@@ -52,10 +57,6 @@ class YoutubeSkill(MycroftSkill):
             require("YoutubeSearchPageKeyword").build()
         self.register_intent(youtubesearchpage, self.youtubesearchpage)
 
-        youtubelivesearchpage = IntentBuilder("YoutubeLiveSearchPage"). \
-            require("YoutubeLiveSearchPageKeyword").build()
-        self.register_intent(youtubelivesearchpage, self.youtubelivesearchpage)
-
         youtubelauncherId = IntentBuilder("YoutubeLauncherId"). \
             require("YoutubeLauncherIdKeyword").build()
         self.register_intent(youtubelauncherId, self.launcherId)
@@ -71,7 +72,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui.register_handler('YoutubeSkill.RefreshWatchList', self.refreshWatchList)
         
     def launcherId(self, message):
-        self.youtubelivesearchpage({})
+        self.show_homepage({})
 
     def getListSearch(self, text):
         query = quote(text)
@@ -108,17 +109,9 @@ class YoutubeSkill(MycroftSkill):
         videoPageObject = {}
         try:
             query = message.data["Query"]
-            url = "https://www.youtube.com/results?search_query=" + quote(query)
-            response = urlopen(url)
-            html = response.read()
-            buttons = self.process_additional_pages(html)
-            nextbutton = buttons[-1]
-            prevbutton = "results?search_query=" + quote(query)
-            self.nextpage_url = "https://www.youtube.com/" + nextbutton['href']
-            self.previouspage_url = "https://www.youtube.com/" + prevbutton
-            videoList = self.process_soup(html)
-            videoPageObject['videoList'] = videoList
-            self.gui["videoListBlob"] = videoPageObject
+            LOG.info("I am in search Live")
+            self.searchCategoryList["videoList"] = self.build_category_list(quote(query))
+            self.gui["searchListBlob"] = self.searchCategoryList
             self.gui["previousAvailable"] = False
             self.gui["nextAvailable"] = True
             self.gui["bgImage"] = quote(query)
@@ -135,7 +128,7 @@ class YoutubeSkill(MycroftSkill):
         url = self.nextpage_url 
         response = urlopen(url)
         html = response.read()
-        videoList = self.process_soup(html)
+        videoList = self.process_soup_additional(html)
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
         self.gui["previousAvailable"] = True
@@ -152,7 +145,7 @@ class YoutubeSkill(MycroftSkill):
         url = self.previouspage_url
         response = urlopen(url)
         html = response.read()
-        videoList = self.process_soup(html)
+        videoList = self.process_soup_additional(html)
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
         self.gui["previousAvailable"] = False
@@ -257,7 +250,7 @@ class YoutubeSkill(MycroftSkill):
         url = "https://www.youtube.com/results?search_query=" + vid
         response = urlopen(url)
         html = response.read()
-        videoList = self.process_soup(html)
+        videoList = self.process_soup_additional(html)
         videoPageObject['videoList'] = videoList
         self.recentPageObject['recentList'] = list(self.recentList)
         self.gui["videoListBlob"] = videoPageObject
@@ -273,40 +266,48 @@ class YoutubeSkill(MycroftSkill):
         url = "https://www.youtube.com/results?search_query=" + vid
         response = urlopen(url)
         html = response.read()
-        videoList = self.process_soup(html)        
+        videoList = self.process_soup_additional(html)        
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
         self.recentPageObject['recentList'] = list(self.recentList)
         self.gui["recentListBlob"] = self.recentPageObject
         
-    def youtubelivesearchpage(self, message):
-        LOG.info("I AM IN SEARCH PAGE FUNCTION")
+    def show_homepage(self, message):
+        LOG.info("I AM IN HOME PAGE FUNCTION")
         self.gui.clear()
         self.enclosure.display_manager.remove_active()
-        self.process_search_page()
-
-    def process_search_page(self):
-        LOG.info("I AM IN SEARCH PROCESS PAGE FUNCTION")
+        self.gui["loadingStatus"] = ""
         self.gui.show_page("YoutubeLogo.qml")
-        videoPageObject = {}
-        url = "https://www.youtube.com/results?search_query=news" 
-        response = urlopen(url)
-        html = response.read()
-        buttons = self.process_additional_pages(html)
-        nextbutton = buttons[-1]
-        prevbutton = "results?search_query=news"
-        self.nextpage_url = "https://www.youtube.com/" + nextbutton['href']
-        self.previouspage_url = "https://www.youtube.com/" + prevbutton
-        videoList = self.process_soup(html)
+        self.process_home_page()
+
+    def process_home_page(self):
+        LOG.info("I AM IN HOME PROCESS PAGE FUNCTION")
+        self.gui.show_page("YoutubeLogo.qml")
+        self.gui["loadingStatus"] = "Fetching News"
+        self.newsCategoryList['videoList'] = self.build_category_list("news")
+        self.gui["loadingStatus"] = "Fetching Music"
+        self.musicCategoryList['videoList'] = self.build_category_list("music")
+        self.gui["loadingStatus"] = "Fetching Technology"
+        self.techCategoryList['videoList'] = self.build_category_list("technology")
+        self.gui["loadingStatus"] = "Fetching Politics"
+        self.polCategoryList['videoList'] = self.build_category_list("politics")
+        self.gui["loadingStatus"] = "Fetching Gaming"
+        self.gamingCategoryList['videoList'] = self.build_category_list("gaming")
         LOG.info("I AM NOW IN REMOVE LOGO PAGE FUNCTION")
+        LOG.info(self.techCategoryList)
         self.gui.clear()
         self.enclosure.display_manager.remove_active()
-        self.show_search_page(videoList)
+        self.show_search_page()
 
-    def show_search_page(self, videoList):
+    def show_search_page(self):
         LOG.info("I AM NOW IN SHOW SEARCH PAGE FUNCTION")
-        self.videoPageObject['videoList'] = videoList
-        self.gui["videoListBlob"] = self.videoPageObject
+        LOG.info(self.techCategoryList)
+        self.gui["newsListBlob"] = self.newsCategoryList
+        self.gui["musicListBlob"] = self.musicCategoryList
+        self.gui["techListBlob"] = self.techCategoryList
+        self.gui["polListBlob"] = self.polCategoryList
+        self.gui["gamingListBlob"] = self.gamingCategoryList
+        self.gui["searchListBlob"] = ""
         self.gui["previousAvailable"] = False
         self.gui["nextAvailable"] = True
         self.gui["bgImage"] = self.live_category
@@ -342,9 +343,6 @@ class YoutubeSkill(MycroftSkill):
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
-        if self.process:
-            self.process.terminate()
-            self.process.wait()
         pass
     
     def process_soup(self, htmltype):
@@ -365,6 +363,36 @@ class YoutubeSkill(MycroftSkill):
         else:
             self.nextSongList = videoList[0]
             
+        return videoList
+    
+    def process_soup_additional(self, htmltype):
+        videoList = []
+        videoList.clear()
+        soup = BeautifulSoup(htmltype)
+        getVideoDetails = zip(soup.findAll(attrs={'class': 'yt-uix-tile-link'}), soup.findAll(attrs={'class': 'yt-lockup-byline'}), soup.findAll(attrs={'class': 'yt-lockup-meta-info'})) 
+        for vid in getVideoDetails:
+            if "googleads" not in vid[0]['href'] and not vid[0]['href'].startswith(
+                u"/user") and not vid[0]['href'].startswith(u"/channel"):
+                videoID = vid[0]['href'].split("v=")[1].split("&")[0]
+                videoTitle = vid[0]['title']
+                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
+                videoChannel = vid[1].contents[0].string
+                videoUploadDate = vid[2].contents[0].string
+                if "watching" in vid[2].contents[0].string:
+                    videoViews = "Live"
+                else:
+                    try:
+                        videoViews = vid[2].contents[1].string
+                    except:
+                        videoViews = "Playlist"
+
+                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate})
+
+        if len(videoList) > 1:
+            self.nextSongList = videoList[1]
+        else:
+            self.nextSongList = videoList[0]               
+                
         return videoList
     
     def process_additional_pages(self, htmltype):
@@ -405,6 +433,15 @@ class YoutubeSkill(MycroftSkill):
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.youtubesearchpagesimple(video.title)
         self.isTitle = video.title
+
+    def build_category_list(self, category):
+        url = "https://www.youtube.com/results?search_query={0}".format(category)
+        response = urlopen(url)
+        html = response.read()
+        videoList = self.process_soup_additional(html)
+        return videoList
+        
+        
     
 def create_skill():
     return YoutubeSkill()
