@@ -197,8 +197,8 @@ Mycroft.Delegate {
                 text: "Gaming"
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                KeyNavigation.right: polCatButton
-                KeyNavigation.left: searchCatButton
+                KeyNavigation.right: searchCatButton
+                KeyNavigation.left: polCatButton
                 KeyNavigation.down: videoQueryBox
                 
                 background: Rectangle {
@@ -243,17 +243,30 @@ Mycroft.Delegate {
             Layout.maximumHeight: Kirigami.Units.gridUnit * 3
             z: 120
 
-            TextField {
+            Rectangle {
                 id: videoQueryBox
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                onAccepted: {
-                    searchYoutubeLiveResults(videoQueryBox.text)
+                
+                color: videoQueryBox.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                
+                Keys.onReturnPressed: {
+                    videoQueryBoxChild.forceActiveFocus
                 }
                 
-                KeyNavigation.up: newsCatButton
-                KeyNavigation.down: categoryLayout
-                KeyNavigation.right: searchVideoQuery
+                TextField {
+                    id: videoQueryBoxChild
+                    anchors.fill: parent
+                    anchors.margins: Kirigami.Units.smallSpacing
+                    
+                    onAccepted: {
+                        searchYoutubeLiveResults(videoQueryBox.text)
+                    }
+                    
+                    KeyNavigation.up: newsCatButton
+                    KeyNavigation.down: categoryLayout
+                    KeyNavigation.right: searchVideoQuery
+                }
             }
 
             Button {

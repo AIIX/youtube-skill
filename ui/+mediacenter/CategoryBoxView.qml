@@ -73,7 +73,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        height: Kirigami.Units.gridUnit * 4
+        height: Kirigami.Units.gridUnit * 2.5
         
         Button {
             id: previousButton

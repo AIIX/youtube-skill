@@ -287,17 +287,16 @@ class YoutubeSkill(MycroftSkill):
         self.newsCategoryList['videoList'] = self.build_category_list("news")
         self.gui["loadingStatus"] = "Fetching Music"
         self.musicCategoryList['videoList'] = self.build_category_list("music")
-        self.gui["loadingStatus"] = "Fetching Technology"
-        self.techCategoryList['videoList'] = self.build_category_list("technology")
-        self.gui["loadingStatus"] = "Fetching Politics"
-        self.polCategoryList['videoList'] = self.build_category_list("politics")
-        self.gui["loadingStatus"] = "Fetching Gaming"
-        self.gamingCategoryList['videoList'] = self.build_category_list("gaming")
-        LOG.info("I AM NOW IN REMOVE LOGO PAGE FUNCTION")
-        LOG.info(self.techCategoryList)
         self.gui.clear()
         self.enclosure.display_manager.remove_active()
         self.show_search_page()
+        self.techCategoryList['videoList'] = self.build_category_list("technology")
+        self.gui["techListBlob"] = self.techCategoryList
+        self.polCategoryList['videoList'] = self.build_category_list("politics")
+        self.gui["polListBlob"] = self.polCategoryList
+        self.gamingCategoryList['videoList'] = self.build_category_list("gaming")
+        self.gui["gamingListBlob"] = self.gamingCategoryList     
+        LOG.info("I AM NOW IN REMOVE LOGO PAGE FUNCTION")
 
     def show_search_page(self):
         LOG.info("I AM NOW IN SHOW SEARCH PAGE FUNCTION")
