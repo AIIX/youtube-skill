@@ -2,3 +2,4 @@ requests>=1.1
 pafy
 youtube-dl
 bs4
+json_database

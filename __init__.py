@@ -18,6 +18,7 @@ from mycroft.skills.core import MycroftSkill, intent_handler, intent_file_handle
 from mycroft.messagebus.message import Message
 from mycroft.util.log import LOG
 from collections import deque
+from json_database import JsonStorage
 
 __author__ = 'aix'
 
@@ -39,6 +40,8 @@ class YoutubeSkill(MycroftSkill):
         self.polCategoryList = {}
         self.gamingCategoryList = {}
         self.searchCategoryList = {}
+        self.storeDB = dirname(__file__) + '-recent.db'
+        self.recent_db = JsonStorage(self.storeDB)
         
     def initialize(self):
         self.load_data_files(dirname(__file__))
@@ -70,6 +73,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui.register_handler('YoutubeSkill.PreviousPage', self.searchPreviousPage)
         self.gui.register_handler('YoutubeSkill.NextAutoPlaySong', self.nextSongForAutoPlay)
         self.gui.register_handler('YoutubeSkill.RefreshWatchList', self.refreshWatchList)
+        self.gui.register_handler('YoutubeSkill.ClearDB', self.clear_db)
         
     def launcherId(self, message):
         self.show_homepage({})
@@ -226,9 +230,17 @@ class YoutubeSkill(MycroftSkill):
         self.gui["nextSongID"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
-        self.recentList.appendleft({"videoID": getvid, "videoTitle": video.title, "videoImage": video.thumb})
+        if 'recentList' in self.recent_db.keys():
+            recentVideoList = self.recent_db['recentList']
+        else:
+            recentVideoList = []
+        recentVideoList.insert(0, {"videoID": getvid, "videoTitle": video.title, "videoImage": video.thumb})
+        self.recent_db['recentList'] = recentVideoList
+        self.recent_db.store()
+        self.gui["recentListBlob"] = self.recent_db
         self.youtubesearchpagesimple(utterance)
         self.isTitle = video.title
+        self.gui["recentListBlob"] = self.recent_db
         
     def youtubepause(self, message):
         self.gui["status"] = str("pause")
@@ -252,9 +264,8 @@ class YoutubeSkill(MycroftSkill):
         html = response.read()
         videoList = self.process_soup_additional(html)
         videoPageObject['videoList'] = videoList
-        self.recentPageObject['recentList'] = list(self.recentList)
         self.gui["videoListBlob"] = videoPageObject
-        self.gui["recentListBlob"] = self.recentPageObject
+        self.gui["recentListBlob"] = self.recent_db
         self.gui.show_page("YoutubeSearch.qml")
         
     def youtubesearchpagesimple(self, query):
@@ -269,8 +280,7 @@ class YoutubeSkill(MycroftSkill):
         videoList = self.process_soup_additional(html)        
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
-        self.recentPageObject['recentList'] = list(self.recentList)
-        self.gui["recentListBlob"] = self.recentPageObject
+        self.gui["recentListBlob"] = self.recent_db
         
     def show_homepage(self, message):
         LOG.info("I AM IN HOME PAGE FUNCTION")
@@ -334,11 +344,15 @@ class YoutubeSkill(MycroftSkill):
         videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(message.data['vidID'])
-        self.recentList.appendleft({"videoID": str(message.data['vidID']), "videoTitle": str(message.data['vidTitle']), "videoImage": video.thumb})
-        self.recentPageObject['recentList'] = list(self.recentList)
-        self.gui["recentListBlob"] = self.recentPageObject
+        if 'recentList' in self.recent_db.keys():
+            recentVideoList = self.recent_db['recentList']
+        else:
+            recentVideoList = []
+        recentVideoList.insert(0, {"videoID": str(message.data['vidID']), "videoTitle": str(message.data['vidTitle']), "videoImage": video.thumb})
+        self.recent_db['recentList'] = recentVideoList
+        self.recent_db.store()
+        self.gui["recentListBlob"] = self.recent_db
         self.isTitle = video.title
-        #self.youtubesearchpagesimple(videoTitleSearch)
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
@@ -439,8 +453,13 @@ class YoutubeSkill(MycroftSkill):
         html = response.read()
         videoList = self.process_soup_additional(html)
         return videoList
-        
-        
     
+    def clear_db(self):
+        LOG.info("In DB Clear")
+        self.recent_db.clear()
+        self.recent_db.store()
+        self.gui["recentListBlob"] = ""
+
+
 def create_skill():
     return YoutubeSkill()

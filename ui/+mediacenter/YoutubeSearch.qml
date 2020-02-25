@@ -39,6 +39,7 @@ Mycroft.Delegate {
     
     onRecentPlayedModelChanged: {
         console.log(JSON.stringify(recentPlayedModel))
+        recentPlayedView.forceLayout()
     }
 
     Keys.onBackPressed: {
@@ -51,10 +52,46 @@ Mycroft.Delegate {
         anchors.fill: parent
         spacing: Kirigami.Units.smallSpacing
         
-        Kirigami.Heading {
-            id: recentItemList
-            text: "Recently Played"
-            level: 3
+        RowLayout {
+            id: headrRecentPlayed
+            Layout.fillWidth: true
+            Kirigami.Heading {
+                id: recentItemList
+                Layout.alignment: Qt.AlignLeft
+                Layout.fillWidth: true
+                text: "Recently Played"
+                level: 3
+            }
+            
+            Button {
+                id: clearRecentListBtn
+                Layout.alignment: Qt.AlignRight
+                Layout.preferredWidth: Kirigami.Units.iconSizes.medium
+                Layout.preferredHeight: Kirigami.Units.iconSizes.medium
+                KeyNavigation.up: closeButton
+                
+                background: Rectangle {
+                    anchors.fill: parent
+                    color: clearRecentListBtn.activeFocus ? Kirigami.Theme.highlightColor: Kirigami.Theme.backgroundColor
+                }
+                
+                onClicked: {
+                    triggerGuiEvent("YoutubeSkill.ClearDB", {})
+                }
+                
+                Keys.onReturnPressed: {
+                    clicked()
+                }
+                
+                contentItem: Item {
+                    Kirigami.Icon {
+                        anchors.centerIn: parent
+                        width: Kirigami.Units.iconSizes.smallMedium
+                        height: Kirigami.Units.iconSizes.smallMedium
+                        source: "edit-clear-all"
+                    }
+                }
+            }
         }
         
         Kirigami.Separator {
@@ -127,7 +164,7 @@ Mycroft.Delegate {
                 }
             }
             
-            KeyNavigation.up: closeButton
+            KeyNavigation.up: clearRecentListBtn
             KeyNavigation.down: leftSearchView
         }
         
