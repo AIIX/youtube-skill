@@ -6,6 +6,7 @@ from os.path import dirname
 import pafy
 import sys
 import json
+import base64
 if sys.version_info[0] < 3:
     from urllib import quote
     from urllib2 import urlopen
@@ -42,6 +43,8 @@ class YoutubeSkill(MycroftSkill):
         self.searchCategoryList = {}
         self.storeDB = dirname(__file__) + '-recent.db'
         self.recent_db = JsonStorage(self.storeDB)
+        self.ytkey = base64.b64decode("QUl6YVN5RE9tSXhSemI0RzFhaXFzYnBaQ3IwQTlFN1NrT0pVRURr")
+        pafy.set_api_key(self.ytkey)
         
     def initialize(self):
         self.load_data_files(dirname(__file__))
