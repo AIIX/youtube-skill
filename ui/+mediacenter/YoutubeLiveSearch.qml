@@ -37,7 +37,7 @@ Mycroft.Delegate {
     property var gamingListModel: sessionData.gamingListBlob.videoList
     property var searchListModel: sessionData.searchListBlob.videoList
     property bool busyIndicate: false
-    
+        
     skillBackgroundSource: sessionData.bgImage ? "https://source.unsplash.com/weekly?" + sessionData.bgImage : "https://source.unsplash.com/weekly?music"
 
     function searchYoutubeLiveResults(query){
@@ -254,6 +254,8 @@ Mycroft.Delegate {
                     videoQueryBoxChild.forceActiveFocus
                 }
                 
+                KeyNavigation.down: categoryLayout
+                
                 TextField {
                     id: videoQueryBoxChild
                     anchors.fill: parent
@@ -305,26 +307,53 @@ Mycroft.Delegate {
             
             CategoryBoxView {
                 id: newsCatView
+                property string categoryName: "News"
+                property bool nextPageAvailable: sessionData.newsNextAvailable
+                onNextPageAvailableChanged: {
+                    busyIndicatorPop.close()
+                }
             }
             
             CategoryBoxView {
                 id: musicCatView
+                property string categoryName: "Music"
+                property bool nextPageAvailable: sessionData.musicNextAvailable
+                onNextPageAvailableChanged: {
+                    busyIndicatorPop.close()
+                }
             }
             
             CategoryBoxView {
                 id: techCatView
+                property string categoryName: "Technology"
+                property bool nextPageAvailable: sessionData.techNextAvailable
+                onNextPageAvailableChanged: {
+                    busyIndicatorPop.close()
+                }
             }
             
             CategoryBoxView {
                 id: polCatView
+                property string categoryName: "Politics"
+                property bool nextPageAvailable: sessionData.polNextAvailable
+                onNextPageAvailableChanged: {
+                    busyIndicatorPop.close()
+                }
             }
             
             CategoryBoxView {
                 id: gamingCatView
+                property string categoryName: "Gaming"
+                property bool nextPageAvailable: sessionData.gamingNextAvailable
+                onNextPageAvailableChanged: {
+                    busyIndicatorPop.close()
+                }
             }
             
             CategoryBoxView  {
                 id: searchCatView
+                property string categoryName: "Search"
+                property bool nextPageAvailable
             }
         }
     }

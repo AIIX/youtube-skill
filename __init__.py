@@ -45,7 +45,7 @@ class YoutubeSkill(MycroftSkill):
         self.recent_db = JsonStorage(self.storeDB)
         self.ytkey = base64.b64decode("QUl6YVN5RE9tSXhSemI0RzFhaXFzYnBaQ3IwQTlFN1NrT0pVRURr")
         pafy.set_api_key(self.ytkey)
-        
+
     def initialize(self):
         self.load_data_files(dirname(__file__))
         
@@ -127,38 +127,76 @@ class YoutubeSkill(MycroftSkill):
             LOG.debug("error")
         
     def searchNextPage(self, message):
-        self.gui.clear()
-        self.enclosure.display_manager.remove_active()
-        videoList = []
-        videoList.clear()
-        videoPageObject = {}
-        url = self.nextpage_url 
-        response = urlopen(url)
-        html = response.read()
-        videoList = self.process_soup_additional(html)
-        videoPageObject['videoList'] = videoList
-        self.gui["videoListBlob"] = videoPageObject
-        self.gui["previousAvailable"] = True
-        self.gui["nextAvailable"] = False
-        self.gui["bgImage"] = self.live_category
-        self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
+        getCategory = message.data["Category"]
+        LOG.info(getCategory)
+        if getCategory == "News":
+            LOG.info("In Category News")
+            newsAdditionalPages = self.process_additional_pages("news")
+            self.newsCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + newsAdditionalPages[0])
+            self.gui["newsNextAvailable"] = False
+            self.gui["newsListBlob"] = self.newsCategoryList
+        if getCategory == "Music":
+            LOG.info("In Category Music")
+            musicAdditionalPages = self.process_additional_pages("music")
+            self.musicCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + musicAdditionalPages[0])
+            self.gui["musicNextAvailable"] = False
+            self.gui["musicListBlob"] = self.musicCategoryList
+        if getCategory == "Technology":
+            LOG.info("In Category Technology")
+            technologyAdditionalPages = self.process_additional_pages("technology")
+            self.techCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + technologyAdditionalPages[0])
+            self.gui["techNextAvailable"] = False
+            self.gui["techListBlob"] = self.techCategoryList
+        if getCategory == "Politics":
+            LOG.info("In Category Politics")
+            politicsAdditionalPages = self.process_additional_pages("politics")
+            self.polCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + politicsAdditionalPages[0])
+            self.gui["polNextAvailable"] = False
+            self.gui["polListBlob"] = self.polCategoryList
+        if getCategory == "Gaming":
+            LOG.info("In Category Gaming")
+            gamingAdditionalPages = self.process_additional_pages("gaming")
+            self.gamingCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + gamingAdditionalPages[0])
+            self.gui["gamingNextAvailable"] = False
+            self.gui["gamingListBlob"] = self.gamingCategoryList
+        if getCategory == "Search":
+            LOG.info("In Search")
         
     def searchPreviousPage(self, message):
-        self.gui.clear()
-        self.enclosure.display_manager.remove_active()
-        videoList = []
-        videoList.clear()
-        videoPageObject = {}
-        url = self.previouspage_url
-        response = urlopen(url)
-        html = response.read()
-        videoList = self.process_soup_additional(html)
-        videoPageObject['videoList'] = videoList
-        self.gui["videoListBlob"] = videoPageObject
-        self.gui["previousAvailable"] = False
-        self.gui["nextAvailable"] = True
-        self.gui["bgImage"] = self.live_category
-        self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
+        getCategory = message.data["Category"]
+        LOG.info(getCategory)
+        if getCategory == "News":
+            LOG.info("In Category News")
+            newsAdditionalPages = self.process_additional_pages("news")
+            self.newsCategoryList['videoList'] = self.build_category_list_from_url(newsAdditionalPages[1])
+            self.gui["newsNextAvailable"] = True
+            self.gui["newsListBlob"] = self.newsCategoryList
+        if getCategory == "Music":
+            LOG.info("In Category Music")
+            musicAdditionalPages = self.process_additional_pages("music")
+            self.musicCategoryList['videoList'] = self.build_category_list_from_url(musicAdditionalPages[1])
+            self.gui["musicNextAvailable"] = True
+            self.gui["musicListBlob"] = self.musicCategoryList
+        if getCategory == "Technology":
+            LOG.info("In Category Technology")
+            technologyAdditionalPages = self.process_additional_pages("technology")
+            self.techCategoryList['videoList'] = self.build_category_list_from_url(technologyAdditionalPages[1])
+            self.gui["techNextAvailable"] = True
+            self.gui["techListBlob"] = self.techCategoryList
+        if getCategory == "Politics":
+            LOG.info("In Category Politics")
+            politicsAdditionalPages = self.process_additional_pages("politics")
+            self.polCategoryList['videoList'] = self.build_category_list_from_url(politicsAdditionalPages[1])
+            self.gui["polNextAvailable"] = True
+            self.gui["polListBlob"] = self.polCategoryList
+        if getCategory == "Gaming":
+            LOG.info("In Category Gaming")
+            gamingAdditionalPages = self.process_additional_pages("gaming")
+            self.gamingCategoryList['videoList'] = self.build_category_list_from_url(gamingAdditionalPages[1])
+            self.gui["gamingNextAvailable"] = True
+            self.gui["gamingListBlob"] = self.gamingCategoryList
+        if getCategory == "Search":
+            LOG.info("In Search")
             
     def getTitle(self, text):
         query = quote(text)
@@ -315,10 +353,15 @@ class YoutubeSkill(MycroftSkill):
         LOG.info("I AM NOW IN SHOW SEARCH PAGE FUNCTION")
         LOG.info(self.techCategoryList)
         self.gui["newsListBlob"] = self.newsCategoryList
+        self.gui["newsNextAvailable"] = True
         self.gui["musicListBlob"] = self.musicCategoryList
+        self.gui["musicNextAvailable"] = True
         self.gui["techListBlob"] = self.techCategoryList
+        self.gui["techNextAvailable"] = True
         self.gui["polListBlob"] = self.polCategoryList
+        self.gui["polNextAvailable"] = True
         self.gui["gamingListBlob"] = self.gamingCategoryList
+        self.gui["gamingNextAvailable"] = True
         self.gui["searchListBlob"] = ""
         self.gui["previousAvailable"] = False
         self.gui["nextAvailable"] = True
@@ -385,7 +428,7 @@ class YoutubeSkill(MycroftSkill):
         videoList = []
         videoList.clear()
         soup = BeautifulSoup(htmltype)
-        getVideoDetails = zip(soup.findAll(attrs={'class': 'yt-uix-tile-link'}), soup.findAll(attrs={'class': 'yt-lockup-byline'}), soup.findAll(attrs={'class': 'yt-lockup-meta-info'})) 
+        getVideoDetails = zip(soup.findAll(attrs={'class': 'yt-uix-tile-link'}), soup.findAll(attrs={'class': 'yt-lockup-byline'}), soup.findAll(attrs={'class': 'yt-lockup-meta-info'}), soup.findAll(attrs={'class': 'video-time'}))
         for vid in getVideoDetails:
             if "googleads" not in vid[0]['href'] and not vid[0]['href'].startswith(
                 u"/user") and not vid[0]['href'].startswith(u"/channel"):
@@ -394,6 +437,7 @@ class YoutubeSkill(MycroftSkill):
                 videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
                 videoChannel = vid[1].contents[0].string
                 videoUploadDate = vid[2].contents[0].string
+                videoDuration = vid[3].contents[0].string
                 if "watching" in vid[2].contents[0].string:
                     videoViews = "Live"
                 else:
@@ -402,19 +446,45 @@ class YoutubeSkill(MycroftSkill):
                     except:
                         videoViews = "Playlist"
 
-                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate})
+                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
 
-        if len(videoList) > 1:
-            self.nextSongList = videoList[1]
-        else:
-            self.nextSongList = videoList[0]               
+        #if len(videoList) > 1:
+            #self.nextSongList = videoList[1]
+        #else:
+            #self.nextSongList = videoList[0]               
                 
         return videoList
     
-    def process_additional_pages(self, htmltype):
-        soup = BeautifulSoup(htmltype)
-        buttons = soup.findAll('a',attrs={'class':"yt-uix-button vve-check yt-uix-sessionlink yt-uix-button-default yt-uix-button-size-default"})
-        return buttons
+    def process_additional_pages(self, category):
+        url = "https://www.youtube.com/results?search_query={0}".format(category)
+        response = urlopen(url)
+        html = response.read()
+        soup = BeautifulSoup(html)
+        buttons = soup.findAll('a', attrs={'class':"yt-uix-button vve-check yt-uix-sessionlink yt-uix-button-default yt-uix-button-size-default"})
+        try:
+            nPage = buttons[0]['href']
+        except:
+            nPage = self.process_additional_pages_fail(category)
+        pPage = url
+        addPgObj = [nPage, pPage]
+        
+        return addPgObj
+    
+    def process_additional_pages_fail(self, category):
+        url = None
+        if category == "news":
+            url = "/results?search_query=world+news"
+        if category == "music":
+            url = "/results?search_query=latest+music"
+        if category == "technology":
+            url = "/results?search_query=latest+tech"
+        if category == "politics":
+            url = "/results?search_query=latest+politics"
+        if category == "gaming":
+            url = "/results?search_query=latest+games"
+
+        return url
+                    
     
     def nextSongForAutoPlay(self):
         self.gui["nextSongTitle"] = self.nextSongList["videoTitle"]
@@ -452,6 +522,14 @@ class YoutubeSkill(MycroftSkill):
 
     def build_category_list(self, category):
         url = "https://www.youtube.com/results?search_query={0}".format(category)
+        response = urlopen(url)
+        html = response.read()
+        videoList = self.process_soup_additional(html)
+        return videoList
+    
+    def build_category_list_from_url(self, link):
+        url = link
+        print(url)
         response = urlopen(url)
         html = response.read()
         videoList = self.process_soup_additional(html)

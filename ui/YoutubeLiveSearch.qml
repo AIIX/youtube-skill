@@ -36,6 +36,7 @@ Mycroft.Delegate {
     property var polListModel: sessionData.polListBlob.videoList
     property var gamingListModel: sessionData.gamingListBlob.videoList
     property var searchListModel: sessionData.searchListBlob.videoList
+    
     property bool busyIndicate: false
     
     skillBackgroundSource: sessionData.bgImage ? "https://source.unsplash.com/weekly?" + sessionData.bgImage : "https://source.unsplash.com/weekly?music"
@@ -292,26 +293,38 @@ Mycroft.Delegate {
             
             CategoryBoxView {
                 id: newsCatView
+                property string categoryName: "News"
+                property bool nextPageAvailable: sessionData.newsNextAvailable
             }
             
             CategoryBoxView {
                 id: musicCatView
+                property string categoryName: "Music"
+                property bool nextPageAvailable: sessionData.musicNextAvailable
             }
             
             CategoryBoxView {
                 id: techCatView
+                property string categoryName: "Technology"
+                property bool nextPageAvailable: sessionData.techNextAvailable
             }
             
             CategoryBoxView {
                 id: polCatView
+                property string categoryName: "Politics"
+                property bool nextPageAvailable: sessionData.polNextAvailable
             }
             
             CategoryBoxView {
                 id: gamingCatView
+                property string categoryName: "Gaming"
+                property bool nextPageAvailable: sessionData.gamingNextAvailable
             }
             
             CategoryBoxView  {
                 id: searchCatView
+                property string categoryName: "Search"
+                property bool nextPageAvailable
             }
         }
     }

@@ -52,7 +52,7 @@ Item {
         delegate: Delegates.VideoCard{}
         
         KeyNavigation.up: videoQueryBox
-        KeyNavigation.down: controlBarItem
+        KeyNavigation.down: nextPageAvailable ? nextButton : previousButton
                 
         Keys.onReturnPressed: {
             busyIndicatorPop.open()
@@ -81,40 +81,46 @@ Item {
             Layout.preferredWidth: nextButton.visible ? parent.width / 2 : parent.width
             Layout.fillHeight: true
             icon.name: "go-previous-symbolic"
-            enabled: sessionData.previousAvailable
-            visible: sessionData.previousAvailable
-            highlighted: focus ? 1 : 0
+            enabled: nextPageAvailable ? 0 : 1
+            visible: nextPageAvailable ? 0 : 1
+            
+            background: Rectangle {
+                color: previousButton.activeFocus ?  Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+            }
+            
             onClicked: {
-                triggerGuiEvent("YoutubeSkill.PreviousPage", {})
+                triggerGuiEvent("YoutubeSkill.PreviousPage", {"Category": categoryName})
             }
             
             Keys.onReturnPressed: {
-                triggerGuiEvent("YoutubeSkill.PreviousPage", {})
+                triggerGuiEvent("YoutubeSkill.PreviousPage", {"Category": categoryName})
             }
             
-            KeyNavigation.right: nextButton
             KeyNavigation.up: videoListView
         }
         
         Button {
             id: nextButton
             text: "Next Page"
-            enabled: sessionData.nextAvailable
-            visible: sessionData.nextAvailable
+            enabled: nextPageAvailable ? 1 : 0
+            visible: nextPageAvailable ? 1 : 0
             Layout.preferredWidth: previousButton.visible ? parent.width / 2 : parent.width
             Layout.fillHeight: true
-            highlighted: focus ? 1 : 0
             icon.name: "go-next-symbolic"
+            
+            background: Rectangle {
+                color: nextButton.activeFocus ?  Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+            }
+            
             onClicked: {
-                triggerGuiEvent("YoutubeSkill.NextPage", {})
+                triggerGuiEvent("YoutubeSkill.NextPage", {"Category": categoryName})
             }
             
             Keys.onReturnPressed: {
-                triggerGuiEvent("YoutubeSkill.NextPage", {})
+                triggerGuiEvent("YoutubeSkill.NextPage", {"Category": categoryName})
             }
             
             KeyNavigation.up: videoListView
-            KeyNavigation.left: previousButton
         }
     }
 }
