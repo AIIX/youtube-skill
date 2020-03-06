@@ -6,15 +6,14 @@ import QtGraphicalEffects 1.0
 import Mycroft 1.0 as Mycroft
 import "+mediacenter/views" as Views
 import "+mediacenter/delegates" as Delegates
+import org.kde.mycroft.bigscreen 1.0 as BigScreen
 
 Rectangle {
     id: suggestionBox
     color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
     property var videoSuggestionList
     property alias suggestionListFocus: suggestListView.focus
-    property var nxtSongTitle
-    property var nxtSongImage
-    property var nxtSongID
+    property var nxtSongBlob
     property int countdownSeconds: 15
     property int seconds: countdownSeconds
     anchors.left: parent.left
@@ -28,9 +27,9 @@ Rectangle {
         }
     }
     
-    onNxtSongIDChanged: {
-        nextSongCdBar.imageSource = nxtSongImage
-        nextSongCdBar.nextSongTitle = nxtSongTitle
+    onNxtSongBlobChanged: {
+        nextSongCdBar.imageSource = nxtSongBlob.videoImage
+        nextSongCdBar.nextSongTitle = nxtSongBlob.videoTitle
     }
     
     onVideoSuggestionListChanged: {
@@ -39,7 +38,7 @@ Rectangle {
     }
     
     onVisibleChanged: {
-        if(visible){
+        if(visible) {
             autoPlayTimer.start()
         }
     }
@@ -51,11 +50,10 @@ Rectangle {
         onTriggered: {
             suggestionBox.seconds--;
             autoplayTimeHeading.text = "Next Video In: " + suggestionBox.seconds
-            if(suggestionBox.seconds == 0){
+            if(suggestionBox.seconds == 0) {
                 running = false;
                 suggestionBox.seconds = suggestionBox.countdownSeconds
-                console.log(nxtSongID)
-                Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: nxtSongID, vidTitle: nxtSongTitle})
+                Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: nxtSongBlob.videoID, vidTitle: nxtSongBlob.videoTitle, vidImage: nxtSongBlob.videoImage, vidChannel: nxtSongBlob.videoChannel, vidViews: nxtSongBlob.videoViews, vidUploadDate: nxtSongBlob.videoUploadDate, vidDuration: nxtSongBlob.videoDuration})
             }
         }
     }
@@ -63,14 +61,15 @@ Rectangle {
     ColumnLayout {
         id: suggestBoxLayout
         anchors.fill: parent
-        Views.ListTileView {
+        BigScreen.TileView {
             id: suggestListView
             clip: true
             model: videoSuggestionList
-            delegate: Delegates.SuggestVideoCard{}
-            
-            KeyNavigation.up: closeButton
-            KeyNavigation.down: stopNextAutoplay
+            delegate: Delegates.ListVideoCard{}
+            title: "Watch Next"
+            Layout.margins: Kirigami.Units.largeSpacing * 2
+            cellWidth: parent.width / 4
+            navigationDown: stopNextAutoplay
         }
         Kirigami.Separator {
             Layout.fillWidth: true

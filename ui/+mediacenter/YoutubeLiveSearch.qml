@@ -30,21 +30,23 @@ import "+mediacenter/delegates" as Delegates
 
 Mycroft.Delegate {
     id: delegate
+    property var recentHomeModel: sessionData.recentHomeListBlob.recentList
+    property var historyListModel: sessionData.recentListBlob.recentList
     property var newsListModel: sessionData.newsListBlob.videoList
     property var musicListModel: sessionData.musicListBlob.videoList
     property var techListModel: sessionData.techListBlob.videoList
     property var polListModel: sessionData.polListBlob.videoList
     property var gamingListModel: sessionData.gamingListBlob.videoList
     property var searchListModel: sessionData.searchListBlob.videoList
+    property var trendListModel: sessionData.trendListBlob.videoList
     property bool busyIndicate: false
-        
-    skillBackgroundSource: sessionData.bgImage ? "https://source.unsplash.com/weekly?" + sessionData.bgImage : "https://source.unsplash.com/weekly?music"
-
-    function searchYoutubeLiveResults(query){
-        triggerGuiEvent("YoutubeSkill.SearchLive", {"Query": query})
-        categoryLayout.currentIndex = 5
-    }
     
+    fillWidth: true
+    
+    topPadding: 0
+    
+    skillBackgroundSource: sessionData.bgImage ? "https://source.unsplash.com/weekly?" + sessionData.bgImage : "https://source.unsplash.com/weekly?music"
+        
     Connections {
         target: Mycroft.MycroftController
         onIntentRecevied: {
@@ -55,24 +57,36 @@ Mycroft.Delegate {
         }
     }
     
+    onRecentHomeModelChanged: {
+        homeCatView.recentModel = recentHomeModel
+    }
+    
+    onTrendListModelChanged: {
+        homeCatView.trendModel = trendListModel
+    }
+    
     onNewsListModelChanged: {
-        newsCatView.model = newsListModel
+        homeCatView.newsModel = newsListModel
     }
     
     onMusicListModelChanged: {
-        musicCatView.model = musicListModel
+        homeCatView.musicModel = musicListModel
     }
     
     onTechListModelChanged: {
-        techCatView.model = techListModel
+        homeCatView.techModel = techListModel
     }
     
     onPolListModelChanged: {
-        polCatView.model = polListModel
+        homeCatView.polModel = polListModel
     }
     
     onGamingListModelChanged: {
-        gamingCatView.model = gamingListModel
+        homeCatView.gamingModel = gamingListModel
+    }
+    
+    onHistoryListModelChanged: {
+        historyCatView.model = historyListModel
     }
     
     onSearchListModelChanged: {
@@ -94,203 +108,154 @@ Mycroft.Delegate {
         parent.parent.parent.currentItem.contentItem.forceActiveFocus()
     }
     
+    
     ColumnLayout {
         id: colLay1
         anchors.fill: parent
         
-        RowLayout {
-            id: categoryRepeater
+        Rectangle {
+            color: Qt.rgba(0, 0, 0, 0.95)
             Layout.fillWidth: true
-            Layout.preferredHeight: Kirigami.Units.gridUnit * 2
-            Layout.maximumHeight: Kirigami.Units.gridUnit * 2
+            Layout.preferredHeight: Kirigami.Units.gridUnit * 3 
+            Layout.maximumHeight: Kirigami.Units.gridUnit * 4
+            z: 100
             
-            Button {
-                id: newsCatButton
-                text: "News"
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                KeyNavigation.right: musicCatButton
-                KeyNavigation.down: videoQueryBox
+            RowLayout {
+                id: categoryRepeater
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    bottom: parent.bottom
+                }
+                width: parent.width / 2
+                anchors.leftMargin: Kirigami.Units.gridUnit
+                anchors.rightMargin: Kirigami.Units.gridUnit
                 
-                background: Rectangle {
-                    Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                    color: newsCatButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
-                }
-                
-                onClicked: {
-                    categoryLayout.currentIndex = 0
-                }
-                Keys.onReturnPressed: {
-                    clicked();
-                }
-            }
-            
-            Button {
-                id: musicCatButton
-                text: "Music"
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                KeyNavigation.right: techCatButton
-                KeyNavigation.left: newsCatButton
-                KeyNavigation.down: videoQueryBox
-                
-                background: Rectangle {
-                    Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                    color: musicCatButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
-                }
-                
-                onClicked: {
-                    categoryLayout.currentIndex = 1
-                }
-                Keys.onReturnPressed: {
-                    clicked();
-                }
-            }
-            
-            Button {
-                id: techCatButton
-                text: "Technology"
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                KeyNavigation.right: polCatButton
-                KeyNavigation.left: musicCatButton
-                KeyNavigation.down: videoQueryBox
-                
-                background: Rectangle {
-                    Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                    color: techCatButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
-                }
-                
-                onClicked: {
-                    categoryLayout.currentIndex = 2
-                }
-                Keys.onReturnPressed: {
-                    clicked();
-                }
-                
-            }
-            
-            Button {
-                id: polCatButton
-                text: "Politics"
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                KeyNavigation.right: gamingCatButton
-                KeyNavigation.left: techCatButton
-                KeyNavigation.down: videoQueryBox
-                
-                background: Rectangle {
-                    Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                    color: polCatButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
-                }
-                
-                onClicked: {
-                    categoryLayout.currentIndex = 3
-                }
-                Keys.onReturnPressed: {
-                    clicked();
-                }
-            }
-            
-            Button {
-                id: gamingCatButton
-                text: "Gaming"
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                KeyNavigation.right: searchCatButton
-                KeyNavigation.left: polCatButton
-                KeyNavigation.down: videoQueryBox
-                
-                background: Rectangle {
-                    Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                    color: gamingCatButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
-                }
-                
-                onClicked: {
-                    categoryLayout.currentIndex = 4
-                }
-                Keys.onReturnPressed: {
-                    clicked();
-                }
-            }
-            
-            Button {
-                id: searchCatButton
-                text: "Search"
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                KeyNavigation.left: gamingCatButton
-                KeyNavigation.down: videoQueryBox
-                
-                background: Rectangle {
-                    Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                    color: searchCatButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
-                }
-                
-                onClicked: {
-                    categoryLayout.currentIndex = 5
-                }
-                Keys.onReturnPressed: {
-                    clicked();
-                }
-            }
-        }
-        
-        RowLayout {
-            id: searchVideoInputBox
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignTop
-            Layout.maximumHeight: Kirigami.Units.gridUnit * 3
-            z: 120
-
-            Rectangle {
-                id: videoQueryBox
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                
-                color: videoQueryBox.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
-                
-                Keys.onReturnPressed: {
-                    videoQueryBoxChild.forceActiveFocus
-                }
-                
-                KeyNavigation.down: categoryLayout
-                
-                TextField {
-                    id: videoQueryBoxChild
-                    anchors.fill: parent
-                    anchors.margins: Kirigami.Units.smallSpacing
+                Button {
+                    id: homeCatButton
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    KeyNavigation.right: historyCatButton
+                    KeyNavigation.down: categoryLayout
                     
-                    onAccepted: {
-                        searchYoutubeLiveResults(videoQueryBox.text)
+                    background: Rectangle {
+                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                        color: homeCatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
                     }
                     
-                    KeyNavigation.up: newsCatButton
-                    KeyNavigation.down: categoryLayout
-                    KeyNavigation.right: searchVideoQuery
-                }
-            }
-
-            Button {
-                id: searchVideoQuery
-                Layout.preferredWidth: Kirigami.Units.gridUnit * 4.5
-                text: "Search"
-                Layout.fillHeight: true
-                highlighted: focus ? 1 : 0
-                onClicked: {
-                    searchYoutubeLiveResults(videoQueryBox.text)
-                }
-                KeyNavigation.up: newsCatButton
-                KeyNavigation.left: videoQueryBox
-                KeyNavigation.down: categoryLayout
-            }
-        }
+                    contentItem: Item {
+                        Kirigami.Heading {
+                            id: contentHome
+                            horizontalAlignment: Text.AlignHCenter
+                            width: parent.width
+                            maximumLineCount: 1
+                            text: "Home"
+                            level: 1
+                        }
                         
-        Kirigami.Separator {
-            id: sept1
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            z: 100
+                        Kirigami.Separator {
+                            id: contentHomeSept
+                            anchors.top: contentHome.bottom
+                            anchors.topMargin: Kirigami.Units.smallSpacing
+                            color: Kirigami.Theme.highlightColor
+                            width: parent.width
+                            height: 2
+                            opacity: categoryLayout.currentIndex == 0 ? 1 : 0
+                        }
+                    }
+                    
+                    onClicked: {
+                        categoryLayout.currentIndex = 0
+                    }
+                    Keys.onReturnPressed: {
+                        clicked()
+                    }
+                }
+                
+                Button {
+                    id: historyCatButton
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignLeft
+                    KeyNavigation.left: homeCatButton
+                    KeyNavigation.right: searchCatButton
+                    KeyNavigation.down: categoryLayout
+                    
+                    background: Rectangle {
+                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                        color: historyCatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
+                    }
+                    
+                    contentItem: Item {
+                        Kirigami.Heading {
+                            id: contentHistory
+                            horizontalAlignment: Text.AlignHCenter
+                            width: parent.width
+                            maximumLineCount: 1
+                            text: "History"
+                            level: 1
+                        }
+                        
+                        Kirigami.Separator {
+                            id: contentHistorySept
+                            anchors.top: contentHistory.bottom
+                            anchors.topMargin: Kirigami.Units.smallSpacing
+                            color: Kirigami.Theme.highlightColor
+                            width: parent.width
+                            height: 2
+                            opacity: categoryLayout.currentIndex == 1 ? 1 : 0
+                        }
+                    }
+                    
+                    onClicked: {
+                        categoryLayout.currentIndex = 1
+                    }
+                    Keys.onReturnPressed: {
+                        clicked();
+                    }
+                }
+                
+                Button {
+                    id: searchCatButton
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    KeyNavigation.left: historyCatButton
+                    KeyNavigation.down: categoryLayout
+                    
+                    background: Rectangle {
+                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                        color: searchCatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
+                    }
+                    
+                    contentItem: Item {
+                        Kirigami.Heading {
+                            id: contentSearch
+                            horizontalAlignment: Text.AlignHCenter
+                            width: parent.width
+                            maximumLineCount: 1
+                            text: "Search"
+                            level: 1
+                        }
+                        
+                        Kirigami.Separator {
+                            id: contentSearchSept
+                            anchors.top: contentSearch.bottom
+                            anchors.topMargin: Kirigami.Units.smallSpacing
+                            color: Kirigami.Theme.highlightColor
+                            width: parent.width
+                            height: 2
+                            opacity: categoryLayout.currentIndex == 2 ? 1 : 0
+                        }
+                    }
+                    
+                    onClicked: {
+                        categoryLayout.currentIndex = 2
+                    }
+                    Keys.onReturnPressed: {
+                        clicked();
+                    }
+                }
+             }
         }
         
         StackLayout {
@@ -305,52 +270,17 @@ Mycroft.Delegate {
                 }
             }
             
-            CategoryBoxView {
-                id: newsCatView
-                property string categoryName: "News"
+            CategoryBoxHomeView {
+                id: homeCatView
+            }
+            
+            CategoryBoxHistoryView {
+                id: historyCatView
+                property string categoryName: "History"
                 property bool nextPageAvailable: sessionData.newsNextAvailable
-                onNextPageAvailableChanged: {
-                    busyIndicatorPop.close()
-                }
             }
             
-            CategoryBoxView {
-                id: musicCatView
-                property string categoryName: "Music"
-                property bool nextPageAvailable: sessionData.musicNextAvailable
-                onNextPageAvailableChanged: {
-                    busyIndicatorPop.close()
-                }
-            }
-            
-            CategoryBoxView {
-                id: techCatView
-                property string categoryName: "Technology"
-                property bool nextPageAvailable: sessionData.techNextAvailable
-                onNextPageAvailableChanged: {
-                    busyIndicatorPop.close()
-                }
-            }
-            
-            CategoryBoxView {
-                id: polCatView
-                property string categoryName: "Politics"
-                property bool nextPageAvailable: sessionData.polNextAvailable
-                onNextPageAvailableChanged: {
-                    busyIndicatorPop.close()
-                }
-            }
-            
-            CategoryBoxView {
-                id: gamingCatView
-                property string categoryName: "Gaming"
-                property bool nextPageAvailable: sessionData.gamingNextAvailable
-                onNextPageAvailableChanged: {
-                    busyIndicatorPop.close()
-                }
-            }
-            
-            CategoryBoxView  {
+            CategoryBoxSearchView  {
                 id: searchCatView
                 property string categoryName: "Search"
                 property bool nextPageAvailable

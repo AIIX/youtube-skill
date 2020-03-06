@@ -20,10 +20,8 @@ Mycroft.Delegate {
     property var videoViewCount: sessionData.viewCount
     property var videoPublishDate: sessionData.publishedDate
     property var videoListModel: sessionData.videoListBlob.videoList
-    property var nextSongTitle: sessionData.nextSongTitle
-    property var nextSongImage: sessionData.nextSongImage
-    property var nextSongID: sessionData.nextSongID
-    
+    property var nextSongBlob: sessionData.nextSongBlob
+
     //The player is always fullscreen
     fillWidth: true
     background: Rectangle {
@@ -187,9 +185,7 @@ Mycroft.Delegate {
             id: suggestions
             visible: false
             videoSuggestionList: videoListModel
-            nxtSongTitle: nextSongTitle
-            nxtSongImage: nextSongImage
-            nxtSongID: nextSongID
+            nxtSongBlob: nextSongBlob
             onVisibleChanged: {
                 if(visible) {
                     suggestionListFocus = true

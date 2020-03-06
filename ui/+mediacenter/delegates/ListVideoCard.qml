@@ -4,53 +4,21 @@ import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import org.kde.kirigami 2.8 as Kirigami
 import org.kde.plasma.core 2.0 as PlasmaCore
-import org.kde.plasma.components 3.0 as PlasmaComponents
+import org.kde.plasma.components 3.0 as PlasmaComponents3
+import org.kde.plasma.components 2.0 as PlasmaComponents
 import Mycroft 1.0 as Mycroft
+import org.kde.mycroft.bigscreen 1.0 as BigScreen
 
 
-PlasmaComponents.ItemDelegate {
+BigScreen.AbstractDelegate {
     id: delegate
+    readonly property ListView listView: ListView.view
     
-//     readonly property Flickable gridView: {
-//         var candidate = parent;
-//         while (candidate) {
-//             if (candidate instanceof Flickable) {
-//                 return candidate;
-//             }
-//             candidate = candidate.parent;
-//         }
-//         return null;
-//     }
-    
-    readonly property GridView gridView: GridView.view
-    implicitWidth: gridView.cellWidth
-    implicitHeight: gridView.cellHeight
-    
-    readonly property bool isCurrent: {
-        gridView.currentIndex == index && activeFocus && !gridView.moving
-    }
-
-    z: isCurrent ? 2 : 0
-    
-    onClicked: {
-        gridView.forceActiveFocus()
-        gridView.currentIndex = index
-    }
-
-    Keys.onReturnPressed: {
-        clicked();
-    }
-    
-    leftPadding: Kirigami.Units.largeSpacing * 2
-    topPadding: Kirigami.Units.largeSpacing * 2
-    rightPadding: Kirigami.Units.largeSpacing * 2
-    bottomPadding: Kirigami.Units.largeSpacing * 2
-
-    leftInset: Kirigami.Units.largeSpacing
-    topInset: Kirigami.Units.largeSpacing
-    rightInset: Kirigami.Units.largeSpacing
-    bottomInset: Kirigami.Units.largeSpacing
-    
+    implicitWidth: listView.cellWidth
+    implicitHeight: listView.height - Kirigami.Units.largeSpacing * 2
+    z: listView.currentIndex == index ? 2 : 0
+    readonly property bool isCurrent: listView.currentIndex == index && activeFocus
+             
     contentItem: Item {
                 ColumnLayout {
                     anchors.fill: parent
@@ -176,122 +144,9 @@ PlasmaComponents.ItemDelegate {
                     }
             }
         }
-    
-    background: Item {
-        id: background
-
-        Rectangle {
-            id: shadowSource
-            anchors {
-                fill: frame
-                margins: units.largeSpacing
-            }
-            color: "black"
-            radius: frame.radius
-            visible: false
-        }
-
-        FastBlur {
-            anchors.fill: frame
-            transparentBorder: true
-            source: shadowSource
-            radius: Kirigami.Units.largeSpacing * 2
-            cached: true
-            readonly property bool inView: delegate.x <= gridView.contentX + gridView.width && delegate.x + delegate.width >= gridView.contentX
-            visible: inView
-        }
-
-        Rectangle {
-            id: frame
-            anchors {
-                fill: parent
-            }
-
-            /* For some reason, putting the colors and animation in the states
-             * and transition makes the color not load until the animations finish
-             * during the startup of the homescreen containment.
-             * Also for some reason, frame starts out white and fades into the correct color while
-             * innerFrame starts out transparent (maybe?) and fades into the correct color.
-             */
-            color: delegate.isCurrent ? delegate.Kirigami.Theme.highlightColor : delegate.Kirigami.Theme.backgroundColor
-            Behavior on color {
-                ColorAnimation {
-                    duration: Kirigami.Units.longDuration/2
-                    easing.type: Easing.InOutQuad
-                }
-            }
-
-            Rectangle {
-                id: innerFrame
-                anchors {
-                    fill: parent
-                    margins: units.smallSpacing
-                }
-                radius: frame.radius/2
-                color: delegate.Kirigami.Theme.backgroundColor
-            }
-
-            states: [
-                State {
-                    when: delegate.isCurrent
-                    PropertyChanges {
-                        target: delegate
-                        leftInset: Kirigami.Units.largeSpacing - innerFrame.anchors.margins
-                        rightInset: Kirigami.Units.largeSpacing - innerFrame.anchors.margins
-                        topInset: -Kirigami.Units.smallSpacing 
-                        bottomInset: -Kirigami.Units.smallSpacing
-                    }
-                    PropertyChanges {
-                        target: frame
-                        radius: 6
-                    }
-                },
-                State {
-                    when: !delegate.isCurrent
-                    PropertyChanges {
-                        target: delegate
-                        leftInset: Kirigami.Units.largeSpacing
-                        rightInset: Kirigami.Units.largeSpacing
-                        topInset: Kirigami.Units.largeSpacing
-                        bottomInset: Kirigami.Units.largeSpacing
-                    }
-                    PropertyChanges {
-                        target: frame
-                        radius: 3
-                    }
-                }
-            ]
-
-            transitions: Transition {
-                ParallelAnimation {
-                    NumberAnimation {
-                        property: "leftInset"
-                        duration: Kirigami.Units.longDuration
-                        easing.type: Easing.InOutQuad
-                    }
-                    NumberAnimation {
-                        property: "rightInset"
-                        duration: Kirigami.Units.longDuration
-                        easing.type: Easing.InOutQuad
-                    }
-                    NumberAnimation {
-                        property: "topInset"
-                        duration: Kirigami.Units.longDuration
-                        easing.type: Easing.InOutQuad
-                    }
-                    NumberAnimation {
-                        property: "bottomInset"
-                        duration: Kirigami.Units.longDuration
-                        easing.type: Easing.InOutQuad
-                    }
-                    NumberAnimation {
-                        property: "radius"
-                        duration: Kirigami.Units.longDuration
-                        easing.type: Easing.InOutQuad
-                    }
-                }
-            }
-        }
+        
+    onClicked: {
+        busyIndicatorPop.open()
+        Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle, vidImage: modelData.videoImage, vidChannel: modelData.videoChannel, vidViews: modelData.videoViews, vidUploadDate: modelData.videoUploadDate, vidDuration: modelData.videoDuration})
     }
 }
-

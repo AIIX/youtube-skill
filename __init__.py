@@ -7,6 +7,7 @@ import pafy
 import sys
 import json
 import base64
+import timeago, datetime 
 if sys.version_info[0] < 3:
     from urllib import quote
     from urllib2 import urlopen
@@ -35,12 +36,15 @@ class YoutubeSkill(MycroftSkill):
         self.lastSong = None
         self.videoPageObject = {}
         self.isTitle = None
+        self.trendCategoryList = {}
         self.newsCategoryList = {}
         self.musicCategoryList = {}
         self.techCategoryList = {}
         self.polCategoryList = {}
         self.gamingCategoryList = {}
         self.searchCategoryList = {}
+        self.recentCategoryList = {}
+        self.recentWatchListObj = {}
         self.storeDB = dirname(__file__) + '-recent.db'
         self.recent_db = JsonStorage(self.storeDB)
         self.ytkey = base64.b64decode("QUl6YVN5RE9tSXhSemI0RzFhaXFzYnBaQ3IwQTlFN1NrT0pVRURr")
@@ -266,18 +270,12 @@ class YoutubeSkill(MycroftSkill):
         self.gui["videoAuthor"] = video.username
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
-        self.gui["nextSongTitle"] = ""
-        self.gui["nextSongImage"] = ""
-        self.gui["nextSongID"] = ""
+        self.gui["nextSongBlob"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
-        if 'recentList' in self.recent_db.keys():
-            recentVideoList = self.recent_db['recentList']
-        else:
-            recentVideoList = []
-        recentVideoList.insert(0, {"videoID": getvid, "videoTitle": video.title, "videoImage": video.thumb})
-        self.recent_db['recentList'] = recentVideoList
-        self.recent_db.store()
+        uploadDateToString = self.build_upload_date(video.published)
+        recentVideoDict = {"videoID": getvid, "videoTitle": video.title, "videoImage": video.bigthumb, "videoChannel": video.username, "videoViews": video.viewcount, "videoUploadDate": uploadDateToString, "videoDuration": video.duration}
+        self.buildHistoryModel(recentVideoDict)
         self.gui["recentListBlob"] = self.recent_db
         self.youtubesearchpagesimple(utterance)
         self.isTitle = video.title
@@ -323,6 +321,14 @@ class YoutubeSkill(MycroftSkill):
         self.gui["videoListBlob"] = videoPageObject
         self.gui["recentListBlob"] = self.recent_db
         
+        try:
+            if len(videoList) > 1:
+                self.nextSongList = videoList[1]
+            else:
+                self.nextSongList = videoList[0]
+        except:
+            self.nextSongList = []
+        
     def show_homepage(self, message):
         LOG.info("I AM IN HOME PAGE FUNCTION")
         self.gui.clear()
@@ -334,24 +340,66 @@ class YoutubeSkill(MycroftSkill):
     def process_home_page(self):
         LOG.info("I AM IN HOME PROCESS PAGE FUNCTION")
         self.gui.show_page("YoutubeLogo.qml")
+        self.gui["loadingStatus"] = "Fetching Trends"
+        self.build_recent_watch_list(20)
+        self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending")
+        if self.trendCategoryList['videoList']:
+            LOG.info("Trends Not Empty")
+        else:
+            LOG.info("Trying To Rebuild Trends List")
+            self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending")
         self.gui["loadingStatus"] = "Fetching News"
         self.newsCategoryList['videoList'] = self.build_category_list("news")
+        if self.newsCategoryList['videoList']:
+            LOG.info("News Not Empty")
+        else:
+            LOG.info("Trying To Rebuild News List")
+            self.newsCategoryList['videoList'] = self.build_category_list("news")
         self.gui["loadingStatus"] = "Fetching Music"
+        
         self.musicCategoryList['videoList'] = self.build_category_list("music")
+        if self.musicCategoryList['videoList']:
+            LOG.info("Music Not Empty")
+        else:
+            LOG.info("Trying To Rebuild Music List")
+            self.musicCategoryList['videoList'] = self.build_category_list("music")
+
         self.gui.clear()
         self.enclosure.display_manager.remove_active()
         self.show_search_page()
+        
         self.techCategoryList['videoList'] = self.build_category_list("technology")
+        if self.techCategoryList['videoList']:
+            LOG.info("Tech Not Empty")
+        else:
+            LOG.info("Trying To Rebuild Tech List")
+            self.techCategoryList['videoList'] = self.build_category_list("technology")
         self.gui["techListBlob"] = self.techCategoryList
+        
         self.polCategoryList['videoList'] = self.build_category_list("politics")
+        if self.polCategoryList['videoList']:
+            LOG.info("Pol Not Empty")
+        else:
+            LOG.info("Trying To Rebuild Pol List")
+            self.polCategoryList['videoList'] = self.build_category_list("politics")            
         self.gui["polListBlob"] = self.polCategoryList
+        
         self.gamingCategoryList['videoList'] = self.build_category_list("gaming")
-        self.gui["gamingListBlob"] = self.gamingCategoryList     
+        if self.gamingCategoryList['videoList']:
+            LOG.info("Gaming Not Empty")
+        else:
+            LOG.info("Trying To Rebuild Pol List")
+            self.gamingCategoryList['videoList'] = self.build_category_list("gaming")
+        self.gui["gamingListBlob"] = self.gamingCategoryList
+        
         LOG.info("I AM NOW IN REMOVE LOGO PAGE FUNCTION")
 
     def show_search_page(self):
         LOG.info("I AM NOW IN SHOW SEARCH PAGE FUNCTION")
         LOG.info(self.techCategoryList)
+        self.gui["recentHomeListBlob"] = self.recentWatchListObj
+        self.gui["recentListBlob"] = self.recent_db 
+        self.gui["trendListBlob"] = self.trendCategoryList
         self.gui["newsListBlob"] = self.newsCategoryList
         self.gui["newsNextAvailable"] = True
         self.gui["musicListBlob"] = self.musicCategoryList
@@ -384,19 +432,15 @@ class YoutubeSkill(MycroftSkill):
         self.gui["viewCount"] = video.viewcount
         self.gui["publishedDate"] = video.published
         self.gui["videoAuthor"] = video.username
-        self.gui["nextSongTitle"] = ""
-        self.gui["nextSongImage"] = ""
-        self.gui["nextSongID"] = ""
+        self.gui["nextSongBlob"] = ""
         videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(message.data['vidID'])
-        if 'recentList' in self.recent_db.keys():
-            recentVideoList = self.recent_db['recentList']
-        else:
-            recentVideoList = []
-        recentVideoList.insert(0, {"videoID": str(message.data['vidID']), "videoTitle": str(message.data['vidTitle']), "videoImage": video.thumb})
-        self.recent_db['recentList'] = recentVideoList
-        self.recent_db.store()
+        recentVideoDict = {"videoID": message.data['vidID'], "videoTitle": message.data['vidTitle'], "videoImage": message.data['vidImage'], "videoChannel": message.data['vidChannel'], "videoViews": message.data['vidViews'], "videoUploadDate": message.data['vidUploadDate'], "videoDuration": message.data['vidDuration']}
+        self.buildHistoryModel(recentVideoDict)
+        #recentVideoList.insert(0, {"videoID": str(message.data['vidID']), "videoTitle": str(message.data['vidTitle']), "videoImage": video.thumb})
+        #self.recent_db['recentList'] = recentVideoList
+        #self.recent_db.store()
         self.gui["recentListBlob"] = self.recent_db
         self.isTitle = video.title
 
@@ -487,10 +531,8 @@ class YoutubeSkill(MycroftSkill):
                     
     
     def nextSongForAutoPlay(self):
-        self.gui["nextSongTitle"] = self.nextSongList["videoTitle"]
-        self.gui["nextSongImage"] = self.nextSongList["videoImage"]
-        self.gui["nextSongID"] = self.nextSongList["videoID"]
-    
+        self.gui["nextSongBlob"] = self.nextSongList
+        
     def refreshWatchList(self, message):
         try:
             self.youtubesearchpagesimple(message.data["title"])
@@ -540,7 +582,63 @@ class YoutubeSkill(MycroftSkill):
         self.recent_db.clear()
         self.recent_db.store()
         self.gui["recentListBlob"] = ""
+        
+    def buildHistoryModel(self, dictItem):
+        LOG.info("In Build History Model")
+        if 'recentList' in self.recent_db.keys():
+            myCheck = self.checkIfHistoryItem(dictItem)
+            if myCheck == True:
+                LOG.info("In true")
+                LOG.info(dictItem)
+                self.moveHistoryEntry(dictItem)
+            elif myCheck == False:
+                LOG.info("In false")
+                LOG.info(dictItem)
+                self.addHistoryEntry(dictItem)
+        
+        else:
+            recentListItem = []
+            recentListItem.insert(0, dictItem)
+            self.recent_db['recentList'] = recentListItem
+            LOG.info("In Build History Recent Not Found Creating")
+            self.recent_db.store()
+            self.build_recent_watch_list(20)
+            self.gui["recentHomeListBlob"] = self.recentWatchListObj
 
+    def checkIfHistoryItem(self, dictItem):
+        hasHistoryItem = False
+        for dict_ in [x for x in self.recent_db['recentList'] if x["videoID"] == dictItem["videoID"]]:
+            hasHistoryItem = True
+        return hasHistoryItem
+
+    def moveHistoryEntry(self, dictItem):
+        res = [i for i in self.recent_db['recentList'] if not (i['videoID'] == dictItem["videoID"])]
+        self.recent_db['recentList'] = res
+        self.recent_db['recentList'].insert(0, dictItem)
+        self.recent_db.store()
+        self.build_recent_watch_list(20)
+        self.gui["recentHomeListBlob"] = self.recentWatchListObj
+        
+    def addHistoryEntry(self, dictItem):
+        self.recent_db['recentList'].insert(0, dictItem)
+        self.recent_db.store()
+        self.build_recent_watch_list(20)
+        self.gui["recentHomeListBlob"] = self.recentWatchListObj
+
+    def build_recent_watch_list(self, count):
+        if 'recentList' in self.recent_db.keys():
+            recentWatchListRaw = self.recent_db['recentList']
+            recentWatchListModded = recentWatchListRaw[0:count]
+            self.recentWatchListObj['recentList'] = recentWatchListModded
+        else:
+            emptyList = []
+            self.recentWatchListObj['recentList'] = emptyList
+            
+    def build_upload_date(self, update):
+        now = datetime.datetime.now() + datetime.timedelta(seconds = 60 * 3.4)
+        date = update
+        dtstring = timeago.format(date, now)
+        return dtstring
 
 def create_skill():
     return YoutubeSkill()

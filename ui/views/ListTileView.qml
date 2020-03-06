@@ -19,97 +19,123 @@
 
 import QtQuick 2.12
 import QtQuick.Layouts 1.4
+import QtQuick.Window 2.2
 import QtQuick.Controls 2.4 as Controls
+import QtGraphicalEffects 1.12
+
+import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 3.0 as PlasmaComponents
 import org.kde.kirigami 2.5 as Kirigami
 
-
-ListView {
-    id: view
-    property int columns: parent.width >= 1500 ? Math.max(3, Math.floor(width / (Kirigami.Units.gridUnit * 14))) : 5
-
-    readonly property int cellWidth: width / columns
-
+FocusScope {
+    id: root
+    signal activated
+    property string title
+    property alias view: view
+    property alias delegate: view.delegate
+    property alias model: view.model
+    property alias currentIndex: view.currentIndex
+    property alias currentItem: view.currentItem
     Layout.fillWidth: true
-    Layout.preferredHeight: Kirigami.Units.gridUnit * 15
-    z: activeFocus ? 10: 1
-    keyNavigationEnabled: true
-    highlightFollowsCurrentItem: true
-    snapMode: ListView.SnapToItem
-    cacheBuffer: width
-
-    displayMarginBeginning: rotation.angle != 0 ? width*2 : 0
-    displayMarginEnd: rotation.angle != 0 ? width*2 : 0
-    highlightMoveDuration: Kirigami.Units.longDuration
-    transform: Rotation {
-        id: rotation
-        axis { x: 0; y: 1; z: 0 }
-        angle: 0
-        property real targetAngle: 30
-        Behavior on angle {
-            SmoothedAnimation {
-                duration: Kirigami.Units.longDuration * 10
-            }
+    
+    implicitHeight: view.implicitHeight + header.implicitHeight
+    property int columns: parent.width >= 1500 ? Math.max(3, Math.floor(width / (Kirigami.Units.gridUnit * 14))) : 5
+    property alias cellWidth: view.cellWidth
+    
+    property Item navigationUp
+    property Item navigationDown
+    
+     Kirigami.Heading {
+        id: header
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
         }
-        origin.x: width/2
-    }
-
-    Timer {
-        id: rotateTimeOut
-        interval: 25
-    }
-    Timer {
-        id: rotateTimer
-        interval: 500
-        onTriggered: {
-            if (rotateTimeOut.running) {
-                rotation.angle = rotation.targetAngle;
-                restart();
-            } else {
-                rotation.angle = 0;
-            }
-        }
-    }
-    spacing: 0
-    orientation: ListView.Horizontal
-
-    property real oldContentX
-    onContentXChanged: {
-        if (oldContentX < contentX) {
-            rotation.targetAngle = 30;
-        } else {
-            rotation.targetAngle = -30;
-        }
-        PlasmaComponents.ScrollBar.horizontal.opacity = 1;
-        if (!rotateTimeOut.running) {
-            rotateTimer.restart();
-        }
-        rotateTimeOut.restart();
-        oldContentX = contentX;
+        text: title
+        layer.enabled: true
+        color: "white"
     }
     
-    PlasmaComponents.ScrollBar.horizontal: PlasmaComponents.ScrollBar {
-        id: scrollBar
-        opacity: 0
-        interactive: false
-        onOpacityChanged: disappearTimer.restart()
-        Timer {
-            id: disappearTimer
-            interval: 1000
-            onTriggered: scrollBar.opacity = 0;
+    ListView {
+        id: view
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: header.baseline
+            bottom: parent.bottom
+            topMargin: Kirigami.Units.largeSpacing*2
+            leftMargin: -Kirigami.Units.largeSpacing
         }
-        Behavior on opacity {
-            OpacityAnimator {
+        focus: true
+
+        z: activeFocus ? 10: 1
+        keyNavigationEnabled: true
+        //Centering disabled as experiment
+        highlightRangeMode: ListView.ApplyRange
+
+        highlightFollowsCurrentItem: true
+        snapMode: ListView.SnapToItem
+        cacheBuffer: width
+        implicitHeight: cellWidth + Kirigami.Units.gridUnit * 3
+        rightMargin: width-cellWidth*3
+        readonly property int cellWidth: (Kirigami.Units.iconSizes.huge + Kirigami.Units.largeSpacing*4)
+        preferredHighlightBegin: cellWidth
+        preferredHighlightEnd: cellWidth
+        displayMarginBeginning: cellWidth
+        displayMarginEnd: cellWidth
+
+        highlightMoveVelocity: -1
+        highlightMoveDuration: Kirigami.Units.longDuration
+
+        onContentWidthChanged: if (view.currentIndex === 0) view.contentX = view.originX
+
+        onMovementEnded: flickEnded()
+        onFlickEnded: currentIndex = indexAt(mapToItem(contentItem, cellWidth, 0).x, 0)
+        
+        spacing: 0
+        orientation: ListView.Horizontal
+
+        move: Transition {
+            SmoothedAnimation {
+                property: "x"
                 duration: Kirigami.Units.longDuration
-                easing.type: Easing.InOutQuad
             }
         }
-    }
 
-    move: Transition {
-        SmoothedAnimation {
-            property: "x"
-            duration: Kirigami.Units.longDuration
+        KeyNavigation.left: root
+        KeyNavigation.right: root
+
+        Keys.onDownPressed:  {
+            if (!navigationDown) {
+                return;
+            }
+
+            if (navigationDown instanceof TileView) {
+                navigationDown.currentIndex = Math.min(Math.floor(navigationDown.view.indexAt(navigationDown.view.contentX + cellWidth/2, height/2)) + (view.currentIndex - view.indexAt(view.contentX + cellWidth/2, height/2)), navigationDown.view.count - 1);
+
+                if (navigationDown.currentIndex < 0) {
+                    navigationDown.currentIndex = view.currentIndex > 0 ? navigationDown.view.count - 1 : 0
+                }
+            }
+
+            navigationDown.forceActiveFocus();
+        }
+
+        Keys.onUpPressed:  {
+            if (!navigationUp) {
+                return;
+            }
+
+            if (navigationUp instanceof TileView) {
+                navigationUp.currentIndex = Math.min(Math.floor(navigationUp.view.indexAt(navigationUp.view.contentX + cellWidth/2, height/2)) + (view.currentIndex - view.indexAt(view.contentX + cellWidth/2, height/2)), navigationUp.view.count - 1);
+
+                if (navigationUp.currentIndex < 0) {
+                    navigationUp.currentIndex = view.currentIndex > 0 ? navigationUp.view.count - 1 : 0
+                }
+            }
+
+            navigationUp.forceActiveFocus();
         }
     }
 }

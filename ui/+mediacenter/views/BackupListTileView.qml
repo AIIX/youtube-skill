@@ -24,22 +24,71 @@ import org.kde.plasma.components 3.0 as PlasmaComponents
 import org.kde.kirigami 2.5 as Kirigami
 
 
-GridView {
+ListView {
     id: view
-    cellWidth: parent.width >= 1500 ? parent.width / 5 : parent.width / 3
-    cellHeight: parent.width >= 1500 ? parent.height / 2 : parent.height / 3
-    
+    property int columns: parent.width >= 1500 ? Math.max(3, Math.floor(width / (Kirigami.Units.gridUnit * 14))) : 5
+
+    readonly property int cellWidth: width / columns
+
     Layout.fillWidth: true
-    Layout.fillHeight: true
-    
-    //z: activeFocus ? 10: 1
+    Layout.preferredHeight: Kirigami.Units.gridUnit * 15
+    z: activeFocus ? 10: 1
     keyNavigationEnabled: true
     highlightFollowsCurrentItem: true
     snapMode: ListView.SnapToItem
     cacheBuffer: width
+
+    displayMarginBeginning: rotation.angle != 0 ? width*2 : 0
+    displayMarginEnd: rotation.angle != 0 ? width*2 : 0
     highlightMoveDuration: Kirigami.Units.longDuration
+    transform: Rotation {
+        id: rotation
+        axis { x: 0; y: 1; z: 0 }
+        angle: 0
+        property real targetAngle: 30
+        Behavior on angle {
+            SmoothedAnimation {
+                duration: Kirigami.Units.longDuration * 10
+            }
+        }
+        origin.x: width/2
+    }
+
+    Timer {
+        id: rotateTimeOut
+        interval: 25
+    }
+    Timer {
+        id: rotateTimer
+        interval: 500
+        onTriggered: {
+            if (rotateTimeOut.running) {
+                rotation.angle = rotation.targetAngle;
+                restart();
+            } else {
+                rotation.angle = 0;
+            }
+        }
+    }
+    spacing: 0
+    orientation: ListView.Horizontal
+
+    property real oldContentX
+    onContentXChanged: {
+        if (oldContentX < contentX) {
+            rotation.targetAngle = 30;
+        } else {
+            rotation.targetAngle = -30;
+        }
+        PlasmaComponents.ScrollBar.horizontal.opacity = 1;
+        if (!rotateTimeOut.running) {
+            rotateTimer.restart();
+        }
+        rotateTimeOut.restart();
+        oldContentX = contentX;
+    }
     
-    PlasmaComponents.ScrollBar.vertical: PlasmaComponents.ScrollBar {
+    PlasmaComponents.ScrollBar.horizontal: PlasmaComponents.ScrollBar {
         id: scrollBar
         opacity: 0
         interactive: false
@@ -55,13 +104,6 @@ GridView {
                 easing.type: Easing.InOutQuad
             }
         }
-    }
-    
-    Behavior on y {
-            NumberAnimation {
-                duration: Kirigami.Units.longDuration * 2
-                easing.type: Easing.InOutQuad
-            }
     }
 
     move: Transition {
