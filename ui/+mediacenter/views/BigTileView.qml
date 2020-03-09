@@ -37,6 +37,7 @@ FocusScope {
     Layout.fillWidth: true
     implicitHeight: view.implicitHeight + header.implicitHeight
     property alias cellWidth: view.cellWidth
+    property alias cellHeight: view.cellHeight
     
     property Item navigationUp
     property Item navigationDown
@@ -47,21 +48,35 @@ FocusScope {
             left: parent.left
             right: parent.right
             top: parent.top
+            leftMargin: Kirigami.Units.largeSpacing * 3
         }
         text: title
-        layer.enabled: true
         color: "white"
     }
-    
+
+    Kirigami.Separator {
+        z: 2
+        anchors {
+            bottom: view.top
+            left: view.left
+            right: parent.right
+        }
+        height: 1
+        color: "white"
+        opacity: 0.4
+        visible: view.contentY > 0
+    }
+
     GridView {
         id: view
         anchors {
                 left: parent.left
                 right: parent.right
-                top: header.baseline
+                top: header.bottom
                 bottom: parent.bottom
-                topMargin: Kirigami.Units.largeSpacing*2
-                leftMargin: -Kirigami.Units.largeSpacing
+                topMargin: Kirigami.Units.largeSpacing * 2
+                leftMargin: Kirigami.Units.largeSpacing * 2
+                rightMargin: Kirigami.Units.largeSpacing * 2
         }
         focus: true
         z: activeFocus ? 10: 1 
@@ -72,6 +87,7 @@ FocusScope {
         snapMode: ListView.SnapToItem
         cacheBuffer: width
         highlightMoveDuration: Kirigami.Units.longDuration
+        clip: true
 
         Behavior on y {
             NumberAnimation {

@@ -41,21 +41,25 @@ Item {
     function searchYoutubeLiveResults(query){
         triggerGuiEvent("YoutubeSkill.SearchLive", {"Query": query})
     }
-        
-    ColumnLayout {
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-            
-        Views.BigTileView {
-            id: historyGridView
-            focus: true
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            title: count > 0 ? "Watch History" : "No Recent History"
-            delegate: Delegates.VideoCard{}
-            KeyNavigation.up: historyCatButton
+
+    Views.BigTileView {
+        id: historyGridView
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
         }
+        focus: true
+        title: count > 0 ? "Watch History" : "No Recent History"
+
+        cellWidth: view.width / 4
+        // FIXME: componentize more all this stuff
+        cellHeight: cellWidth / 1.8 + Kirigami.Units.gridUnit * 5
+        delegate: Delegates.ListVideoCard {
+            width: historyGridView.cellWidth
+            height: historyGridView.cellHeight
+        }
+        KeyNavigation.up: historyCatButton
     }
 }

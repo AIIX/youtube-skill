@@ -102,22 +102,28 @@ Item {
             }
         }
     }
-    
-    ColumnLayout {
-        anchors.top: searchBarArea.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-            
-        Views.BigTileView {
-            id: searchGridView
-            focus: true
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            title: count > 0 ? "Search Results" : " "
-            delegate: Delegates.VideoCard{}
-            
-            KeyNavigation.up: searchBarArea
+
+    Views.BigTileView {
+        id: searchGridView
+        anchors {
+            top: searchBarArea.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            topMargin: Kirigami.Units.largeSpacing
         }
+        focus: true
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        cellWidth: view.width / 4
+        // FIXME: componentize more all this stuff
+        cellHeight: cellWidth / 1.8 + Kirigami.Units.gridUnit * 5
+        title: count > 0 ? "Search Results" : " "
+        delegate: Delegates.ListVideoCard {
+            width: searchGridView.cellWidth
+            height: searchGridView.cellHeight
+        }
+        
+        KeyNavigation.up: searchBarArea
     }
 }
