@@ -143,27 +143,26 @@ Mycroft.Delegate {
                     background: Rectangle {
                         Kirigami.Theme.colorSet: Kirigami.Theme.Button
                         color: homeCatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
-                    }
-                    
-                    contentItem: Item {
-                        Kirigami.Heading {
-                            id: contentHome
-                            horizontalAlignment: Text.AlignHCenter
-                            width: parent.width
-                            maximumLineCount: 1
-                            text: "Home"
-                            level: 1
-                        }
-                        
+
                         Kirigami.Separator {
-                            id: contentHomeSept
-                            anchors.top: contentHome.bottom
-                            anchors.topMargin: Kirigami.Units.smallSpacing
+                            anchors {
+                                left: parent.left
+                                right: parent.right
+                                bottom: parent.bottom
+                            }
                             color: Kirigami.Theme.highlightColor
-                            width: parent.width
                             height: 2
                             opacity: categoryLayout.currentIndex == 0 ? 1 : 0
                         }
+                    }
+                    
+                    contentItem: Kirigami.Heading {
+                        id: contentHome
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        maximumLineCount: 1
+                        text: "Home"
+                        level: 1
                     }
                     
                     onClicked: {
@@ -186,27 +185,25 @@ Mycroft.Delegate {
                     background: Rectangle {
                         Kirigami.Theme.colorSet: Kirigami.Theme.Button
                         color: historyCatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
-                    }
-                    
-                    contentItem: Item {
-                        Kirigami.Heading {
-                            id: contentHistory
-                            horizontalAlignment: Text.AlignHCenter
-                            width: parent.width
-                            maximumLineCount: 1
-                            text: "History"
-                            level: 1
-                        }
-                        
                         Kirigami.Separator {
-                            id: contentHistorySept
-                            anchors.top: contentHistory.bottom
-                            anchors.topMargin: Kirigami.Units.smallSpacing
+                            anchors {
+                                left: parent.left
+                                right: parent.right
+                                bottom: parent.bottom
+                            }
                             color: Kirigami.Theme.highlightColor
-                            width: parent.width
                             height: 2
                             opacity: categoryLayout.currentIndex == 1 ? 1 : 0
                         }
+                    }
+                    
+                    contentItem: Kirigami.Heading {
+                        id: contentHistory
+                        horizontalAlignment: Text.AlignHCenter
+                        width: parent.width
+                        maximumLineCount: 1
+                        text: "History"
+                        level: 1
                     }
                     
                     onClicked: {
@@ -227,27 +224,25 @@ Mycroft.Delegate {
                     background: Rectangle {
                         Kirigami.Theme.colorSet: Kirigami.Theme.Button
                         color: searchCatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
-                    }
-                    
-                    contentItem: Item {
-                        Kirigami.Heading {
-                            id: contentSearch
-                            horizontalAlignment: Text.AlignHCenter
-                            width: parent.width
-                            maximumLineCount: 1
-                            text: "Search"
-                            level: 1
-                        }
-                        
                         Kirigami.Separator {
-                            id: contentSearchSept
-                            anchors.top: contentSearch.bottom
-                            anchors.topMargin: Kirigami.Units.smallSpacing
+                            anchors {
+                                left: parent.left
+                                right: parent.right
+                                bottom: parent.bottom
+                            }
                             color: Kirigami.Theme.highlightColor
-                            width: parent.width
                             height: 2
                             opacity: categoryLayout.currentIndex == 2 ? 1 : 0
                         }
+                    }
+                    
+                    contentItem: Kirigami.Heading {
+                        id: contentSearch
+                        horizontalAlignment: Text.AlignHCenter
+                        width: parent.width
+                        maximumLineCount: 1
+                        text: "Search"
+                        level: 1
                     }
                     
                     onClicked: {
