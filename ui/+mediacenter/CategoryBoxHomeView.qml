@@ -78,7 +78,6 @@ Item {
                 easing.type: Easing.InOutQuad
             }
         }
-        height: parent.height
         spacing: Kirigami.Units.largeSpacing
         
         BigScreen.TileView {
@@ -92,7 +91,7 @@ Item {
                     contentLayout.currentSection = recentListView
                 }
             }
-
+Layout.maximumHeight: 100
             navigationUp: homeCatButton
             navigationDown: trendListView
         }

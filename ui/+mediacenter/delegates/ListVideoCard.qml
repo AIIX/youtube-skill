@@ -12,19 +12,15 @@ import org.kde.mycroft.bigscreen 1.0 as BigScreen
 
 BigScreen.AbstractDelegate {
     id: delegate
-    readonly property ListView listView: ListView.view
     
     implicitWidth: listView.cellWidth
-    implicitHeight: listView.height - Kirigami.Units.largeSpacing * 2
-    z: listView.currentIndex == index ? 2 : 0
-    readonly property bool isCurrent: listView.currentIndex == index && activeFocus
+    height: parent.height
 
     contentItem: ColumnLayout {
         spacing: Kirigami.Units.smallSpacing
 
-        Rectangle {
+        Item {
             id: imgRoot
-            color: "transparent"
             //clip: true
             Layout.alignment: Qt.AlignTop
             Layout.fillWidth: true
@@ -124,27 +120,28 @@ BigScreen.AbstractDelegate {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: Kirigami.Units.largeSpacing
-                
-                PlasmaComponents.Label {
-                    id: videoUploadDate
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-                    wrapMode: Text.WordWrap
-                    maximumLineCount: 1
-                    elide: Text.ElideRight
-                    color: PlasmaCore.ColorScope.textColor
-                    text: modelData.videoUploadDate
-                }
 
                 PlasmaComponents.Label {
                     id: videoViews
-                    Layout.alignment: Qt.AlignRight
+                    Layout.alignment: Qt.AlignLeft
                     Layout.rightMargin: Kirigami.Units.largeSpacing
                     wrapMode: Text.WordWrap
                     maximumLineCount: 1
                     elide: Text.ElideRight
                     color: PlasmaCore.ColorScope.textColor
                     text: modelData.videoViews
+                }
+
+                PlasmaComponents.Label {
+                    id: videoUploadDate
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignRight | Qt.AlignTop
+                    horizontalAlignment: Text.AlignRight
+                    wrapMode: Text.WordWrap
+                    maximumLineCount: 1
+                    elide: Text.ElideRight
+                    color: PlasmaCore.ColorScope.textColor
+                    text: modelData.videoUploadDate
                 }
             }
         }
