@@ -77,68 +77,64 @@ BigScreen.AbstractDelegate {
                 }
             }
 
-            Item {
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                spacing: Kirigami.Units.smallSpacing
 
-                ColumnLayout {
-                    anchors.fill: parent
-                    spacing: Kirigami.Units.smallSpacing
+                Kirigami.Heading {
+                    id: videoLabel
+                    Layout.fillWidth: true
+                    Layout.leftMargin: Kirigami.Units.largeSpacing
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                    wrapMode: Text.Wrap
+                    level: 3
+                    //verticalAlignment: Text.AlignVCenter
+                    maximumLineCount: 1
+                    elide: Text.ElideRight
+                    color: PlasmaCore.ColorScope.textColor
+                    Component.onCompleted: {
+                        text = modelData.videoTitle
+                    }
+                }
 
-                    Kirigami.Heading {
-                        id: videoLabel
+                PlasmaComponents.Label {
+                    id: videoChannelName
+                    Layout.fillWidth: true
+                    Layout.leftMargin: Kirigami.Units.largeSpacing
+                    wrapMode: Text.WordWrap
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                    maximumLineCount: 1
+                    elide: Text.ElideRight
+                    color: PlasmaCore.ColorScope.textColor
+                    text: modelData.videoChannel
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: Kirigami.Units.largeSpacing
+                    
+                    PlasmaComponents.Label {
+                        id: videoUploadDate
                         Layout.fillWidth: true
-                        Layout.leftMargin: Kirigami.Units.largeSpacing
                         Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-                        wrapMode: Text.Wrap
-                        level: 3
-                        //verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WordWrap
                         maximumLineCount: 1
                         elide: Text.ElideRight
                         color: PlasmaCore.ColorScope.textColor
-                        Component.onCompleted: {
-                            text = modelData.videoTitle
-                        }
+                        text: modelData.videoUploadDate
                     }
 
                     PlasmaComponents.Label {
-                        id: videoChannelName
-                        Layout.fillWidth: true
-                        Layout.leftMargin: Kirigami.Units.largeSpacing
+                        id: videoViews
+                        Layout.alignment: Qt.AlignRight
+                        Layout.rightMargin: Kirigami.Units.largeSpacing
                         wrapMode: Text.WordWrap
-                        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                         maximumLineCount: 1
                         elide: Text.ElideRight
                         color: PlasmaCore.ColorScope.textColor
-                        text: modelData.videoChannel
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: Kirigami.Units.largeSpacing
-                        
-                        PlasmaComponents.Label {
-                            id: videoUploadDate
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 1
-                            elide: Text.ElideRight
-                            color: PlasmaCore.ColorScope.textColor
-                            text: modelData.videoUploadDate
-                        }
-
-                        PlasmaComponents.Label {
-                            id: videoViews
-                            Layout.alignment: Qt.AlignRight
-                            Layout.rightMargin: Kirigami.Units.largeSpacing
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 1
-                            elide: Text.ElideRight
-                            color: PlasmaCore.ColorScope.textColor
-                            text: modelData.videoViews
-                        }
+                        text: modelData.videoViews
                     }
                 }
             }
