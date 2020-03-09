@@ -116,7 +116,7 @@ Mycroft.Delegate {
         id: colLay1
         
         Rectangle {
-            color: Qt.rgba(0, 0, 0, 0.95)
+            color: Qt.rgba(0, 0, 0, 0.8)
             Layout.fillWidth: true
             Layout.preferredHeight: Kirigami.Units.gridUnit * 3 
             Layout.maximumHeight: Kirigami.Units.gridUnit * 4
