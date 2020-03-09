@@ -46,7 +46,7 @@ BigScreen.AbstractDelegate {
                     y: imgRoot.y
                     width: imgRoot.width
                     height: imgRoot.height
-                    radius: Kirigami.Units.smallSpacing
+                    radius: Kirigami.Units.smallSpacing / 2
                 }
             }
 

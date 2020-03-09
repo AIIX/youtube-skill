@@ -43,8 +43,11 @@ Mycroft.Delegate {
     
     fillWidth: true
     
+    leftPadding: 0
+    rightPadding: 0
     topPadding: 0
-    
+    bottomPadding: 0
+
     skillBackgroundSource: sessionData.bgImage ? "https://source.unsplash.com/weekly?" + sessionData.bgImage : "https://source.unsplash.com/weekly?music"
         
     Connections {
@@ -109,9 +112,8 @@ Mycroft.Delegate {
     }
     
     
-    ColumnLayout {
+    contentItem: ColumnLayout {
         id: colLay1
-        anchors.fill: parent
         
         Rectangle {
             color: Qt.rgba(0, 0, 0, 0.95)

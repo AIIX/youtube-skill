@@ -69,7 +69,11 @@ Item {
     
     ColumnLayout {
         id: contentLayout
-        width: parent.width
+        anchors {
+            left: parent.left
+            right: parent.right
+            margins: Kirigami.Units.largeSpacing * 3
+        }
         property Item currentSection
         readonly property int rowHeight: recentListView.cellWidth / 1.8 + Kirigami.Units.gridUnit * 7
         y: currentSection ? -currentSection.y : 0
@@ -80,7 +84,8 @@ Item {
                 easing.type: Easing.InOutQuad
             }
         }
-        spacing: Kirigami.Units.largeSpacing
+
+        spacing: Kirigami.Units.largeSpacing * 4
 
         BigScreen.TileView {
             id: recentListView
