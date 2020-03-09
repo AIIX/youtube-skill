@@ -25,35 +25,46 @@ BigScreen.AbstractDelegate {
         Rectangle {
             id: imgRoot
             color: "transparent"
-            clip: true
+            //clip: true
             Layout.alignment: Qt.AlignTop
             Layout.fillWidth: true
-            Layout.topMargin: -delegate.topPadding + delegate.topInset + delegate.borderSize
-            Layout.leftMargin: -delegate.leftPadding + delegate.leftInset + delegate.borderSize
-            Layout.rightMargin: -delegate.rightPadding + delegate.rightInset + delegate.borderSize
+            Layout.topMargin: -delegate.topPadding + delegate.topInset + extraBorder
+            Layout.leftMargin: -delegate.leftPadding + delegate.leftInset + extraBorder
+            Layout.rightMargin: -delegate.rightPadding + delegate.rightInset + extraBorder
             //Layout.bottomMargin: -Kirigami.Units.smallSpacing
-            Layout.preferredHeight: parent.height - Kirigami.Units.gridUnit * 3
-            radius: 3
+            Layout.preferredHeight: width/1.8//width / (img.sourceSize.width/img.sourceSize.height)//width/1.6
+            // FIXME: another thing copied from AbstractDelegate
+            property real extraBorder: delegate.isCurrent ? delegate.borderSize : 0
+            Behavior on extraBorder {
+                NumberAnimation {
+                    duration: Kirigami.Units.longDuration
+                    easing.type: Easing.InOutQuad
+                }
+            }
 
             layer.enabled: true
             layer.effect: OpacityMask {
                 cached: true
                 maskSource: Rectangle {
-                    x: imgRoot.x; y: imgRoot.y
+                    x: imgRoot.x;
+                    y: imgRoot.y
                     width: imgRoot.width
                     height: imgRoot.height
-                    radius: imgRoot.radius
+                    radius: Kirigami.Units.smallSpacing
                 }
             }
 
             Image {
                 id: img
                 source: modelData.videoImage
-                width: parent.width
-                height: parent.height
-                y: -12
+                anchors {
+                    fill: parent
+                    // To not round under
+                    bottomMargin: Kirigami.Units.smallSpacing
+                }
+                //y: -12
                 opacity: 1
-                fillMode: Image.Tile 
+                fillMode: Image.PreserveAspectCrop
 
                 Rectangle {
                     id: videoDurationTime
