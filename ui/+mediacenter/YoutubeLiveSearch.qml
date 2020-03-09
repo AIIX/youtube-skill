@@ -133,126 +133,40 @@ Mycroft.Delegate {
                 anchors.leftMargin: Kirigami.Units.gridUnit
                 anchors.rightMargin: Kirigami.Units.gridUnit
                 
-                Button {
+                TopBarTabButton {
                     id: homeCatButton
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
                     KeyNavigation.right: historyCatButton
                     KeyNavigation.down: categoryLayout
-                    
-                    background: Rectangle {
-                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                        color: homeCatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
-
-                        Kirigami.Separator {
-                            anchors {
-                                left: parent.left
-                                right: parent.right
-                                bottom: parent.bottom
-                            }
-                            color: Kirigami.Theme.highlightColor
-                            height: 2
-                            opacity: categoryLayout.currentIndex == 0 ? 1 : 0
-                        }
-                    }
-                    
-                    contentItem: Kirigami.Heading {
-                        id: contentHome
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        maximumLineCount: 1
-                        text: "Home"
-                        level: 1
-                    }
-                    
+                    checked: categoryLayout.currentIndex == 0
+                    text: "Home"
                     onClicked: {
                         categoryLayout.currentIndex = 0
                     }
-                    Keys.onReturnPressed: {
-                        clicked()
-                    }
                 }
                 
-                Button {
+                TopBarTabButton {
                     id: historyCatButton
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignLeft
                     KeyNavigation.left: homeCatButton
                     KeyNavigation.right: searchCatButton
                     KeyNavigation.down: categoryLayout
-                    
-                    background: Rectangle {
-                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                        color: historyCatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
-                        Kirigami.Separator {
-                            anchors {
-                                left: parent.left
-                                right: parent.right
-                                bottom: parent.bottom
-                            }
-                            color: Kirigami.Theme.highlightColor
-                            height: 2
-                            opacity: categoryLayout.currentIndex == 1 ? 1 : 0
-                        }
-                    }
-                    
-                    contentItem: Kirigami.Heading {
-                        id: contentHistory
-                        horizontalAlignment: Text.AlignHCenter
-                        width: parent.width
-                        maximumLineCount: 1
-                        text: "History"
-                        level: 1
-                    }
-                    
+                    checked: categoryLayout.currentIndex == 1
+                    text: "History"
                     onClicked: {
                         categoryLayout.currentIndex = 1
                     }
-                    Keys.onReturnPressed: {
-                        clicked();
-                    }
                 }
                 
-                Button {
+                TopBarTabButton {
                     id: searchCatButton
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
                     KeyNavigation.left: historyCatButton
                     KeyNavigation.down: categoryLayout
-                    
-                    background: Rectangle {
-                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                        color: searchCatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
-                        Kirigami.Separator {
-                            anchors {
-                                left: parent.left
-                                right: parent.right
-                                bottom: parent.bottom
-                            }
-                            color: Kirigami.Theme.highlightColor
-                            height: 2
-                            opacity: categoryLayout.currentIndex == 2 ? 1 : 0
-                        }
-                    }
-                    
-                    contentItem: Kirigami.Heading {
-                        id: contentSearch
-                        horizontalAlignment: Text.AlignHCenter
-                        width: parent.width
-                        maximumLineCount: 1
-                        text: "Search"
-                        level: 1
-                    }
-                    
+                    checked: categoryLayout.currentIndex == 2
+                    text: "Search"
                     onClicked: {
                         categoryLayout.currentIndex = 2
                     }
-                    Keys.onReturnPressed: {
-                        clicked();
-                    }
                 }
-             }
+            }
         }
         
         StackLayout {
