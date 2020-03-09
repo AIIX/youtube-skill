@@ -44,7 +44,7 @@ Mycroft.Delegate {
     }
         
     onVideoTitleChanged: {
-        triggerGuiEvent("YoutubeSkill.RefreshWatchList", {"title": videoTitle})
+        triggerGuiEvent("YoutubeSkill.RefreshWatchList", {})
         if(videoTitle != ""){
             infomationBar.visible = true
         }

@@ -7,6 +7,7 @@ import pafy
 import sys
 import json
 import base64
+import re
 import timeago, datetime 
 if sys.version_info[0] < 3:
     from urllib import quote
@@ -274,10 +275,11 @@ class YoutubeSkill(MycroftSkill):
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
         uploadDateToString = self.build_upload_date(video.published)
-        recentVideoDict = {"videoID": getvid, "videoTitle": video.title, "videoImage": video.bigthumb, "videoChannel": video.username, "videoViews": video.viewcount, "videoUploadDate": uploadDateToString, "videoDuration": video.duration}
+        viewCountWithString = self.add_view_string(video.viewcount)
+        recentVideoDict = {"videoID": getvid, "videoTitle": video.title, "videoImage": video.bigthumb, "videoChannel": video.username, "videoViews": viewCountWithString, "videoUploadDate": uploadDateToString, "videoDuration": video.duration}
         self.buildHistoryModel(recentVideoDict)
         self.gui["recentListBlob"] = self.recent_db
-        self.youtubesearchpagesimple(utterance)
+        self.youtubesearchpagesimple(getvid)
         self.isTitle = video.title
         self.gui["recentListBlob"] = self.recent_db
         
@@ -312,11 +314,10 @@ class YoutubeSkill(MycroftSkill):
         videoList = []
         videoList.clear()
         videoPageObject = {}
-        vid = self.moreRandomListSearch(query)
-        url = "https://www.youtube.com/results?search_query=" + vid
+        url = "https://www.youtube.com/watch?v=" + query
         response = urlopen(url)
         html = response.read()
-        videoList = self.process_soup_additional(html)        
+        videoList = self.process_soup_watchlist(html)        
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
         self.gui["recentListBlob"] = self.recent_db
@@ -438,9 +439,6 @@ class YoutubeSkill(MycroftSkill):
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(message.data['vidID'])
         recentVideoDict = {"videoID": message.data['vidID'], "videoTitle": message.data['vidTitle'], "videoImage": message.data['vidImage'], "videoChannel": message.data['vidChannel'], "videoViews": message.data['vidViews'], "videoUploadDate": message.data['vidUploadDate'], "videoDuration": message.data['vidDuration']}
         self.buildHistoryModel(recentVideoDict)
-        #recentVideoList.insert(0, {"videoID": str(message.data['vidID']), "videoTitle": str(message.data['vidTitle']), "videoImage": video.thumb})
-        #self.recent_db['recentList'] = recentVideoList
-        #self.recent_db.store()
         self.gui["recentListBlob"] = self.recent_db
         self.isTitle = video.title
 
@@ -492,11 +490,6 @@ class YoutubeSkill(MycroftSkill):
 
                 videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
 
-        #if len(videoList) > 1:
-            #self.nextSongList = videoList[1]
-        #else:
-            #self.nextSongList = videoList[0]               
-                
         return videoList
     
     def process_additional_pages(self, category):
@@ -535,9 +528,9 @@ class YoutubeSkill(MycroftSkill):
         
     def refreshWatchList(self, message):
         try:
-            self.youtubesearchpagesimple(message.data["title"])
+            self.youtubesearchpagesimple(self.lastSong)
         except:
-            self.youtubesearchpagesimple(self.isTitle)
+            self.youtubesearchpagesimple(self.lastSong)
         
     @intent_file_handler('youtube-repeat.intent')
     def youtube_repeat_last(self):
@@ -559,7 +552,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["nextSongImage"] = ""
         self.gui["nextSongID"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
-        self.youtubesearchpagesimple(video.title)
+        self.youtubesearchpagesimple(self.lastSong)
         self.isTitle = video.title
 
     def build_category_list(self, category):
@@ -639,6 +632,35 @@ class YoutubeSkill(MycroftSkill):
         date = update
         dtstring = timeago.format(date, now)
         return dtstring
+    
+    def add_view_string(self, viewcount):
+        val = viewcount
+        count = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1,", "%d" % val)
+        views = count + " views"
+        LOG.info(views)
+        return views
+
+    def process_soup_watchlist(self, html):
+        videoList = []
+        videoList.clear()
+        soup = BeautifulSoup(html)
+        currentVideoSection = soup.find('div', attrs={'class': 'watch-sidebar'})
+        getVideoDetails = zip(currentVideoSection.findAll(attrs={'class': 'yt-uix-sessionlink'}), currentVideoSection.findAll(attrs={'class': 'attribution'}), currentVideoSection.findAll(attrs={'class': 'yt-uix-simple-thumb-wrap'}), currentVideoSection.findAll(attrs={'class': 'video-time'}), currentVideoSection.findAll(attrs={'class': 'view-count'}))
+        for vid in getVideoDetails:
+            if "googleads" not in vid[0]['href'] and not vid[0]['href'].startswith(
+        u"/user") and not vid[0]['href'].startswith(u"/channel") and "title" in vid[0].attrs:
+                videoID = vid[0]['href'].split("v=")[1].split("&")[0]
+                videoTitle = vid[0]['title']
+                videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
+                videoChannel = vid[1].contents[0].string
+                videoUploadDate = " "
+                videoDuration = vid[3].contents[0].string
+                videoViews = vid[4].text
+
+                videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
+
+        return videoList
+
 
 def create_skill():
     return YoutubeSkill()

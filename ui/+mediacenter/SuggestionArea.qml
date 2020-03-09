@@ -63,7 +63,7 @@ Rectangle {
         anchors.fill: parent
         BigScreen.TileView {
             id: suggestListView
-            clip: true
+            clip: false
             model: videoSuggestionList
             delegate: Delegates.ListVideoCard{}
             title: "Watch Next"

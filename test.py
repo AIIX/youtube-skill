@@ -9,25 +9,20 @@ else:
     from urllib.parse import quote, urlencode
 from bs4 import BeautifulSoup, SoupStrainer
 
-url = "https://www.youtube.com/results?search_query=news"
+url = "https://www.youtube.com/watch?v=0DdoGPav3fc"
 response = urlopen(url)
 html = response.read()
 soup = BeautifulSoup(html)
-getVideoDetails = zip(soup.findAll(attrs={'class': 'yt-uix-tile-link'}), soup.findAll(attrs={'class': 'yt-lockup-byline'}), soup.findAll(attrs={'class': 'yt-lockup-meta-info'}), soup.findAll(attrs={'class': 'video-time'})) 
+currentVideoSection = soup.find('div', attrs={'class': 'watch-sidebar'})
+getVideoDetails = zip(currentVideoSection.findAll(attrs={'class': 'yt-uix-sessionlink'}), currentVideoSection.findAll(attrs={'class': 'attribution'}), currentVideoSection.findAll(attrs={'class': 'yt-uix-simple-thumb-wrap'}), currentVideoSection.findAll(attrs={'class': 'video-time'}), currentVideoSection.findAll(attrs={'class': 'view-count'}))
 for vid in getVideoDetails:
     if "googleads" not in vid[0]['href'] and not vid[0]['href'].startswith(
-        u"/user") and not vid[0]['href'].startswith(u"/channel"):
+        u"/user") and not vid[0]['href'].startswith(u"/channel") and "title" in vid[0].attrs:
         videoID = vid[0]['href'].split("v=")[1].split("&")[0]
         videoTitle = vid[0]['title']
         videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
         videoChannel = vid[1].contents[0].string
-        videoUploadDate = vid[2].contents[0].string
+        videoUploadDate = " "
         videoDuration = vid[3].contents[0].string
-        if "watching" in vid[2].contents[0].string:
-            videoViews = "Live"
-        else:
-            try:
-                videoViews = vid[2].contents[1].string
-            except:
-                videoViews = "Playlist"
+        videoViews = vid[4].text
         print({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})

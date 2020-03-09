@@ -93,6 +93,7 @@ Item {
             title: "Recently Watched"
             cellWidth: parent.width / 4
             delegate: Delegates.ListVideoCard{}
+            visible: recentListView.view.count > 0 ? 1 : 0
             onActiveFocusChanged: {
                 if(activeFocus){
                     contentLayout.currentSection = recentListView
