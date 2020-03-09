@@ -125,8 +125,6 @@ BigScreen.AbstractDelegate {
                     id: videoViews
                     Layout.alignment: Qt.AlignLeft
                     Layout.rightMargin: Kirigami.Units.largeSpacing
-                    wrapMode: Text.WordWrap
-                    maximumLineCount: 1
                     elide: Text.ElideRight
                     color: PlasmaCore.ColorScope.textColor
                     text: modelData.videoViews
@@ -137,8 +135,6 @@ BigScreen.AbstractDelegate {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignRight | Qt.AlignTop
                     horizontalAlignment: Text.AlignRight
-                    wrapMode: Text.WordWrap
-                    maximumLineCount: 1
                     elide: Text.ElideRight
                     color: PlasmaCore.ColorScope.textColor
                     text: modelData.videoUploadDate

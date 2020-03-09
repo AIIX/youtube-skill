@@ -71,7 +71,9 @@ Item {
         id: contentLayout
         width: parent.width
         property Item currentSection
+        readonly property int rowHeight: recentListView.cellWidth / 1.8 + Kirigami.Units.gridUnit * 7
         y: currentSection ? -currentSection.y : 0
+
         Behavior on y {
             NumberAnimation {
                 duration: Kirigami.Units.longDuration * 2
@@ -79,7 +81,7 @@ Item {
             }
         }
         spacing: Kirigami.Units.largeSpacing
-        
+
         BigScreen.TileView {
             id: recentListView
             focus: true
@@ -91,7 +93,8 @@ Item {
                     contentLayout.currentSection = recentListView
                 }
             }
-Layout.maximumHeight: 100
+
+            implicitHeight: contentLayout.rowHeight
             navigationUp: homeCatButton
             navigationDown: trendListView
         }
@@ -108,6 +111,7 @@ Layout.maximumHeight: 100
                 }
             }
 
+            implicitHeight: contentLayout.rowHeight
             navigationUp: recentListView
             navigationDown: newsListView
         }
@@ -124,6 +128,7 @@ Layout.maximumHeight: 100
                 }
             }
             
+            implicitHeight: contentLayout.rowHeight
             navigationUp: trendListView
             navigationDown: musicListView
         }
@@ -139,7 +144,8 @@ Layout.maximumHeight: 100
                     contentLayout.currentSection = musicListView
                 }
             }
-            
+
+            implicitHeight: contentLayout.rowHeight
             navigationUp: newsListView
             navigationDown: techListView
         }
@@ -155,7 +161,8 @@ Layout.maximumHeight: 100
                     contentLayout.currentSection = techListView
                 }
             }
-            
+
+            implicitHeight: contentLayout.rowHeight
             navigationUp: musicListView
             navigationDown: polListView
         }
@@ -171,7 +178,8 @@ Layout.maximumHeight: 100
                     contentLayout.currentSection = polListView
                 }
             }
-            
+
+            implicitHeight: contentLayout.rowHeight
             navigationUp: techListView
             navigationDown: gamingListView
         }
@@ -187,7 +195,8 @@ Layout.maximumHeight: 100
                     contentLayout.currentSection = gamingListView
                 }
             }
-            
+
+            implicitHeight: contentLayout.rowHeight
             navigationUp: polListView
             navigationDown: trendListView
         }
