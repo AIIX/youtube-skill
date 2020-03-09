@@ -342,7 +342,6 @@ class YoutubeSkill(MycroftSkill):
         LOG.info("I AM IN HOME PROCESS PAGE FUNCTION")
         self.gui.show_page("YoutubeLogo.qml")
         self.gui["loadingStatus"] = "Fetching Trends"
-        self.build_recent_watch_list(20)
         self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending")
         if self.trendCategoryList['videoList']:
             LOG.info("Trends Not Empty")
@@ -356,7 +355,11 @@ class YoutubeSkill(MycroftSkill):
         else:
             LOG.info("Trying To Rebuild News List")
             self.newsCategoryList['videoList'] = self.build_category_list("news")
-        self.gui["loadingStatus"] = "Fetching Music"
+        
+        self.build_recent_watch_list(20)
+        self.gui.clear()
+        self.enclosure.display_manager.remove_active()
+        self.show_search_page()
         
         self.musicCategoryList['videoList'] = self.build_category_list("music")
         if self.musicCategoryList['videoList']:
@@ -364,10 +367,7 @@ class YoutubeSkill(MycroftSkill):
         else:
             LOG.info("Trying To Rebuild Music List")
             self.musicCategoryList['videoList'] = self.build_category_list("music")
-
-        self.gui.clear()
-        self.enclosure.display_manager.remove_active()
-        self.show_search_page()
+        self.gui["musicListBlob"] = self.musicCategoryList
         
         self.techCategoryList['videoList'] = self.build_category_list("technology")
         if self.techCategoryList['videoList']:
