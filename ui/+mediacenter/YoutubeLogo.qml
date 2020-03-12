@@ -23,7 +23,7 @@ Mycroft.Delegate {
             
             Item {
                 width: imageRoot.implicitWidth
-                height: Kirigami.Units.gridUnit * 10
+                height: parent.height / 5
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: Kirigami.Units.gridUnit
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -33,7 +33,7 @@ Mycroft.Delegate {
                     id: bzindc
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.horizontalCenterOffset: -Kirigami.Units.gridUnit * 6
-                    running: imageRoot.visible
+                    running: true
                 }
                 
                 Kirigami.Heading {

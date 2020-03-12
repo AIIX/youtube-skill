@@ -28,7 +28,7 @@ import "+mediacenter/views" as Views
 import "+mediacenter/delegates" as Delegates
 
 Item {
-    property alias model: searchGridView.model
+    property var searchListModel: sessionData.searchListBlob.videoList
     Layout.fillWidth: true
     Layout.fillHeight: true
     
@@ -113,6 +113,7 @@ Item {
             topMargin: Kirigami.Units.largeSpacing
         }
         focus: true
+        model: searchListModel
         Layout.fillWidth: true
         Layout.fillHeight: true
         cellWidth: view.width / 4

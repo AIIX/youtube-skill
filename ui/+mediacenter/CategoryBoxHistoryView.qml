@@ -28,7 +28,7 @@ import "+mediacenter/views" as Views
 import "+mediacenter/delegates" as Delegates
 
 Item {
-    property alias model: historyGridView.model
+    property var historyListModel: sessionData.recentListBlob.recentList
     Layout.fillWidth: true
     Layout.fillHeight: true
     
@@ -38,8 +38,8 @@ Item {
         }
     }
     
-    function searchYoutubeLiveResults(query){
-        triggerGuiEvent("YoutubeSkill.SearchLive", {"Query": query})
+    onHistoryListModelChanged: {
+        historyGridView.view.forceLayout()
     }
 
     Views.BigTileView {
@@ -51,6 +51,7 @@ Item {
             bottom: parent.bottom
         }
         focus: true
+        model: historyListModel
         title: count > 0 ? "Watch History" : "No Recent History"
 
         cellWidth: view.width / 4

@@ -30,15 +30,6 @@ import "+mediacenter/delegates" as Delegates
 
 Mycroft.Delegate {
     id: delegate
-    property var recentHomeModel: sessionData.recentHomeListBlob.recentList
-    property var historyListModel: sessionData.recentListBlob.recentList
-    property var newsListModel: sessionData.newsListBlob.videoList
-    property var musicListModel: sessionData.musicListBlob.videoList
-    property var techListModel: sessionData.techListBlob.videoList
-    property var polListModel: sessionData.polListBlob.videoList
-    property var gamingListModel: sessionData.gamingListBlob.videoList
-    property var searchListModel: sessionData.searchListBlob.videoList
-    property var trendListModel: sessionData.trendListBlob.videoList
     property bool busyIndicate: false
     
     fillWidth: true
@@ -49,6 +40,26 @@ Mycroft.Delegate {
     bottomPadding: 0
 
     skillBackgroundSource: sessionData.bgImage ? "https://source.unsplash.com/weekly?" + sessionData.bgImage : "https://source.unsplash.com/weekly?music"
+    
+    function highlightActiveCategory(cat){
+        switch(cat){
+            case "Home":
+                historyCatButton.checked = false
+                searchCatButton.checked = false
+                homeCatButton.checked = true
+                break;
+            case "History":
+                searchCatButton.checked = false
+                homeCatButton.checked = false
+                historyCatButton.checked = true
+                break;
+            case "Search":
+                homeCatButton.checked = false
+                historyCatButton.checked = false
+                searchCatButton.checked = true
+                break;
+        }
+    }
         
     Connections {
         target: Mycroft.MycroftController
@@ -58,44 +69,6 @@ Mycroft.Delegate {
                 busyIndicate = false
             }
         }
-    }
-    
-    onRecentHomeModelChanged: {
-        homeCatView.recentModel = recentHomeModel
-    }
-    
-    onTrendListModelChanged: {
-        homeCatView.trendModel = trendListModel
-    }
-    
-    onNewsListModelChanged: {
-        homeCatView.newsModel = newsListModel
-    }
-    
-    onMusicListModelChanged: {
-        homeCatView.musicModel = musicListModel
-    }
-    
-    onTechListModelChanged: {
-        homeCatView.techModel = techListModel
-    }
-    
-    onPolListModelChanged: {
-        homeCatView.polModel = polListModel
-    }
-    
-    onGamingListModelChanged: {
-        homeCatView.gamingModel = gamingListModel
-    }
-    
-    onHistoryListModelChanged: {
-        historyCatView.model = historyListModel
-    }
-    
-    onSearchListModelChanged: {
-        searchCatView.model = searchListModel
-        console.log("SearchListModelChanged")
-        console.log(JSON.stringify(searchListModel))
     }
     
     onFocusChanged: {
@@ -137,10 +110,12 @@ Mycroft.Delegate {
                     id: homeCatButton
                     KeyNavigation.right: historyCatButton
                     KeyNavigation.down: categoryLayout
-                    checked: categoryLayout.currentIndex == 0
+                    checked: true
                     text: "Home"
                     onClicked: {
-                        categoryLayout.currentIndex = 0
+                        categoryLayout.clear(StackView.Immediate)
+                        categoryLayout.push(homeCat)
+                        highlightActiveCategory("Home")
                     }
                 }
                 
@@ -149,10 +124,12 @@ Mycroft.Delegate {
                     KeyNavigation.left: homeCatButton
                     KeyNavigation.right: searchCatButton
                     KeyNavigation.down: categoryLayout
-                    checked: categoryLayout.currentIndex == 1
+                    checked: false
                     text: "History"
                     onClicked: {
-                        categoryLayout.currentIndex = 1
+                        categoryLayout.clear(StackView.Immediate)
+                        categoryLayout.push(historyCat)
+                        highlightActiveCategory("History")
                     }
                 }
                 
@@ -160,42 +137,43 @@ Mycroft.Delegate {
                     id: searchCatButton
                     KeyNavigation.left: historyCatButton
                     KeyNavigation.down: categoryLayout
-                    checked: categoryLayout.currentIndex == 2
+                    checked: false
                     text: "Search"
                     onClicked: {
-                        categoryLayout.currentIndex = 2
+                        categoryLayout.clear(StackView.Immediate)
+                        categoryLayout.push(searchCat)
+                        highlightActiveCategory("Search")
                     }
                 }
             }
         }
         
-        StackLayout {
-            id: categoryLayout
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            currentIndex: 0
-            
-            onFocusChanged: {
-                if(focus){
-                    categoryLayout.itemAt(currentIndex).forceActiveFocus()
-                }
-            }
-            
+        Component {
+            id: homeCat
             CategoryBoxHomeView {
                 id: homeCatView
             }
-            
+        }
+        
+        Component {
+            id: historyCat
             CategoryBoxHistoryView {
                 id: historyCatView
-                property string categoryName: "History"
-                property bool nextPageAvailable: sessionData.newsNextAvailable
             }
-            
+        }
+        
+        Component {
+            id: searchCat
             CategoryBoxSearchView  {
                 id: searchCatView
-                property string categoryName: "Search"
-                property bool nextPageAvailable
             }
+        }
+        
+        StackView {
+            id: categoryLayout
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            initialItem: homeCat
         }
     }
     
@@ -221,10 +199,6 @@ Mycroft.Delegate {
         onClosed: {
             busyIndicate = false
         }
-    }
-
-    Component.onCompleted: {
-        categoryLayout.itemAt(categoryLayout.currentIndex).forceActiveFocus()
     }
 }
 

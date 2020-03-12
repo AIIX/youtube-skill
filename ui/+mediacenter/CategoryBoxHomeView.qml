@@ -29,41 +29,45 @@ import "+mediacenter/views" as Views
 import "+mediacenter/delegates" as Delegates
 
 Item {
-    property alias recentModel: recentListView.model
-    property alias newsModel: newsListView.model
-    property alias musicModel: musicListView.model
-    property alias techModel: techListView.model
-    property alias trendModel: trendListView.model
-    property alias polModel: polListView.model
-    property alias gamingModel: gamingListView.model
+    property var recentHomeModel: sessionData.recentHomeListBlob.recentList
+    property var historyListModel: sessionData.recentListBlob.recentList
+    property var newsListModel: sessionData.newsListBlob.videoList
+    property var musicListModel: sessionData.musicListBlob.videoList
+    property var techListModel: sessionData.techListBlob.videoList
+    property var polListModel: sessionData.polListBlob.videoList
+    property var gamingListModel: sessionData.gamingListBlob.videoList
+    property var searchListModel: sessionData.searchListBlob.videoList
+    property var trendListModel: sessionData.trendListBlob.videoList
     Layout.fillWidth: true
     Layout.fillHeight: true
     
     onFocusChanged: {
-        if(focus){
+        if(focus && recentListView.visible){
             recentListView.forceActiveFocus()
+        } else if (focus && !recentListView.visible) {
+            trendListView.forceActiveFocus()
         }
     }
     
-    onNewsModelChanged: {
+    onNewsListModelChanged: {
        newsListView.view.forceLayout()
     }
-    onMusicModelChanged: {
+    onMusicListModelChanged: {
        musicListView.view.forceLayout()
     }
-    onTechModelChanged: {
+    onTechListModelChanged: {
        techListView.view.forceLayout()
     }
-    onPolModelChanged: {
+    onPolListModelChanged: {
        polListView.view.forceLayout()
     }
-    onGamingModelChanged: {
+    onGamingListModelChanged: {
        gamingListView.view.forceLayout()
     }
-    onRecentModelChanged: {
+    onRecentHomeModelChanged: {
         recentListView.view.forceLayout()
     }
-    onTrendModelChanged: {
+    onTrendListModelChanged: {
         trendListView.view.forceLayout()
     }
     
@@ -90,6 +94,7 @@ Item {
         BigScreen.TileView {
             id: recentListView
             focus: true
+            model: recentHomeModel
             title: "Recently Watched"
             cellWidth: parent.width / 4
             delegate: Delegates.ListVideoCard{}
@@ -108,6 +113,7 @@ Item {
         BigScreen.TileView {
             id: trendListView
             focus: false
+            model: trendListModel
             title: "Trending"
             cellWidth: parent.width / 4
             delegate: Delegates.ListVideoCard{}
@@ -118,13 +124,14 @@ Item {
             }
 
             implicitHeight: contentLayout.rowHeight
-            navigationUp: recentListView
+            navigationUp: recentListView.visible ? recentListView : homeCatButton
             navigationDown: newsListView
         }
 
         BigScreen.TileView {
             id: newsListView
             focus: false
+            model: newsListModel
             title: "News"
             cellWidth: parent.width / 4
             delegate: Delegates.ListVideoCard{}
@@ -142,6 +149,7 @@ Item {
         BigScreen.TileView {
             id: musicListView
             focus: false
+            model: musicListModel
             title: "Music"
             cellWidth: parent.width / 4
             delegate: Delegates.ListVideoCard{}
@@ -159,6 +167,7 @@ Item {
         BigScreen.TileView {
             id: techListView
             focus: false
+            model: techListModel
             title: "Technology"
             cellWidth: parent.width / 4
             delegate: Delegates.ListVideoCard{}
@@ -176,6 +185,7 @@ Item {
         BigScreen.TileView {
             id: polListView
             focus: false
+            model: polListModel
             title: "Politics"
             cellWidth: parent.width / 4
             delegate: Delegates.ListVideoCard{}
@@ -193,6 +203,7 @@ Item {
         BigScreen.TileView {
             id: gamingListView
             focus: false
+            model: gamingListModel
             title: "Gaming"
             cellWidth: parent.width / 4
             delegate: Delegates.ListVideoCard{}
@@ -204,7 +215,7 @@ Item {
 
             implicitHeight: contentLayout.rowHeight
             navigationUp: polListView
-            navigationDown: trendListView
+            navigationDown: recentListView.visible ? recentListView : trendListView
         }
     }
 }
