@@ -86,13 +86,14 @@ BigScreen.AbstractDelegate {
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            // Compensate for blank space created from not rounding thumbnail bottom corners
+            Layout.topMargin: -delegate.baseRadius
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             spacing: Kirigami.Units.smallSpacing
 
             Kirigami.Heading {
                 id: videoLabel
                 Layout.fillWidth: true
-                Layout.leftMargin: Kirigami.Units.largeSpacing
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                 wrapMode: Text.Wrap
                 level: 3
@@ -108,7 +109,6 @@ BigScreen.AbstractDelegate {
             PlasmaComponents.Label {
                 id: videoChannelName
                 Layout.fillWidth: true
-                Layout.leftMargin: Kirigami.Units.largeSpacing
                 wrapMode: Text.WordWrap
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                 maximumLineCount: 1
@@ -119,7 +119,6 @@ BigScreen.AbstractDelegate {
 
             RowLayout {
                 Layout.fillWidth: true
-                Layout.leftMargin: Kirigami.Units.largeSpacing
 
                 PlasmaComponents.Label {
                     id: videoViews
