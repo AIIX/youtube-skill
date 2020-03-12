@@ -61,6 +61,8 @@ BigScreen.AbstractDelegate {
                 }
                 opacity: 1
                 fillMode: Image.PreserveAspectCrop
+                // Optimize when scaling the thumbnail or moving
+                smooth: (imgRoot.extraBorder > 0 && imgRoot.extraBorder < delegate.borderSize) || delegate.listView.moving ? false : true
 
                 Rectangle {
                     id: videoDurationTime
