@@ -2,6 +2,7 @@ import QtQuick 2.9
 import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.3
 import org.kde.kirigami 2.10 as Kirigami
+import org.kde.plasma.components 2.0 as PlasmaComponents
 import Mycroft 1.0 as Mycroft
 
 Mycroft.Delegate {
@@ -29,7 +30,7 @@ Mycroft.Delegate {
                 anchors.horizontalCenter: parent.horizontalCenter
                 z: 100
                 
-                BusyIndicator {
+                PlasmaComponents.BusyIndicator {
                     id: bzindc
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.horizontalCenterOffset: -Kirigami.Units.gridUnit * 6

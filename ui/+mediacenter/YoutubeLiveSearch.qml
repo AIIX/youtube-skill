@@ -113,8 +113,8 @@ Mycroft.Delegate {
                     checked: true
                     text: "Home"
                     onClicked: {
-                        categoryLayout.clear(StackView.Immediate)
-                        categoryLayout.push(homeCat)
+                        categoryLayout.pop(categoryLayout.find(function(item) {
+    return item.name == "homeCat";}))
                         highlightActiveCategory("Home")
                     }
                 }
@@ -127,7 +127,9 @@ Mycroft.Delegate {
                     checked: false
                     text: "History"
                     onClicked: {
-                        categoryLayout.clear(StackView.Immediate)
+                        if(categoryLayout.depth >= 2) {
+                            categoryLayout.pop(null)
+                        }
                         categoryLayout.push(historyCat)
                         highlightActiveCategory("History")
                     }
@@ -140,7 +142,9 @@ Mycroft.Delegate {
                     checked: false
                     text: "Search"
                     onClicked: {
-                        categoryLayout.clear(StackView.Immediate)
+                        if(categoryLayout.depth >= 2) {
+                            categoryLayout.pop(null)
+                        }
                         categoryLayout.push(searchCat)
                         highlightActiveCategory("Search")
                     }
@@ -173,7 +177,10 @@ Mycroft.Delegate {
             id: categoryLayout
             Layout.fillWidth: true
             Layout.fillHeight: true
-            initialItem: homeCat
+            
+            Component.onCompleted: {
+                categoryLayout.push(homeCat)
+            }
         }
     }
     
