@@ -22,13 +22,16 @@ Mycroft.Delegate {
         }
         
         contentItem: Item {
-            PlasmaComponents.BusyIndicator {
+            AnimatedImage {
                 id: busyIndicatorComponent
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: statusArea.height / 6
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.horizontalCenterOffset: -Kirigami.Units.gridUnit * 6
-                running: true
+                width: Kirigami.Units.iconSizes.smallMedium
+                height: Kirigami.Units.iconSizes.smallMedium
+                playing: true
+                source: "./images/spinner.gif"
             }
             
             Kirigami.Heading {
