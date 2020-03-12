@@ -27,8 +27,9 @@ BigScreen.AbstractDelegate {
             Layout.topMargin: -delegate.topPadding + delegate.topInset + extraBorder
             Layout.leftMargin: -delegate.leftPadding + delegate.leftInset + extraBorder
             Layout.rightMargin: -delegate.rightPadding + delegate.rightInset + extraBorder
-            //Layout.bottomMargin: -Kirigami.Units.smallSpacing
-            Layout.preferredHeight: width/1.8//width / (img.sourceSize.width/img.sourceSize.height)//width/1.6
+            // Any width times 0.5625 is a 16:9 ratio
+            // Adding baseRadius is needed to prevent the bottom from being rounded
+            Layout.preferredHeight: width * 0.5625 + delegate.baseRadius
             // FIXME: another thing copied from AbstractDelegate
             property real extraBorder: delegate.isCurrent ? delegate.borderSize : 0
             Behavior on extraBorder {
@@ -56,9 +57,8 @@ BigScreen.AbstractDelegate {
                 anchors {
                     fill: parent
                     // To not round under
-                    bottomMargin: Kirigami.Units.smallSpacing
+                    bottomMargin: delegate.baseRadius
                 }
-                //y: -12
                 opacity: 1
                 fillMode: Image.PreserveAspectCrop
 
