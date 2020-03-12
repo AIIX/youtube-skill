@@ -67,12 +67,13 @@ BigScreen.AbstractDelegate {
                 Rectangle {
                     id: videoDurationTime
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: parent.width > Kirigami.Units.gridUnit * 15 ?  Kirigami.Units.gridUnit * 0.4 : Kirigami.Units.largeSpacing
+                    anchors.bottomMargin: Kirigami.Units.largeSpacing
                     anchors.right: parent.right
-                    anchors.rightMargin: Kirigami.Units.gridUnit * 0.75
-                    width: Kirigami.Units.gridUnit * 2.5 + Kirigami.Units.largeSpacing * 2
-                    height: durationText.height
-                    radius: Kirigami.Units.gridUnit * 0.5
+                    anchors.rightMargin: Kirigami.Units.largeSpacing
+                    // FIXME: kind of hacky to get the padding around the text right
+                    width: durationText.width + Kirigami.Units.largeSpacing
+                    height: Kirigami.Units.gridUnit
+                    radius: delegate.baseRadius
                     color: Qt.rgba(0, 0, 0, 0.8)
 
                     PlasmaComponents.Label {
