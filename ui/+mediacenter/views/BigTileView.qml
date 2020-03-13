@@ -88,17 +88,6 @@ FocusScope {
         cacheBuffer: width
         highlightMoveDuration: Kirigami.Units.longDuration
         clip: true
-
-        Behavior on y {
-            NumberAnimation {
-                duration: Kirigami.Units.longDuration * 2
-                easing.type: Easing.InOutQuad
-            }
-        }
-        
-        onCurrentItemChanged: {
-            y = -currentItem.y
-        }
         
         move: Transition {
             SmoothedAnimation {
