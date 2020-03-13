@@ -146,6 +146,15 @@ Item {
                     Layout.preferredWidth: Kirigami.Units.iconSizes.large
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
+                    
+                    background: Rectangle {
+                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                        color: backButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                        radius: width / 2
+                        border.color: Kirigami.Theme.textColor
+                        border.width: 1
+                    }
+                    
                     icon.name: "go-previous-symbolic"
                     z: 1000
                     onClicked: {
@@ -168,6 +177,15 @@ Item {
                     Layout.preferredWidth: Kirigami.Units.iconSizes.large
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
+                    
+                    background: Rectangle {
+                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                        color: button.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                        radius: width / 2
+                        border.color: Kirigami.Theme.textColor
+                        border.width: 1
+                    }
+                    
                     icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
                     z: 1000
                     onClicked: {

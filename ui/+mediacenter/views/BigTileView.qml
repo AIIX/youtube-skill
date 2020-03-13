@@ -89,6 +89,10 @@ FocusScope {
         highlightMoveDuration: Kirigami.Units.longDuration
         clip: true
         
+        onCurrentItemChanged: {
+            positionViewAtIndex(currentIndex, GridView.Center)
+        }
+        
         move: Transition {
             SmoothedAnimation {
                 property: "x"
