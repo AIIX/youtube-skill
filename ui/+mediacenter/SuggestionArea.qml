@@ -8,19 +8,19 @@ import "+mediacenter/views" as Views
 import "+mediacenter/delegates" as Delegates
 import org.kde.mycroft.bigscreen 1.0 as BigScreen
 
-Rectangle {
+Controls.Control {
     id: suggestionBox
-    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
     property var videoSuggestionList
     property alias suggestionListFocus: suggestListView.focus
     property var nxtSongBlob
     property int countdownSeconds: 15
     property int seconds: countdownSeconds
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.verticalCenter: parent.verticalCenter
-    implicitHeight: suggestBoxLayout.implicitHeight + Kirigami.Units.largeSpacing * 4
-    
+    implicitWidth: parent.width
+    anchors.top: parent.top
+    anchors.topMargin: Kirigami.Units.gridUnit
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: Kirigami.Units.gridUnit * 2
+
     onFocusChanged: {
         if(visible && focus){
                 suggestListView.forceActiveFocus()
@@ -34,7 +34,7 @@ Rectangle {
     
     onVideoSuggestionListChanged: {
         console.log(JSON.stringify(videoSuggestionList))
-        suggestListView.forceLayout()
+        suggestListView.view.forceLayout()
     }
     
     onVisibleChanged: {
@@ -58,86 +58,157 @@ Rectangle {
         }
     }
     
-    ColumnLayout {
-        id: suggestBoxLayout
-        anchors.fill: parent
+    background: Rectangle {
+         color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
+    }
+    
+    contentItem: Item {     
+        
         BigScreen.TileView {
             id: suggestListView
             clip: false
             model: videoSuggestionList
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.leftMargin: Kirigami.Units.largeSpacing * 2
+            width: parent.width
+            height: cellWidth + Kirigami.Units.gridUnit * 1.5
             delegate: Delegates.ListVideoCard{}
-            title: "Watch Next"
-            Layout.margins: Kirigami.Units.largeSpacing * 2
             cellWidth: parent.width / 4
-            navigationDown: stopNextAutoplay
+            title: "Watch Next"
+            visible: suggestionBox.visible
+            navigationDown: replayButton
         }
-        Kirigami.Separator {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-        }
-        RowLayout{
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.alignment: Qt.AlignHCenter
-            
-            Views.CountdownBar {
-                id: nextSongCdBar
-                Layout.preferredWidth: parent.width / 3
-                Layout.fillHeight: true
+        
+        ColumnLayout {
+            id: suggestBoxLayout
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: suggestListView.bottom
+                bottom: parent.bottom
             }
+                
             Kirigami.Separator {
-                Layout.fillHeight: true
-                Layout.preferredWidth: 1
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
             }
-            Controls.Button {
-                id: stopNextAutoplay
-                Layout.preferredWidth: parent.width / 3
+            
+            RowLayout{
+                Layout.fillWidth: true
                 Layout.fillHeight: true
-                text: "Cancle Autoplay"
+                Layout.alignment: Qt.AlignHCenter
                 
-                KeyNavigation.up: suggestListView
-                
-                onClicked: {
-                    if(autoplayTimeHeading.visible){
-                        autoPlayTimer.stop()
-                        autoplayTimeHeading.visible = false
-                        stopNextAutoplay.text = "Next Video"
-                        suggestionBox.seconds = suggestionBox.countdownSeconds
-                    } else {
-                        suggestionBox.seconds = suggestionBox.countdownSeconds
-                        autoPlayTimer.start()
-                        autoplayTimeHeading.visible = true
-                        stopNextAutoplay.text = "Cancle Autoplay"
-                    }
+                Views.CountdownBar {
+                    id: nextSongCdBar
+                    Layout.preferredWidth: parent.width / 3
+                    Layout.fillHeight: true
+                }
+                Kirigami.Separator {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 1
                 }
                 
-                Keys.onReturnPressed: {
-                    if(autoplayTimeHeading.visible){
-                        autoPlayTimer.stop()
-                        autoplayTimeHeading.visible = false
-                        stopNextAutoplay.text = "Next Video"
-                        suggestionBox.seconds = suggestionBox.countdownSeconds
-                    } else {
-                        suggestionBox.seconds = suggestionBox.countdownSeconds
-                        autoPlayTimer.start()
-                        autoplayTimeHeading.visible = true
-                        stopNextAutoplay.text = "Cancle Autoplay"
+                RowLayout {
+                    Layout.preferredWidth: parent.width / 3
+                    Layout.fillHeight: true
+                    
+                    Controls.Button {
+                        id: replayButton
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        text: "Replay Video"
+                        
+                        KeyNavigation.up: suggestListView
+                        KeyNavigation.right: stopNextAutoplay
+                        
+                        background: Rectangle {
+                            Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                            color: replayButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                            border.color: Kirigami.Theme.textColor
+                            border.width: 1
+                        }
+                        
+                        onClicked: {
+                            if(autoplayTimeHeading.visible){
+                                autoPlayTimer.stop()
+                                autoplayTimeHeading.visible = false
+                                stopNextAutoplay.text = "Next Video"
+                                suggestionBox.seconds = suggestionBox.countdownSeconds
+                            }
+                            triggerGuiEvent("YoutubeSkill.ReplayLast", {})
+                        }
+                        
+                        Keys.onReturnPressed: {
+                            if(autoplayTimeHeading.visible){
+                                autoPlayTimer.stop()
+                                autoplayTimeHeading.visible = false
+                                stopNextAutoplay.text = "Next Video"
+                                suggestionBox.seconds = suggestionBox.countdownSeconds
+                            }
+                            triggerGuiEvent("YoutubeSkill.ReplayLast", {})
+                        }
+                    }
+                    
+                    Controls.Button {
+                        id: stopNextAutoplay
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        text: "Cancle Autoplay"
+                        
+                        KeyNavigation.up: suggestListView
+                        KeyNavigation.left: replayButton
+                        
+                        background: Rectangle {
+                            Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                            color: stopNextAutoplay.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                            border.color: Kirigami.Theme.textColor
+                            border.width: 1
+                        }
+                        
+                        onClicked: {
+                            if(autoplayTimeHeading.visible){
+                                autoPlayTimer.stop()
+                                autoplayTimeHeading.visible = false
+                                stopNextAutoplay.text = "Next Video"
+                                suggestionBox.seconds = suggestionBox.countdownSeconds
+                            } else {
+                                suggestionBox.seconds = suggestionBox.countdownSeconds
+                                autoPlayTimer.start()
+                                autoplayTimeHeading.visible = true
+                                stopNextAutoplay.text = "Cancel Autoplay"
+                            }
+                        }
+                        
+                        Keys.onReturnPressed: {
+                            if(autoplayTimeHeading.visible){
+                                autoPlayTimer.stop()
+                                autoplayTimeHeading.visible = false
+                                stopNextAutoplay.text = "Next Video"
+                                suggestionBox.seconds = suggestionBox.countdownSeconds
+                            } else {
+                                suggestionBox.seconds = suggestionBox.countdownSeconds
+                                autoPlayTimer.start()
+                                autoplayTimeHeading.visible = true
+                                stopNextAutoplay.text = "Cancle Autoplay"
+                            }
+                        }
                     }
                 }
-            }
             
-            Kirigami.Separator {
-                Layout.fillHeight: true
-                Layout.preferredWidth: 1
-            }
-            
-            Kirigami.Heading {
-                id: autoplayTimeHeading
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                Layout.preferredWidth: parent.width / 3
-                Layout.fillHeight: true
-                level: 3
+                Kirigami.Separator {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 1
+                }
+                
+                Kirigami.Heading {
+                    id: autoplayTimeHeading
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    Layout.preferredWidth: parent.width / 3
+                    Layout.fillHeight: true
+                    level: 3
+                }
             }
         }
     }

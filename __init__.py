@@ -82,6 +82,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui.register_handler('YoutubeSkill.NextAutoPlaySong', self.nextSongForAutoPlay)
         self.gui.register_handler('YoutubeSkill.RefreshWatchList', self.refreshWatchList)
         self.gui.register_handler('YoutubeSkill.ClearDB', self.clear_db)
+        self.gui.register_handler('YoutubeSkill.ReplayLast', self.youtube_repeat_last)
         
     def launcherId(self, message):
         self.show_homepage({})
@@ -340,7 +341,6 @@ class YoutubeSkill(MycroftSkill):
 
     def process_home_page(self):
         LOG.info("I AM IN HOME PROCESS PAGE FUNCTION")
-        self.gui.show_page("YoutubeLogo.qml")
         self.gui["loadingStatus"] = "Fetching Trends"
         self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending")
         if self.trendCategoryList['videoList']:
