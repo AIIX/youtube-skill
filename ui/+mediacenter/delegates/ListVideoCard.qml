@@ -31,13 +31,7 @@ BigScreen.AbstractDelegate {
             // Adding baseRadius is needed to prevent the bottom from being rounded
             Layout.preferredHeight: width * 0.5625 + delegate.baseRadius
             // FIXME: another thing copied from AbstractDelegate
-            property real extraBorder: delegate.isCurrent ? delegate.borderSize : 0
-            Behavior on extraBorder {
-                NumberAnimation {
-                    duration: Kirigami.Units.longDuration
-                    easing.type: Easing.InOutQuad
-                }
-            }
+            property real extraBorder: 0
 
             layer.enabled: true
             layer.effect: OpacityMask {
@@ -61,8 +55,6 @@ BigScreen.AbstractDelegate {
                 }
                 opacity: 1
                 fillMode: Image.PreserveAspectCrop
-                // Optimize when scaling the thumbnail or moving
-                smooth: (imgRoot.extraBorder > 0 && imgRoot.extraBorder < delegate.borderSize) || delegate.listView.moving ? false : true
 
                 Rectangle {
                     id: videoDurationTime
@@ -82,6 +74,34 @@ BigScreen.AbstractDelegate {
                         text: modelData.videoDuration
                         color: Kirigami.Theme.textColor
                     }
+                }
+            }
+            
+            states: [
+                State {
+                    when: delegate.isCurrent
+                    PropertyChanges {
+                        target: imgRoot
+                        extraBorder: delegate.borderSize
+                    }
+                },
+                State {
+                    when: !delegate.isCurrent
+                    PropertyChanges {
+                        target: imgRoot
+                        extraBorder: 0
+                    }
+                }
+            ]
+            transitions: Transition {
+                onRunningChanged: {
+                    // Optimize when animating the thumbnail
+                    img.smooth = !running
+                }
+                NumberAnimation {
+                    property: "extraBorder"
+                    duration: Kirigami.Units.longDuration
+                    easing.type: Easing.InOutQuad
                 }
             }
         }
