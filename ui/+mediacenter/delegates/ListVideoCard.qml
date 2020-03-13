@@ -27,16 +27,11 @@ BigScreen.AbstractDelegate {
             Layout.topMargin: -delegate.topPadding + delegate.topInset + extraBorder
             Layout.leftMargin: -delegate.leftPadding + delegate.leftInset + extraBorder
             Layout.rightMargin: -delegate.rightPadding + delegate.rightInset + extraBorder
-            //Layout.bottomMargin: -Kirigami.Units.smallSpacing
-            Layout.preferredHeight: width/1.8//width / (img.sourceSize.width/img.sourceSize.height)//width/1.6
+            // Any width times 0.5625 is a 16:9 ratio
+            // Adding baseRadius is needed to prevent the bottom from being rounded
+            Layout.preferredHeight: width * 0.5625 + delegate.baseRadius
             // FIXME: another thing copied from AbstractDelegate
-            property real extraBorder: delegate.isCurrent ? delegate.borderSize : 0
-            Behavior on extraBorder {
-                NumberAnimation {
-                    duration: Kirigami.Units.longDuration
-                    easing.type: Easing.InOutQuad
-                }
-            }
+            property real extraBorder: 0
 
             layer.enabled: true
             layer.effect: OpacityMask {
@@ -46,7 +41,7 @@ BigScreen.AbstractDelegate {
                     y: imgRoot.y
                     width: imgRoot.width
                     height: imgRoot.height
-                    radius: Kirigami.Units.smallSpacing / 2
+                    radius: delegate.baseRadius
                 }
             }
 
@@ -56,21 +51,21 @@ BigScreen.AbstractDelegate {
                 anchors {
                     fill: parent
                     // To not round under
-                    bottomMargin: Kirigami.Units.smallSpacing
+                    bottomMargin: delegate.baseRadius
                 }
-                //y: -12
                 opacity: 1
                 fillMode: Image.PreserveAspectCrop
 
                 Rectangle {
                     id: videoDurationTime
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: parent.width > Kirigami.Units.gridUnit * 15 ?  Kirigami.Units.gridUnit * 0.4 : Kirigami.Units.largeSpacing
+                    anchors.bottomMargin: Kirigami.Units.largeSpacing
                     anchors.right: parent.right
-                    anchors.rightMargin: Kirigami.Units.gridUnit * 0.75
-                    width: Kirigami.Units.gridUnit * 2.5 + Kirigami.Units.largeSpacing * 2
-                    height: durationText.height
-                    radius: Kirigami.Units.gridUnit * 0.5
+                    anchors.rightMargin: Kirigami.Units.largeSpacing
+                    // FIXME: kind of hacky to get the padding around the text right
+                    width: durationText.width + Kirigami.Units.largeSpacing
+                    height: Kirigami.Units.gridUnit
+                    radius: delegate.baseRadius
                     color: Qt.rgba(0, 0, 0, 0.8)
 
                     PlasmaComponents.Label {
@@ -81,18 +76,47 @@ BigScreen.AbstractDelegate {
                     }
                 }
             }
+            
+            states: [
+                State {
+                    when: delegate.isCurrent
+                    PropertyChanges {
+                        target: imgRoot
+                        extraBorder: delegate.borderSize
+                    }
+                },
+                State {
+                    when: !delegate.isCurrent
+                    PropertyChanges {
+                        target: imgRoot
+                        extraBorder: 0
+                    }
+                }
+            ]
+            transitions: Transition {
+                onRunningChanged: {
+                    // Optimize when animating the thumbnail
+                    img.smooth = !running
+                }
+                NumberAnimation {
+                    property: "extraBorder"
+                    duration: Kirigami.Units.longDuration
+                    easing.type: Easing.InOutQuad
+                }
+            }
         }
 
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            // Compensate for blank space created from not rounding thumbnail bottom corners
+            Layout.topMargin: -delegate.baseRadius
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             spacing: Kirigami.Units.smallSpacing
 
             Kirigami.Heading {
                 id: videoLabel
                 Layout.fillWidth: true
-                Layout.leftMargin: Kirigami.Units.largeSpacing
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                 wrapMode: Text.Wrap
                 level: 3
@@ -108,7 +132,6 @@ BigScreen.AbstractDelegate {
             PlasmaComponents.Label {
                 id: videoChannelName
                 Layout.fillWidth: true
-                Layout.leftMargin: Kirigami.Units.largeSpacing
                 wrapMode: Text.WordWrap
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                 maximumLineCount: 1
@@ -119,7 +142,6 @@ BigScreen.AbstractDelegate {
 
             RowLayout {
                 Layout.fillWidth: true
-                Layout.leftMargin: Kirigami.Units.largeSpacing
 
                 PlasmaComponents.Label {
                     id: videoViews
