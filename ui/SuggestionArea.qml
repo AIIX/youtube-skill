@@ -93,7 +93,7 @@ Rectangle {
                 id: stopNextAutoplay
                 Layout.preferredWidth: parent.width / 3
                 Layout.fillHeight: true
-                text: "Cancle Autoplay"
+                text: "Cancel Autoplay"
                 
                 KeyNavigation.up: suggestListView
                 
@@ -107,7 +107,7 @@ Rectangle {
                         suggestionBox.seconds = suggestionBox.countdownSeconds
                         autoPlayTimer.start()
                         autoplayTimeHeading.visible = true
-                        stopNextAutoplay.text = "Cancle Autoplay"
+                        stopNextAutoplay.text = "Cancel Autoplay"
                     }
                 }
                 
@@ -121,7 +121,7 @@ Rectangle {
                         suggestionBox.seconds = suggestionBox.countdownSeconds
                         autoPlayTimer.start()
                         autoplayTimeHeading.visible = true
-                        stopNextAutoplay.text = "Cancle Autoplay"
+                        stopNextAutoplay.text = "Cancel Autoplay"
                     }
                 }
             }

@@ -154,7 +154,7 @@ Controls.Control {
                         id: stopNextAutoplay
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        text: "Cancle Autoplay"
+                        text: "Cancel Autoplay"
                         
                         KeyNavigation.up: suggestListView
                         KeyNavigation.left: replayButton
@@ -190,7 +190,7 @@ Controls.Control {
                                 suggestionBox.seconds = suggestionBox.countdownSeconds
                                 autoPlayTimer.start()
                                 autoplayTimeHeading.visible = true
-                                stopNextAutoplay.text = "Cancle Autoplay"
+                                stopNextAutoplay.text = "Cancel Autoplay"
                             }
                         }
                     }
