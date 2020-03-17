@@ -20,6 +20,7 @@ Controls.Control {
     anchors.topMargin: Kirigami.Units.gridUnit
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Kirigami.Units.gridUnit * 2
+    property bool busyIndicate: false
 
     onFocusChanged: {
         if(visible && focus){
@@ -40,6 +41,16 @@ Controls.Control {
     onVisibleChanged: {
         if(visible) {
             autoPlayTimer.start()
+        }
+    }
+    
+    Connections {
+        target: Mycroft.MycroftController
+        onIntentRecevied: {
+            if(type == "speak") {
+                busyIndicatorPop.close()
+                busyIndicate = false
+            }
         }
     }
 
@@ -210,6 +221,34 @@ Controls.Control {
                     level: 3
                 }
             }
+        }
+    }
+    
+    Controls.Popup {
+        id: busyIndicatorPop
+        width: parent.width
+        height: parent.height
+        background: Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(0, 0, 0, 0.5)
+        }
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+        
+        Controls.BusyIndicator {
+            running: busyIndicate
+            anchors.centerIn: parent
+        }
+        
+        onOpened: {
+            busyIndicate = true
+            autoPlayTimer.stop()
+            autoplayTimeHeading.visible = false
+            stopNextAutoplay.text = "Next Video"
+            suggestionBox.seconds = suggestionBox.countdownSeconds
+        }
+        
+        onClosed: {
+            busyIndicate = false
         }
     }
 }

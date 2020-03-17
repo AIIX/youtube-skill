@@ -87,7 +87,14 @@ Mycroft.Delegate {
         mins = mins % 60;
         hrs = hrs % 24;
         days = days % 365;
-        var result = "Published: " + days + " days, " + hrs + " hours, " + mins + " minutes ago"
+        if(days == 0 && hrs != 0) {
+            var result = "Published: " + hrs + " hours ago"    
+        } else if (days == 0 && hrs == 0) {
+            var result = "Published: " + mins + " minutes ago"
+        } else {
+            var result = "Published: " + days + " days ago"
+        }
+        //var result = "Published: " + days + " days, " + hrs + " hours, " + mins + " minutes ago"
         return result
     }
 
