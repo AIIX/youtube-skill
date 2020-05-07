@@ -22,10 +22,9 @@ import QtQuick.Layouts 1.4
 import QtQuick.Controls 2.4 as Controls
 import org.kde.kirigami 2.5 as Kirigami
 
+
 FocusScope {
     id: root
-    property alias units: Kirigami.Units
-        
     signal activated
     property string title
     property alias view: view

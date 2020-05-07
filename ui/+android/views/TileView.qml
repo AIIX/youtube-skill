@@ -22,7 +22,6 @@ import QtQuick.Layouts 1.4
 import QtQuick.Window 2.2
 import QtGraphicalEffects 1.12
 import QtQuick.Controls 2.4 as Controls
-import org.kde.plasma.components 3.0 as PlasmaComponents
 import org.kde.kirigami 2.5 as Kirigami
 
 FocusScope {
@@ -37,6 +36,7 @@ FocusScope {
     Layout.fillWidth: true
     
     implicitHeight: view.implicitHeight + header.implicitHeight
+    property alias units: Kirigami.Units
 
     //TODO:dynamic
     property int columns: Math.max(3, Math.floor(width / (units.gridUnit * 8)))

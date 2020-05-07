@@ -1,6 +1,5 @@
 /*
- *  Copyright 2019 Aditya Mehra <aix.m@outlook.com>
- *  Copyright 2019 Marco Martin <mart@kde.org>
+ * Copyright 2019 Aditya Mehra <aix.m@outlook.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,13 +38,17 @@ FocusScope {
     Layout.fillWidth: true
     
     implicitHeight: view.implicitHeight + header.implicitHeight
-    property int columns: parent.width >= 1500 ? Math.max(3, Math.floor(width / (Kirigami.Units.gridUnit * 14))) : 5
+
+    //TODO:dynamic
+    property int columns: Math.max(3, Math.floor(width / (units.gridUnit * 8)))
+
     property alias cellWidth: view.cellWidth
-    
+    readonly property real screenRatio: view.Window.window ? view.Window.window.width / view.Window.window.height : 1.6
+
     property Item navigationUp
     property Item navigationDown
-    
-     Kirigami.Heading {
+
+    Kirigami.Heading {
         id: header
         anchors {
             left: parent.left
@@ -77,9 +80,9 @@ FocusScope {
         highlightFollowsCurrentItem: true
         snapMode: ListView.SnapToItem
         cacheBuffer: width
-        implicitHeight: cellWidth + Kirigami.Units.gridUnit * 3
+        implicitHeight: cellWidth + units.gridUnit * 3
         rightMargin: width-cellWidth*3
-        readonly property int cellWidth: parent.width / 6
+        readonly property int cellWidth: (Kirigami.Units.iconSizes.huge + Kirigami.Units.largeSpacing*4)
         preferredHighlightBegin: cellWidth
         preferredHighlightEnd: cellWidth
         displayMarginBeginning: cellWidth
