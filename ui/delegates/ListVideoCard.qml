@@ -18,11 +18,10 @@ ItemDelegate {
         }
         return null;
     }
-    readonly property bool isCurrent: {//print(text+index+" "+listView.currentIndex+activeFocus+" "+listView.moving)
+    readonly property bool isCurrent: {
         listView.currentIndex == index && activeFocus && !listView.moving
     }
 
-    //highlighted: isCurrent
     property int borderSize: Kirigami.Units.smallSpacing
     property int baseRadius: 3
 
@@ -43,26 +42,6 @@ ItemDelegate {
     
     background: Item {
         id: background
-
-//         readonly property Item highlight: Rectangle {
-//             parent: delegate
-//             z: 1
-//             anchors {
-//                 fill: parent
-//             }
-//             color: "transparent"
-//             border {
-//                 width: delegate.borderSize
-//                 color: delegate.Kirigami.Theme.highlightColor
-//             }
-//             opacity: delegate.isCurrent || delegate.highlighted
-//             Behavior on opacity {
-//                 OpacityAnimator {
-//                     duration: Kirigami.Units.longDuration/2
-//                     easing.type: Easing.InOutQuad
-//                 }
-//             }
-//         }
         
         Rectangle {
             id: frame

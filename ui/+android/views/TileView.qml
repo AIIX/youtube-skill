@@ -36,10 +36,9 @@ FocusScope {
     Layout.fillWidth: true
     
     implicitHeight: view.implicitHeight + header.implicitHeight
-    property alias units: Kirigami.Units
 
     //TODO:dynamic
-    property int columns: Math.max(3, Math.floor(width / (units.gridUnit * 8)))
+    property int columns: Math.max(3, Math.floor(width / (Kirigami.Units.gridUnit * 8)))
 
     property alias cellWidth: view.cellWidth
     property alias cellHeight: view.cellHeight
@@ -83,7 +82,7 @@ FocusScope {
         implicitHeight: cellHeight
         rightMargin: width-cellWidth
         property int cellWidth: parent.width / 3
-        property int cellHeight: cellWidth + units.gridUnit * 3
+        property int cellHeight: cellWidth + Kirigami.Units.gridUnit * 3
 //         preferredHighlightBegin: 0
 //         preferredHighlightEnd: cellWidth
         displayMarginBeginning: cellWidth

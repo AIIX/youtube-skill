@@ -7,7 +7,6 @@ import Mycroft 1.0 as Mycroft
 
 ItemDelegate {
     id: delegate
-    property alias units: Kirigami.Units
     
     readonly property Flickable listView: {
         var candidate = parent;

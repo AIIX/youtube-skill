@@ -24,7 +24,6 @@ import org.kde.kirigami 2.5 as Kirigami
 
 FocusScope {
     id: root
-    property alias units: Kirigami.Units
         
     signal activated
     property string title
