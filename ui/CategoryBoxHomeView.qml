@@ -20,177 +20,190 @@ import QtQuick.Layouts 1.4
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import org.kde.kirigami 2.8 as Kirigami
-import org.kde.plasma.core 2.0 as PlasmaCore
-import org.kde.plasma.components 3.0 as PlasmaComponents3
-import org.kde.plasma.components 2.0 as PlasmaComponents
 import Mycroft 1.0 as Mycroft
-import org.kde.mycroft.bigscreen 1.0 as BigScreen
-import "+mediacenter/views" as Views
-import "+mediacenter/delegates" as Delegates
+import "+android/views" as Views
+import "+android/delegates" as Delegates
 
 Item {
-    property alias recentModel: recentListView.model
-    property alias newsModel: newsListView.model
-    property alias musicModel: musicListView.model
-    property alias techModel: techListView.model
-    property alias trendModel: trendListView.model
-    property alias polModel: polListView.model
-    property alias gamingModel: gamingListView.model
+    property var recentHomeModel: sessionData.recentHomeListBlob.recentList
+    property var historyListModel: sessionData.recentListBlob.recentList
+    property var newsListModel: sessionData.newsListBlob.videoList
+    property var musicListModel: sessionData.musicListBlob.videoList
+    property var techListModel: sessionData.techListBlob.videoList
+    property var polListModel: sessionData.polListBlob.videoList
+    property var gamingListModel: sessionData.gamingListBlob.videoList
+    property var searchListModel: sessionData.searchListBlob.videoList
+    property var trendListModel: sessionData.trendListBlob.videoList
     Layout.fillWidth: true
     Layout.fillHeight: true
     
     onFocusChanged: {
-        if(focus){
+        if(focus && recentListView.visible){
             recentListView.forceActiveFocus()
+        } else if (focus && !recentListView.visible) {
+            trendListView.forceActiveFocus()
         }
     }
     
-    onNewsModelChanged: {
+    onNewsListModelChanged: {
        newsListView.view.forceLayout()
     }
-    onMusicModelChanged: {
+    onMusicListModelChanged: {
        musicListView.view.forceLayout()
     }
-    onTechModelChanged: {
+    onTechListModelChanged: {
        techListView.view.forceLayout()
     }
-    onPolModelChanged: {
+    onPolListModelChanged: {
        polListView.view.forceLayout()
     }
-    onGamingModelChanged: {
+    onGamingListModelChanged: {
        gamingListView.view.forceLayout()
     }
-    onRecentModelChanged: {
+    onRecentHomeModelChanged: {
         recentListView.view.forceLayout()
     }
-    onTrendModelChanged: {
+    onTrendListModelChanged: {
         trendListView.view.forceLayout()
     }
     
-    ColumnLayout {
-        id: contentLayout
+    Flickable {
         width: parent.width
-        property Item currentSection
-        y: currentSection ? -currentSection.y : 0
-        Behavior on y {
-            NumberAnimation {
-                duration: Kirigami.Units.longDuration * 2
-                easing.type: Easing.InOutQuad
-            }
-        }
         height: parent.height
-        spacing: Kirigami.Units.largeSpacing
-        
-        BigScreen.TileView {
-            id: recentListView
-            focus: true
-            title: "Recently Watched"
-            cellWidth: parent.width / 4
-            delegate: Delegates.ListVideoCard{}
-            onActiveFocusChanged: {
-                if(activeFocus){
-                    contentLayout.currentSection = recentListView
+        contentHeight: contentLayout.implicitHeight
+    
+        ColumnLayout {
+            id: contentLayout
+            anchors {
+                left: parent.left
+                right: parent.right
+                margins: Kirigami.Units.largeSpacing * 3
+            }
+            property Item currentSection
+            readonly property int rowHeight: recentListView.cellWidth / 1.8 + Kirigami.Units.gridUnit * 7
+            y: currentSection ? -currentSection.y : 0
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: Kirigami.Units.longDuration * 2
+                    easing.type: Easing.InOutQuad
                 }
             }
 
-            navigationUp: homeCatButton
-            navigationDown: trendListView
-        }
+            spacing: Kirigami.Units.largeSpacing * 4
 
-        BigScreen.TileView {
-            id: trendListView
-            focus: false
-            title: "Trending"
-            cellWidth: parent.width / 4
-            delegate: Delegates.ListVideoCard{}
-            onActiveFocusChanged: {
-                if(activeFocus){
-                    contentLayout.currentSection = trendListView
+            Views.TileView {
+                id: recentListView
+                focus: true
+                model: recentHomeModel
+                title: "Recently Watched"
+                cellWidth: parent.width / 2
+                delegate: Delegates.ListVideoCard{}
+                visible: recentListView.view.count > 0 ? 1 : 0
+                onActiveFocusChanged: {
+                    if(activeFocus){
+                        contentLayout.currentSection = recentListView
+                    }
                 }
+
+                implicitHeight: contentLayout.rowHeight
             }
 
-            navigationUp: recentListView
-            navigationDown: newsListView
-        }
+            Views.TileView {
+                id: trendListView
+                focus: false
+                model: trendListModel
+                title: "Trending"
+                cellWidth: parent.width / 2
+                delegate: Delegates.ListVideoCard{}
+                onActiveFocusChanged: {
+                    if(activeFocus){
+                        contentLayout.currentSection = trendListView
+                    }
+                }
 
-        BigScreen.TileView {
-            id: newsListView
-            focus: false
-            title: "News"
-            cellWidth: parent.width / 4
-            delegate: Delegates.ListVideoCard{}
-            onActiveFocusChanged: {
-                if(activeFocus){
-                    contentLayout.currentSection = newsListView
+                implicitHeight: contentLayout.rowHeight
+            }
+
+            Views.TileView {
+                id: newsListView
+                focus: false
+                model: newsListModel
+                title: "News"
+                cellWidth: parent.width / 2
+                delegate: Delegates.ListVideoCard{}
+                onActiveFocusChanged: {
+                    if(activeFocus){
+                        contentLayout.currentSection = newsListView
+                    }
                 }
+                
+                implicitHeight: contentLayout.rowHeight
             }
             
-            navigationUp: trendListView
-            navigationDown: musicListView
-        }
-        
-        BigScreen.TileView {
-            id: musicListView
-            focus: false
-            title: "Music"
-            cellWidth: parent.width / 4
-            delegate: Delegates.ListVideoCard{}
-            onActiveFocusChanged: {
-                if(activeFocus){
-                    contentLayout.currentSection = musicListView
+            Views.TileView {
+                id: musicListView
+                focus: false
+                model: musicListModel
+                title: "Music"
+                cellWidth: parent.width / 2
+                delegate: Delegates.ListVideoCard{}
+                onActiveFocusChanged: {
+                    if(activeFocus){
+                        contentLayout.currentSection = musicListView
+                    }
                 }
+
+                implicitHeight: contentLayout.rowHeight
             }
             
-            navigationUp: newsListView
-            navigationDown: techListView
-        }
-        
-        BigScreen.TileView {
-            id: techListView
-            focus: false
-            title: "Technology"
-            cellWidth: parent.width / 4
-            delegate: Delegates.ListVideoCard{}
-            onActiveFocusChanged: {
-                if(activeFocus){
-                    contentLayout.currentSection = techListView
+            Views.TileView {
+                id: techListView
+                focus: false
+                model: techListModel
+                title: "Technology"
+                cellWidth: parent.width / 2
+                delegate: Delegates.ListVideoCard{}
+                onActiveFocusChanged: {
+                    if(activeFocus){
+                        contentLayout.currentSection = techListView
+                    }
                 }
+
+                implicitHeight: contentLayout.rowHeight
             }
             
-            navigationUp: musicListView
-            navigationDown: polListView
-        }
-        
-        BigScreen.TileView {
-            id: polListView
-            focus: false
-            title: "Politics"
-            cellWidth: parent.width / 4
-            delegate: Delegates.ListVideoCard{}
-            onActiveFocusChanged: {
-                if(activeFocus){
-                    contentLayout.currentSection = polListView
+            Views.TileView {
+                id: polListView
+                focus: false
+                model: polListModel
+                title: "Politics"
+                cellWidth: parent.width / 2
+                delegate: Delegates.ListVideoCard{}
+                onActiveFocusChanged: {
+                    if(activeFocus){
+                        contentLayout.currentSection = polListView
+                    }
                 }
+
+                implicitHeight: contentLayout.rowHeight
             }
             
-            navigationUp: techListView
-            navigationDown: gamingListView
-        }
-        
-        BigScreen.TileView {
-            id: gamingListView
-            focus: false
-            title: "Gaming"
-            cellWidth: parent.width / 4
-            delegate: Delegates.ListVideoCard{}
-            onActiveFocusChanged: {
-                if(activeFocus){
-                    contentLayout.currentSection = gamingListView
+            Views.TileView {
+                id: gamingListView
+                focus: false
+                model: gamingListModel
+                title: "Gaming"
+                cellWidth: parent.width / 2
+                delegate: Delegates.ListVideoCard{}
+                onActiveFocusChanged: {
+                    if(activeFocus){
+                        contentLayout.currentSection = gamingListView
+                    }
                 }
+
+                implicitHeight: contentLayout.rowHeight
             }
-            
-            navigationUp: polListView
-            navigationDown: trendListView
         }
     }
 }

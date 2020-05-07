@@ -20,15 +20,12 @@ import QtQuick.Layouts 1.4
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import org.kde.kirigami 2.8 as Kirigami
-import org.kde.plasma.core 2.0 as PlasmaCore
-import org.kde.plasma.components 3.0 as PlasmaComponents3
-import org.kde.plasma.components 2.0 as PlasmaComponents
 import Mycroft 1.0 as Mycroft
-import "+mediacenter/views" as Views
-import "+mediacenter/delegates" as Delegates
+import "+android/views" as Views
+import "+android/delegates" as Delegates
 
 Item {
-    property alias model: searchGridView.model
+    property var searchListModel: sessionData.searchListBlob.videoList
     Layout.fillWidth: true
     Layout.fillHeight: true
     
@@ -46,9 +43,11 @@ Item {
         id: searchBarArea
         anchors.top: parent.top
         anchors.topMargin: Kirigami.Units.largeSpacing
-        anchors.horizontalCenter: parent.horizontalCenter
         height: Kirigami.Units.gridUnit * 3
-        width: parent.width / 3
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: Kirigami.Units.gridUnit
+        anchors.rightMargin: Kirigami.Units.gridUnit
         radius: 12
         color: searchBarArea.activeFocus ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.95) : Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.95)
                 
@@ -102,22 +101,29 @@ Item {
             }
         }
     }
-    
-    ColumnLayout {
-        anchors.top: searchBarArea.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-            
-        Views.BigTileView {
-            id: searchGridView
-            focus: true
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            title: count > 0 ? "Search Results" : " "
-            delegate: Delegates.VideoCard{}
-            
-            KeyNavigation.up: searchBarArea
+
+    Views.BigTileView {
+        id: searchGridView
+        anchors {
+            top: searchBarArea.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            topMargin: Kirigami.Units.largeSpacing
         }
+        focus: true
+        model: searchListModel
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        cellWidth: view.width / 4
+        // FIXME: componentize more all this stuff
+        cellHeight: cellWidth / 1.8 + Kirigami.Units.gridUnit * 5
+        title: count > 0 ? "Search Results" : " "
+        delegate: Delegates.ListVideoCard {
+            width: searchGridView.cellWidth
+            height: searchGridView.cellHeight
+        }
+        
+        KeyNavigation.up: searchBarArea
     }
 }

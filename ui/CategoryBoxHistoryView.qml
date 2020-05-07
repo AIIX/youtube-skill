@@ -20,15 +20,12 @@ import QtQuick.Layouts 1.4
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import org.kde.kirigami 2.8 as Kirigami
-import org.kde.plasma.core 2.0 as PlasmaCore
-import org.kde.plasma.components 3.0 as PlasmaComponents3
-import org.kde.plasma.components 2.0 as PlasmaComponents
 import Mycroft 1.0 as Mycroft
-import "+mediacenter/views" as Views
-import "+mediacenter/delegates" as Delegates
+import "+android/views" as Views
+import "+android/delegates" as Delegates
 
 Item {
-    property alias model: historyGridView.model
+    property var historyListModel: sessionData.recentListBlob.recentList
     Layout.fillWidth: true
     Layout.fillHeight: true
     
@@ -38,24 +35,29 @@ Item {
         }
     }
     
-    function searchYoutubeLiveResults(query){
-        triggerGuiEvent("YoutubeSkill.SearchLive", {"Query": query})
+    onHistoryListModelChanged: {
+        historyGridView.view.forceLayout()
     }
-        
-    ColumnLayout {
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-            
-        Views.BigTileView {
-            id: historyGridView
-            focus: true
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            title: count > 0 ? "Watch History" : "No Recent History"
-            delegate: Delegates.VideoCard{}
-            KeyNavigation.up: historyCatButton
+
+    Views.BigTileView {
+        id: historyGridView
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
         }
+        focus: true
+        model: historyListModel
+        title: count > 0 ? "Watch History" : "No Recent History"
+
+        cellWidth: view.width / 2
+        // FIXME: componentize more all this stuff
+        cellHeight: cellWidth / 1.8 + Kirigami.Units.gridUnit * 5
+        delegate: Delegates.ListVideoCard {
+            width: historyGridView.cellWidth
+            height: historyGridView.cellHeight
+        }
+        KeyNavigation.up: historyCatButton
     }
 }

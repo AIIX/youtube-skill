@@ -26,6 +26,7 @@ Controls.Button {
     id: control
     Layout.fillHeight: true
     Layout.fillWidth: true
+    property var source
     
     background: Rectangle {
         Kirigami.Theme.colorSet: Kirigami.Theme.Button
@@ -43,13 +44,14 @@ Controls.Button {
         }
     }
     
-    contentItem: Kirigami.Heading {
-        id: contentHome
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        maximumLineCount: 1
-        text: control.text
-        level: 1
+    contentItem: Item {
+        Image {
+            id: contentHome
+            width: Kirigami.Units.iconSizes.medium
+            height: Kirigami.Units.iconSizes.medium
+            anchors.centerIn: parent
+            source: control.source
+        }
     }
     
     Keys.onReturnPressed: {

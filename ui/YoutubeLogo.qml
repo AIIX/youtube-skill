@@ -1,8 +1,7 @@
-import QtQuick 2.9
-import QtQuick.Controls 2.3
+import QtQuick 2.4
+import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
-import org.kde.kirigami 2.11 as Kirigami
-import org.kde.plasma.components 3.0 as PlasmaComponents
+import org.kde.kirigami 2.4 as Kirigami
 import Mycroft 1.0 as Mycroft
 
 Mycroft.Delegate {
@@ -31,7 +30,7 @@ Mycroft.Delegate {
                 width: Kirigami.Units.iconSizes.smallMedium
                 height: Kirigami.Units.iconSizes.smallMedium
                 playing: true
-                source: "images/spinner.gif"
+                source: "./images/spinner.gif"
             }
             
             Kirigami.Heading {
