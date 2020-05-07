@@ -1,0 +1,5 @@
+{
+    "android_icon": "/res/icon/youtube-skill.png",
+    "android_name": "Youtube",
+    "android_handler": "youtube-skill.aiix.home"
+}

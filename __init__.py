@@ -342,12 +342,12 @@ class YoutubeSkill(MycroftSkill):
     def process_home_page(self):
         LOG.info("I AM IN HOME PROCESS PAGE FUNCTION")
         self.gui["loadingStatus"] = "Fetching Trends"
-        self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending")
+        self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending?gl=AU")
         if self.trendCategoryList['videoList']:
             LOG.info("Trends Not Empty")
         else:
             LOG.info("Trying To Rebuild Trends List")
-            self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending")
+            self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending?gl=AU")
         self.gui["loadingStatus"] = "Fetching News"
         self.newsCategoryList['videoList'] = self.build_category_list("news")
         if self.newsCategoryList['videoList']:
