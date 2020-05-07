@@ -20,7 +20,6 @@ import QtQuick 2.9
 import QtQuick.Layouts 1.4
 import QtQuick.Controls 2.3 as Controls
 import org.kde.kirigami 2.8 as Kirigami
-import org.kde.plasma.core 2.0 as PlasmaCore
 
 Controls.Button {
     id: control
