@@ -34,7 +34,7 @@ Rectangle {
     
     onVideoSuggestionListChanged: {
         console.log(JSON.stringify(videoSuggestionList))
-        suggestListView.forceLayout()
+        suggestListView.view.forceLayout()
     }
     
     onVisibleChanged: {

@@ -44,7 +44,7 @@ Mycroft.Delegate {
     }
         
     onVideoTitleChanged: {
-        triggerGuiEvent("YoutubeSkill.RefreshWatchList", {})
+        triggerGuiEvent("YoutubeSkill.RefreshWatchList", {"title": videoTitle})
         if(videoTitle != ""){
             infomationBar.visible = true
         }
@@ -87,14 +87,7 @@ Mycroft.Delegate {
         mins = mins % 60;
         hrs = hrs % 24;
         days = days % 365;
-        if(days == 0 && hrs != 0) {
-            var result = "Published: " + hrs + " hours ago"    
-        } else if (days == 0 && hrs == 0) {
-            var result = "Published: " + mins + " minutes ago"
-        } else {
-            var result = "Published: " + days + " days ago"
-        }
-        //var result = "Published: " + days + " days, " + hrs + " hours, " + mins + " minutes ago"
+        var result = "Published: " + days + " days, " + hrs + " hours, " + mins + " minutes ago"
         return result
     }
 
@@ -136,8 +129,8 @@ Mycroft.Delegate {
     controlBar: Local.SeekControl {
         id: seekControl
         anchors {
-            left: parent.left
-            right: parent.right
+//             left: parent.left
+//             right: parent.right
             bottom: parent.bottom
         }
         title: videoTitle  
@@ -168,13 +161,15 @@ Mycroft.Delegate {
                 })
             }
             
-            Kirigami.Heading {
+            Controls.Label {
                 id: vidTitle
-                level: 2
-                height: Kirigami.Units.gridUnit * 2
                 visible: true
+                maximumLineCount: 2
+                wrapMode: Text.Wrap
+                anchors.left: parent.left
+                anchors.leftMargin: Kirigami.Units.largeSpacing
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Title: " + videoTitle
+                text: videoTitle
                 z: 100
             }
          }

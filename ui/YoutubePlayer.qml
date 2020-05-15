@@ -129,8 +129,8 @@ Mycroft.Delegate {
     controlBar: Local.SeekControl {
         id: seekControl
         anchors {
-            left: parent.left
-            right: parent.right
+//             left: parent.left
+//             right: parent.right
             bottom: parent.bottom
         }
         title: videoTitle  
@@ -161,13 +161,15 @@ Mycroft.Delegate {
                 })
             }
             
-            Kirigami.Heading {
+            Controls.Label {
                 id: vidTitle
-                level: 2
-                height: Kirigami.Units.gridUnit * 2
                 visible: true
+                maximumLineCount: 2
+                wrapMode: Text.Wrap
+                anchors.left: parent.left
+                anchors.leftMargin: Kirigami.Units.largeSpacing
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Title: " + videoTitle
+                text: videoTitle
                 z: 100
             }
          }
