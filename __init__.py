@@ -8,7 +8,8 @@ import sys
 import json
 import base64
 import re
-import timeago, datetime 
+import timeago, datetime
+import dateutil.parser
 if sys.version_info[0] < 3:
     from urllib import quote
     from urllib2 import urlopen
@@ -276,6 +277,8 @@ class YoutubeSkill(MycroftSkill):
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
         uploadDateToString = self.build_upload_date(video.published)
+        LOG.info("Video Published On")
+        LOG.info(video.published)
         viewCountWithString = self.add_view_string(video.viewcount)
         recentVideoDict = {"videoID": getvid, "videoTitle": video.title, "videoImage": video.bigthumb, "videoChannel": video.username, "videoViews": viewCountWithString, "videoUploadDate": uploadDateToString, "videoDuration": video.duration}
         self.buildHistoryModel(recentVideoDict)
@@ -629,8 +632,9 @@ class YoutubeSkill(MycroftSkill):
             
     def build_upload_date(self, update):
         now = datetime.datetime.now() + datetime.timedelta(seconds = 60 * 3.4)
-        date = update
-        dtstring = timeago.format(date, now)
+        date = dateutil.parser.parse(update)
+        naive = date.replace(tzinfo=None)
+        dtstring = timeago.format(naive, now)
         return dtstring
     
     def add_view_string(self, viewcount):
