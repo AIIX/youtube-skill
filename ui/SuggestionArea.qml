@@ -4,8 +4,8 @@ import QtQuick.Controls 2.0 as Controls
 import org.kde.kirigami 2.8 as Kirigami
 import QtGraphicalEffects 1.0
 import Mycroft 1.0 as Mycroft
-import "+mediacenter/views" as Views
-import "+mediacenter/delegates" as Delegates
+import "+android/views" as Views
+import "+android/delegates" as Delegates
 import org.kde.mycroft.bigscreen 1.0 as BigScreen
 
 Rectangle {

@@ -24,8 +24,8 @@ import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 3.0 as PlasmaComponents3
 import org.kde.plasma.components 2.0 as PlasmaComponents
 import Mycroft 1.0 as Mycroft
-import "+mediacenter/views" as Views
-import "+mediacenter/delegates" as Delegates
+import "+android/views" as Views
+import "+android/delegates" as Delegates
 
 Item {
     property alias model: videoListView.model

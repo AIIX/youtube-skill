@@ -35,7 +35,12 @@ Mycroft.Delegate {
     property Component emptyHighlighter: Item{}
 
     skillBackgroundSource: "https://source.unsplash.com/weekly?music"
-    
+
+    leftPadding: 0
+    rightPadding: 0
+    topPadding: 0
+    bottomPadding: 0
+
     onVideoListModelChanged: {
         leftSearchView.forceLayout()
     }
@@ -45,9 +50,8 @@ Mycroft.Delegate {
         parent.parent.parent.currentItem.contentItem.forceActiveFocus()
     }
     
-    ColumnLayout {
+    contentItem: ColumnLayout {
         id: recentlyPlayerColumn
-        anchors.fill: parent
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.Heading {
@@ -124,7 +128,7 @@ Mycroft.Delegate {
                 }
                              
                 Keys.onReturnPressed: {
-                    Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle})
+                    Mycroft.MycroftController.sendRequest("aiix.youtube-skill.playvideo_id", {vidID: modelData.videoID, vidTitle: modelData.videoTitle, vidImage: modelData.videoImage, vidChannel: modelData.videoChannel, vidViews: modelData.videoViews, vidUploadDate: modelData.videoUploadDate, vidDuration: modelData.videoDuration})
                 }
             }
         }
