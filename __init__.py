@@ -662,7 +662,7 @@ class YoutubeSkill(MycroftSkill):
                 videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
 
         return videoList
-
+    
 
 def create_skill():
     return YoutubeSkill()

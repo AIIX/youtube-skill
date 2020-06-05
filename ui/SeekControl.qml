@@ -1,4 +1,4 @@
-import QtMultimedia 5.13
+import QtMultimedia 5.12
 import QtQuick.Layouts 1.4
 import QtQuick 2.9
 import QtQuick.Controls 2.12 as Controls
@@ -55,7 +55,7 @@ Item {
     Rectangle {
         width: parent.width
         height: parent.height
-        color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
+        color: Qt.rgba(0, 0, 0, 0.8)
         //color: "white"
         y: opened ? 0 : parent.height
 
@@ -78,13 +78,28 @@ Item {
                 id: mainLayout2
                 Layout.fillHeight: true
                 Controls.RoundButton {
-                    id: backButton                        
-                    height: Kirigami.Units.gridUnit * 2
+                    id: backButton
                     Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    icon.name: "go-previous-symbolic"
                     z: 1000
+                    
+                    background: Rectangle {
+                        radius: 200
+                        color: Qt.rgba(0, 0, 0, 0.9)
+                        border.width: 1
+                        border.color: "white"
+                    }
+                    
+                    contentItem: Item {
+                        Image {
+                            width: parent.width > 600 ? Kirigami.Units.iconSizes.medium : Kirigami.Units.iconSizes.small
+                            height: width
+                            anchors.centerIn: parent
+                            source: "images/back.png"
+                        }
+                    }
+                    
                     onClicked: {
                         Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
                         video.stop();
@@ -105,8 +120,24 @@ Item {
                     Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
                     z: 1000
+                    
+                    background: Rectangle {
+                        radius: 200
+                        color: Qt.rgba(0, 0, 0, 0.9)
+                        border.width: 1
+                        border.color: "white"
+                    }
+                    
+                    contentItem: Item {
+                        Image {
+                            width: parent.width > 600 ? Kirigami.Units.iconSizes.medium : Kirigami.Units.iconSizes.small
+                            height: width
+                            anchors.centerIn: parent
+                            source: videoControl.playbackState === MediaPlayer.PlayingState ? "images/media-playback-pause.svg" : "images/media-playback-start.svg"
+                        }
+                    }
+                    
                     onClicked: {
                         video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                         hideTimer.restart();
@@ -245,7 +276,23 @@ Item {
                     Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    icon.name: "documentinfo"
+                    
+                    background: Rectangle {
+                        radius: 200
+                        color: Qt.rgba(0, 0, 0, 0.9)
+                        border.width: 1
+                        border.color: "white"
+                    }
+                    
+                    contentItem: Item {
+                        Image {
+                            width: parent.width > 600 ? Kirigami.Units.iconSizes.medium : Kirigami.Units.iconSizes.small
+                            height: width
+                            anchors.centerIn: parent
+                            source: "images/information.png"
+                        }
+                    }
+                    
                     z: 1000
                     onClicked: {
                         videoInformationPop.open()

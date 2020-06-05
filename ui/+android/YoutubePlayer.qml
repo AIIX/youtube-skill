@@ -52,12 +52,7 @@ Mycroft.Delegate {
     
     onFocusChanged: {
         console.log("here")
-        if(focus && suggestions.visible){
-            console.log("in suggestFocus 1")
-            suggestions.forceActiveFocus();
-        } else if(focus && !suggestions.visbile) {
-            video.forceActiveFocus();
-        }
+        video.forceActiveFocus();
     }
     
     Connections {
@@ -183,44 +178,22 @@ Mycroft.Delegate {
             visible: root.videoStatus == "stop" ? 1 : 0
         }
         
-        SuggestionArea {
-            id: suggestions
-            visible: false
-            videoSuggestionList: videoListModel
-            nxtSongBlob: nextSongBlob
-            onVisibleChanged: {
-                if(visible) {
-                    suggestionListFocus = true
-                } else {
-                    video.focus = true
-                }
-            }
-        }
-        
         Video {
             id: video
             anchors.fill: parent
             focus: true
             autoLoad: true
             autoPlay: false
-            Keys.onSpacePressed: video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
-            KeyNavigation.up: closeButton
-            //Keys.onLeftPressed: video.seek(video.position - 5000)
-            //Keys.onRightPressed: video.seek(video.position + 5000)
             source: videoSource
             readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
             
             onFocusChanged: {
                 if(focus){
                     console.log("focus in video")
-                    if(suggestions.visbile){
-                        console.log("in suggestFocus 2")
-                        suggestions.forceActiveFocus();
-                    }
                 }
             }
 
-            onCurrentStatusChanged: {print("OOO"+currentStatus)
+            onCurrentStatusChanged: {
                 switch(currentStatus){
                     case "stop":
                         video.stop();
@@ -256,9 +229,8 @@ Mycroft.Delegate {
             onStatusChanged: {
                 if(status == MediaPlayer.EndOfMedia) {
                     triggerGuiEvent("YoutubeSkill.NextAutoPlaySong", {})
-                    suggestions.visible = true
                 } else {
-                    suggestions.visible = false
+		    console.log("Status Changed")
                 }
             }
         }
