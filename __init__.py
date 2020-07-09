@@ -10,6 +10,7 @@ import base64
 import re
 import timeago, datetime
 import dateutil.parser
+import requests
 if sys.version_info[0] < 3:
     from urllib import quote
     from urllib2 import urlopen
@@ -51,6 +52,8 @@ class YoutubeSkill(MycroftSkill):
         self.recent_db = JsonStorage(self.storeDB)
         self.ytkey = base64.b64decode("QUl6YVN5RE9tSXhSemI0RzFhaXFzYnBaQ3IwQTlFN1NrT0pVRURr")
         pafy.set_api_key(self.ytkey)
+        self.quackAPIWorker="J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="
+        self.quackagent = {'User-Agent' : base64.b64decode(self.quackAPIWorker)}
 
     def initialize(self):
         self.load_data_files(dirname(__file__))
@@ -91,8 +94,8 @@ class YoutubeSkill(MycroftSkill):
     def getListSearch(self, text):
         query = quote(text)
         url = "https://www.youtube.com/results?search_query=" + quote(query)
-        response = urlopen(url)
-        html = response.read()
+        response = requests.get(url, headers=self.quackagent)
+        html = response.text
         a_tag = SoupStrainer('a')
         soup = BeautifulSoup(html, 'html.parser', parse_only=a_tag)
         for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
@@ -208,8 +211,8 @@ class YoutubeSkill(MycroftSkill):
     def getTitle(self, text):
         query = quote(text)
         url = "https://www.youtube.com/results?search_query=" + quote(query)
-        response = urlopen(url)
-        html = response.read()
+        response = requests.get(url, headers=self.quackagent)
+        html = response.text
         soup = BeautifulSoup(html)
         for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
             if "googleads" not in vid['href'] and not vid['href'].startswith(
@@ -235,8 +238,8 @@ class YoutubeSkill(MycroftSkill):
         self.gui["recentListBlob"] = ""
         self.gui["videoThumb"] = ""
         url = "https://www.youtube.com/results?search_query=" + quote(utterance)
-        response = urlopen(url)
-        html = response.read()
+        response = requests.get(url, headers=self.quackagent)
+        html = response.text
         a_tag = SoupStrainer('a')
         soup = BeautifulSoup(html, 'html.parser', parse_only=a_tag)
         self.gui["video"] = ""
@@ -303,8 +306,8 @@ class YoutubeSkill(MycroftSkill):
             message.data.get('YoutubeSearchPageKeyword'), '')
         vid = self.getListSearch(utterance)
         url = "https://www.youtube.com/results?search_query=" + vid
-        response = urlopen(url)
-        html = response.read()
+        response = requests.get(url, headers=self.quackagent)
+        html = response.text
         videoList = self.process_soup_additional(html)
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
@@ -317,8 +320,8 @@ class YoutubeSkill(MycroftSkill):
         videoList.clear()
         videoPageObject = {}
         url = "https://www.youtube.com/watch?v=" + query
-        response = urlopen(url)
-        html = response.read()
+        response = requests.get(url, headers=self.quackagent)
+        html = response.text
         videoList = self.process_soup_watchlist(html)        
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
@@ -474,7 +477,7 @@ class YoutubeSkill(MycroftSkill):
         getVideoDetails = zip(soup.findAll(attrs={'class': 'yt-uix-tile-link'}), soup.findAll(attrs={'class': 'yt-lockup-byline'}), soup.findAll(attrs={'class': 'yt-lockup-meta-info'}), soup.findAll(attrs={'class': 'video-time'}))
         for vid in getVideoDetails:
             if "googleads" not in vid[0]['href'] and not vid[0]['href'].startswith(
-                u"/user") and not vid[0]['href'].startswith(u"/channel"):
+                u"/user") and not vid[0]['href'].startswith(u"/channel") and not vid[0]['href'].startswith('/news') and not vid[0]['href'].startswith('/music') and not vid[0]['href'].startswith('/technology') and not vid[0]['href'].startswith('/politics') and not vid[0]['href'].startswith('/gaming'):
                 videoID = vid[0]['href'].split("v=")[1].split("&")[0]
                 videoTitle = vid[0]['title']
                 videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
@@ -495,8 +498,8 @@ class YoutubeSkill(MycroftSkill):
     
     def process_additional_pages(self, category):
         url = "https://www.youtube.com/results?search_query={0}".format(category)
-        response = urlopen(url)
-        html = response.read()
+        response = requests.get(url, headers=self.quackagent)
+        html = response.text
         soup = BeautifulSoup(html)
         buttons = soup.findAll('a', attrs={'class':"yt-uix-button vve-check yt-uix-sessionlink yt-uix-button-default yt-uix-button-size-default"})
         try:
@@ -558,16 +561,16 @@ class YoutubeSkill(MycroftSkill):
 
     def build_category_list(self, category):
         url = "https://www.youtube.com/results?search_query={0}".format(category)
-        response = urlopen(url)
-        html = response.read()
+        response = requests.get(url, headers=self.quackagent)
+        html = response.text
         videoList = self.process_soup_additional(html)
         return videoList
     
     def build_category_list_from_url(self, link):
         url = link
         print(url)
-        response = urlopen(url)
-        html = response.read()
+        response = requests.get(url, headers=self.quackagent)
+        html = response.text
         videoList = self.process_soup_additional(html)
         return videoList
     
@@ -650,7 +653,7 @@ class YoutubeSkill(MycroftSkill):
         getVideoDetails = zip(currentVideoSection.findAll(attrs={'class': 'yt-uix-sessionlink'}), currentVideoSection.findAll(attrs={'class': 'attribution'}), currentVideoSection.findAll(attrs={'class': 'yt-uix-simple-thumb-wrap'}), currentVideoSection.findAll(attrs={'class': 'video-time'}), currentVideoSection.findAll(attrs={'class': 'view-count'}))
         for vid in getVideoDetails:
             if "googleads" not in vid[0]['href'] and not vid[0]['href'].startswith(
-        u"/user") and not vid[0]['href'].startswith(u"/channel") and "title" in vid[0].attrs:
+                u"/user") and not vid[0]['href'].startswith(u"/channel") and not vid[0]['href'].startswith('/news') and not vid[0]['href'].startswith('/music') and not vid[0]['href'].startswith('/technology') and not vid[0]['href'].startswith('/politics') and not vid[0]['href'].startswith('/gaming') and "title" in vid[0].attrs:
                 videoID = vid[0]['href'].split("v=")[1].split("&")[0]
                 videoTitle = vid[0]['title']
                 videoImage = "https://i.ytimg.com/vi/{0}/hqdefault.jpg".format(videoID)
