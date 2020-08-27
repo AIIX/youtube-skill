@@ -570,12 +570,13 @@ class YoutubeSkill(MycroftSkill):
         for x in range(len(vidslist['videos'])):
             videoID = vidslist['videos'][x]['videoId']
             videoTitle = vidslist['videos'][x]['title']
-            videoImage = vidslist['videos'][x]['thumbnails'][0]['url'].split["?"][0]
+            videoImage = vidslist['videos'][x]['thumbnails'][0]['url']
+            vidImgFix = str(videoImage).split("?")[0]
             videoUploadDate = vidslist['videos'][x]['published_time']
             videoDuration = vidslist['videos'][x]['length_human']
             videoViews = vidslist['videos'][x]['views']
             videoChannel = vidslist['videos'][x]['channel_name']
-            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
+            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": vidImgFix, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
         
         return videoList
     
@@ -586,12 +587,13 @@ class YoutubeSkill(MycroftSkill):
         for x in range(len(vidslist['page_videos'])):
             videoID = vidslist['page_videos'][x]['videoId']
             videoTitle = vidslist['page_videos'][x]['title']
-            videoImage = vidslist['page_videos'][x]['thumbnails'][0]['url'].split["?"][0]
+            videoImage = vidslist['page_videos'][x]['thumbnails'][0]['url']
+            vidImgFix = str(videoImage).split("?")[0]
             videoUploadDate = vidslist['page_videos'][x]['published_time']
             videoDuration = vidslist['page_videos'][x]['length_human']
             videoViews = vidslist['page_videos'][x]['views']
             videoChannel = vidslist['page_videos'][x]['channel_name']
-            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
+            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": vidImgFix, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
         
         return videoList
     
