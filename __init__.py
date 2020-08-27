@@ -23,6 +23,7 @@ from mycroft.messagebus.message import Message
 from mycroft.util.log import LOG
 from collections import deque
 from json_database import JsonStorage
+from .tempfix.search.searcher import YoutubeSearcher
 
 __author__ = 'aix'
 
@@ -316,21 +317,21 @@ class YoutubeSkill(MycroftSkill):
         videoList = []
         videoList.clear()
         videoPageObject = {}
-        url = "https://www.youtube.com/watch?v=" + query
-        response = urlopen(url)
-        html = response.read()
-        videoList = self.process_soup_watchlist(html)        
+        yts = YoutubeSearcher()
+        vidslist = yts.watchlist_search(video_id=query)
+        for x in range(len(vidslist['watchlist_videos'])):
+            videoID = vidslist['watchlist_videos'][x]['videoId']
+            videoTitle = vidslist['watchlist_videos'][x]['title']
+            videoImage = vidslist['watchlist_videos'][x]['thumbnails'][0]['url']
+            videoUploadDate = vidslist['watchlist_videos'][x]['published_time']
+            videoDuration = vidslist['watchlist_videos'][x]['length_human']
+            videoViews = vidslist['watchlist_videos'][x]['views']
+            videoChannel = vidslist['watchlist_videos'][x]['channel_name']
+            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
+        
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
         self.gui["recentListBlob"] = self.recent_db
-        
-        try:
-            if len(videoList) > 1:
-                self.nextSongList = videoList[1]
-            else:
-                self.nextSongList = videoList[0]
-        except:
-            self.nextSongList = []
         
     def show_homepage(self, message):
         LOG.info("I AM IN HOME PAGE FUNCTION")
@@ -343,12 +344,12 @@ class YoutubeSkill(MycroftSkill):
     def process_home_page(self):
         LOG.info("I AM IN HOME PROCESS PAGE FUNCTION")
         self.gui["loadingStatus"] = "Fetching Trends"
-        self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending?gl=AU")
+        self.trendCategoryList['videoList'] = self.build_category_list_from_url("trending")
         if self.trendCategoryList['videoList']:
             LOG.info("Trends Not Empty")
         else:
             LOG.info("Trying To Rebuild Trends List")
-            self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending?gl=AU")
+            self.trendCategoryList['videoList'] = self.build_category_list_from_url("trending")
         self.gui["loadingStatus"] = "Fetching News"
         self.newsCategoryList['videoList'] = self.build_category_list("news")
         if self.newsCategoryList['videoList']:
@@ -557,18 +558,36 @@ class YoutubeSkill(MycroftSkill):
         self.isTitle = video.title
 
     def build_category_list(self, category):
-        url = "https://www.youtube.com/results?search_query={0}".format(category)
-        response = urlopen(url)
-        html = response.read()
-        videoList = self.process_soup_additional(html)
+        LOG.info("Building For Category" + category)
+        videoList = []
+        yts = YoutubeSearcher()
+        vidslist = yts.search_youtube(category, render="videos")
+        for x in range(len(vidslist['videos'])):
+            videoID = vidslist['videos'][x]['videoId']
+            videoTitle = vidslist['videos'][x]['title']
+            videoImage = vidslist['videos'][x]['thumbnails'][0]['url']
+            videoUploadDate = vidslist['videos'][x]['published_time']
+            videoDuration = vidslist['videos'][x]['length_human']
+            videoViews = vidslist['videos'][x]['views']
+            videoChannel = vidslist['videos'][x]['channel_name']
+            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
+        
         return videoList
     
     def build_category_list_from_url(self, link):
-        url = link
-        print(url)
-        response = urlopen(url)
-        html = response.read()
-        videoList = self.process_soup_additional(html)
+        videoList = []
+        yts = YoutubeSearcher()
+        vidslist = yts.page_search(page_type=category)
+        for x in range(len(vidslist['page_videos'])):
+            videoID = vidslist['page_videos'][x]['videoId']
+            videoTitle = vidslist['page_videos'][x]['title']
+            videoImage = vidslist['page_videos'][x]['thumbnails'][0]['url']
+            videoUploadDate = vidslist['page_videos'][x]['published_time']
+            videoDuration = vidslist['page_videos'][x]['length_human']
+            videoViews = vidslist['page_videos'][x]['views']
+            videoChannel = vidslist['page_videos'][x]['channel_name']
+            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
+        
         return videoList
     
     def clear_db(self):
