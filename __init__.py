@@ -574,7 +574,7 @@ class YoutubeSkill(MycroftSkill):
         
         return videoList
     
-    def build_category_list_from_url(self, link):
+    def build_category_list_from_url(self, category):
         videoList = []
         yts = YoutubeSearcher()
         vidslist = yts.page_search(page_type=category)
