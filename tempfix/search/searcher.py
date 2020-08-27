@@ -1,6 +1,7 @@
 import bs4
 import re
 import json
+import requests
 from .session.session import session
 
 class YoutubeSearcher:
@@ -41,7 +42,7 @@ class YoutubeSearcher:
                   "gl": self.location_code}
         
         # TODO dont cache if no results found
-        html = session.get(self.base_url + "/results",
+        html = requests.get(self.base_url + "/results",
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
@@ -104,7 +105,7 @@ class YoutubeSearcher:
         else:
             page = "feed/trending"
         
-        html = session.get(self.base_url + "/" + page,
+        html = requests.get(self.base_url + "/" + page,
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)

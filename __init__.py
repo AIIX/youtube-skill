@@ -328,11 +328,12 @@ class YoutubeSkill(MycroftSkill):
             videoID = vidslist['watchlist_videos'][x]['videoId']
             videoTitle = vidslist['watchlist_videos'][x]['title']
             videoImage = vidslist['watchlist_videos'][x]['thumbnails'][0]['url']
+            vidFixImg = str(videoImage).strip("?")[0]
             videoUploadDate = vidslist['watchlist_videos'][x]['published_time']
-            videoDuration = vidslist['watchlist_videos'][x]['length_human']
+            videoDuration = vidslist['watchlist_videos'][x]['length']
             videoViews = vidslist['watchlist_videos'][x]['views']
             videoChannel = vidslist['watchlist_videos'][x]['channel_name']
-            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
+            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": vidFixImg, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
         
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
@@ -573,7 +574,7 @@ class YoutubeSkill(MycroftSkill):
             videoImage = vidslist['videos'][x]['thumbnails'][0]['url']
             vidImgFix = str(videoImage).split("?")[0]
             videoUploadDate = vidslist['videos'][x]['published_time']
-            videoDuration = vidslist['videos'][x]['length_human']
+            videoDuration = vidslist['videos'][x]['length']
             videoViews = vidslist['videos'][x]['views']
             videoChannel = vidslist['videos'][x]['channel_name']
             videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": vidImgFix, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
@@ -590,7 +591,7 @@ class YoutubeSkill(MycroftSkill):
             videoImage = vidslist['page_videos'][x]['thumbnails'][0]['url']
             vidImgFix = str(videoImage).split("?")[0]
             videoUploadDate = vidslist['page_videos'][x]['published_time']
-            videoDuration = vidslist['page_videos'][x]['length_human']
+            videoDuration = vidslist['page_videos'][x]['length']
             videoViews = vidslist['page_videos'][x]['views']
             videoChannel = vidslist['page_videos'][x]['channel_name']
             videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": vidImgFix, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
