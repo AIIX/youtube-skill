@@ -82,6 +82,8 @@ class YoutubeSkill(MycroftSkill):
         self.gui.register_handler('YoutubeSkill.SearchLive',
                                   self.searchLive)
         
+        self.gui.register_handler('YoutubeSkill.NextPage', self.searchNextPage)
+        self.gui.register_handler('YoutubeSkill.PreviousPage', self.searchPreviousPage)
         self.gui.register_handler('YoutubeSkill.NextAutoPlaySong', self.nextSongForAutoPlay)
         self.gui.register_handler('YoutubeSkill.RefreshWatchList', self.refreshWatchList)
         self.gui.register_handler('YoutubeSkill.ClearDB', self.clear_db)
@@ -134,7 +136,79 @@ class YoutubeSkill(MycroftSkill):
             self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
         except:
             LOG.debug("error")
-                    
+        
+    def searchNextPage(self, message):
+        getCategory = message.data["Category"]
+        LOG.info(getCategory)
+        if getCategory == "News":
+            LOG.info("In Category News")
+            newsAdditionalPages = self.process_additional_pages("news")
+            self.newsCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + newsAdditionalPages[0])
+            self.gui["newsNextAvailable"] = False
+            self.gui["newsListBlob"] = self.newsCategoryList
+        if getCategory == "Music":
+            LOG.info("In Category Music")
+            musicAdditionalPages = self.process_additional_pages("music")
+            self.musicCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + musicAdditionalPages[0])
+            self.gui["musicNextAvailable"] = False
+            self.gui["musicListBlob"] = self.musicCategoryList
+        if getCategory == "Technology":
+            LOG.info("In Category Technology")
+            technologyAdditionalPages = self.process_additional_pages("technology")
+            self.techCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + technologyAdditionalPages[0])
+            self.gui["techNextAvailable"] = False
+            self.gui["techListBlob"] = self.techCategoryList
+        if getCategory == "Politics":
+            LOG.info("In Category Politics")
+            politicsAdditionalPages = self.process_additional_pages("politics")
+            self.polCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + politicsAdditionalPages[0])
+            self.gui["polNextAvailable"] = False
+            self.gui["polListBlob"] = self.polCategoryList
+        if getCategory == "Gaming":
+            LOG.info("In Category Gaming")
+            gamingAdditionalPages = self.process_additional_pages("gaming")
+            self.gamingCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com" + gamingAdditionalPages[0])
+            self.gui["gamingNextAvailable"] = False
+            self.gui["gamingListBlob"] = self.gamingCategoryList
+        if getCategory == "Search":
+            LOG.info("In Search")
+        
+    def searchPreviousPage(self, message):
+        getCategory = message.data["Category"]
+        LOG.info(getCategory)
+        if getCategory == "News":
+            LOG.info("In Category News")
+            newsAdditionalPages = self.process_additional_pages("news")
+            self.newsCategoryList['videoList'] = self.build_category_list_from_url(newsAdditionalPages[1])
+            self.gui["newsNextAvailable"] = True
+            self.gui["newsListBlob"] = self.newsCategoryList
+        if getCategory == "Music":
+            LOG.info("In Category Music")
+            musicAdditionalPages = self.process_additional_pages("music")
+            self.musicCategoryList['videoList'] = self.build_category_list_from_url(musicAdditionalPages[1])
+            self.gui["musicNextAvailable"] = True
+            self.gui["musicListBlob"] = self.musicCategoryList
+        if getCategory == "Technology":
+            LOG.info("In Category Technology")
+            technologyAdditionalPages = self.process_additional_pages("technology")
+            self.techCategoryList['videoList'] = self.build_category_list_from_url(technologyAdditionalPages[1])
+            self.gui["techNextAvailable"] = True
+            self.gui["techListBlob"] = self.techCategoryList
+        if getCategory == "Politics":
+            LOG.info("In Category Politics")
+            politicsAdditionalPages = self.process_additional_pages("politics")
+            self.polCategoryList['videoList'] = self.build_category_list_from_url(politicsAdditionalPages[1])
+            self.gui["polNextAvailable"] = True
+            self.gui["polListBlob"] = self.polCategoryList
+        if getCategory == "Gaming":
+            LOG.info("In Category Gaming")
+            gamingAdditionalPages = self.process_additional_pages("gaming")
+            self.gamingCategoryList['videoList'] = self.build_category_list_from_url(gamingAdditionalPages[1])
+            self.gui["gamingNextAvailable"] = True
+            self.gui["gamingListBlob"] = self.gamingCategoryList
+        if getCategory == "Search":
+            LOG.info("In Search")
+            
     def getTitle(self, text):
         query = quote(text)
         url = "https://www.youtube.com/results?search_query=" + quote(query)
@@ -207,6 +281,8 @@ class YoutubeSkill(MycroftSkill):
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
         uploadDateToString = self.build_upload_date(video.published)
+        LOG.info("Video Published On")
+        LOG.info(video.published)
         viewCountWithString = self.add_view_string(video.viewcount)
         recentVideoDict = {"videoID": getvid, "videoTitle": video.title, "videoImage": video.bigthumb, "videoChannel": video.username, "videoViews": viewCountWithString, "videoUploadDate": uploadDateToString, "videoDuration": video.duration}
         self.buildHistoryModel(recentVideoDict)
@@ -261,7 +337,7 @@ class YoutubeSkill(MycroftSkill):
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
         self.gui["recentListBlob"] = self.recent_db
-                
+        
     def show_homepage(self, message):
         LOG.info("I AM IN HOME PAGE FUNCTION")
         self.gui.clear()
@@ -273,12 +349,12 @@ class YoutubeSkill(MycroftSkill):
     def process_home_page(self):
         LOG.info("I AM IN HOME PROCESS PAGE FUNCTION")
         self.gui["loadingStatus"] = "Fetching Trends"
-        self.trendCategoryList['videoList'] = self.build_category_list_from_url("trending")
+        self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending")
         if self.trendCategoryList['videoList']:
             LOG.info("Trends Not Empty")
         else:
             LOG.info("Trying To Rebuild Trends List")
-            self.trendCategoryList['videoList'] = self.build_category_list_from_url("trending")
+            self.trendCategoryList['videoList'] = self.build_category_list_from_url("https://www.youtube.com/feed/trending")
         self.gui["loadingStatus"] = "Fetching News"
         self.newsCategoryList['videoList'] = self.build_category_list("news")
         if self.newsCategoryList['videoList']:
@@ -441,15 +517,15 @@ class YoutubeSkill(MycroftSkill):
     def process_additional_pages_fail(self, category):
         url = None
         if category == "news":
-            url = "world+news"
+            url = "/results?search_query=world+news"
         if category == "music":
-            url = "latest+music"
+            url = "/results?search_query=latest+music"
         if category == "technology":
-            url = "latest+tech"
+            url = "/results?search_query=latest+tech"
         if category == "politics":
-            url = "latest+politics"
+            url = "/results?search_query=latest+politics"
         if category == "gaming":
-            url = "latest+games"
+            url = "/results?search_query=latest+games"
 
         return url
                     
@@ -610,7 +686,7 @@ class YoutubeSkill(MycroftSkill):
                 videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
 
         return videoList
-    
+
 
 def create_skill():
     return YoutubeSkill()
