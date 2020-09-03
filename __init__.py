@@ -91,6 +91,11 @@ class YoutubeSkill(MycroftSkill):
         
     def launcherId(self, message):
         self.show_homepage({})
+    
+    @intent_file_handler('youtubeopenapp.intent')
+    def launch_home_and_search_category(self, message):
+        self.speak("Loading Up Youtube For You")
+        self.show_homepage({})
 
     def getListSearch(self, text):
         query = quote(text)
