@@ -228,10 +228,13 @@ class YoutubeSearcher:
                 thumb = vid["thumbnail"]['thumbnails']
                 
                 #Get video view count or live watch count
-                if "simpleText" in vid["shortViewCountText"]:
-                    views = vid["shortViewCountText"]["simpleText"]
+                if "shortViewCountText" in vid:
+                    if "simpleText" in vid["shortViewCountText"]:
+                        views = vid["shortViewCountText"]["simpleText"]
+                    else:
+                        views = vid["shortViewCountText"]["runs"][0]["text"] + " " +  vid["shortViewCountText"]["runs"][1]["text"]
                 else:
-                    views = vid["shortViewCountText"]["runs"][0]["text"] + " " +  vid["shortViewCountText"]["runs"][1]["text"]
+                    views = "Unknown"
                 
                 #Get video published_time assume if not available video is Live
                 if "publishedTimeText" in vid:
