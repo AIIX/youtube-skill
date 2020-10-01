@@ -37,6 +37,22 @@ class YoutubeSearcher:
         self.primary_contents_page = None
     
     def search_youtube(self, query, render="all"):
+        self.featured_channel = {"videos": [], "playlists": []}
+        self.data = {}
+        self.videos = []
+        self.playlists = []
+        self.related_to_search = []
+        self.related_queries = []
+        self.radio = []
+        self.movies = []
+        self.promoted = []
+        self.videos_on_page = []
+        self.corrected_query = None
+        self.contents = None
+        self.primary_contents = None
+        self.secondary_contents = None
+        self.primary_contents_page = None
+
         params = {"search_query": query,
                   "gl": self.location_code}
         

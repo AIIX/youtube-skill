@@ -183,20 +183,6 @@ Mycroft.Delegate {
             visible: root.videoStatus == "stop" ? 1 : 0
         }
         
-        SuggestionArea {
-            id: suggestions
-            visible: false
-            videoSuggestionList: videoListModel
-            nxtSongBlob: nextSongBlob
-            onVisibleChanged: {
-                if(visible) {
-                    suggestionListFocus = true
-                } else {
-                    video.focus = true
-                }
-            }
-        }
-        
         Video {
             id: video
             anchors.fill: parent
@@ -256,9 +242,6 @@ Mycroft.Delegate {
             onStatusChanged: {
                 if(status == MediaPlayer.EndOfMedia) {
                     triggerGuiEvent("YoutubeSkill.NextAutoPlaySong", {})
-                    suggestions.visible = true
-                } else {
-                    suggestions.visible = false
                 }
             }
         }

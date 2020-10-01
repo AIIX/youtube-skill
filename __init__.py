@@ -10,6 +10,7 @@ import base64
 import re
 import timeago, datetime
 import dateutil.parser
+import youtube_dl
 if sys.version_info[0] < 3:
     from urllib import quote
     from urllib2 import urlopen
@@ -52,6 +53,7 @@ class YoutubeSkill(MycroftSkill):
         self.recent_db = JsonStorage(self.storeDB)
         self.ytkey = base64.b64decode("QUl6YVN5RE9tSXhSemI0RzFhaXFzYnBaQ3IwQTlFN1NrT0pVRURr")
         pafy.set_api_key(self.ytkey)
+        self.yts = YoutubeSearcher()
 
     def initialize(self):
         self.load_data_files(dirname(__file__))
@@ -226,7 +228,7 @@ class YoutubeSkill(MycroftSkill):
         self.enclosure.display_manager.remove_active()
         utterance = message.data['videoname'].lower()
         self.youtube_play_video(utterance)
-    
+
     def youtube_play_video(self, utterance):
         self.gui["setTitle"] = ""
         self.gui["video"] = ""
@@ -235,57 +237,71 @@ class YoutubeSkill(MycroftSkill):
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
         self.gui["videoThumb"] = ""
-        url = "https://www.youtube.com/results?search_query=" + quote(utterance)
-        response = urlopen(url)
-        html = response.read()
-        a_tag = SoupStrainer('a')
-        soup = BeautifulSoup(html, 'html.parser', parse_only=a_tag)
-        self.gui["video"] = ""
-        self.gui["status"] = "stop"
-        self.gui["currenturl"] = ""
-        self.gui["videoListBlob"] = ""
-        self.gui["recentListBlob"] = ""
-        self.gui["videoThumb"] = ""
-        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
-        rfind = soup.findAll(attrs={'class': 'yt-uix-tile-link'})
-        try:
-            vid = str(rfind[0].attrs['href'])
-            veid = "https://www.youtube.com{0}".format(vid)
-            LOG.info(veid)
-            getvid = vid.split("v=")[1].split("&")[0]
-        except:
-            vid = str(rfind[1].attrs['href'])
-            veid = "https://www.youtube.com{0}".format(vid)
-            LOG.info(veid)
-            getvid = vid.split("v=")[1].split("&")[0]
+        video_query_str = str(quote(utterance))
+        print(video_query_str)
+        abc = self.yts.search_youtube(video_query_str, render="videos")
+        vid = abc['videos'][0]['url']
+        ydl = youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
+        with ydl:
+            ytresult = ydl.extract_info(
+                vid,
+                download=False # We just want to extract the info
+            )
+            if 'entries' in ytresult:
+                ytvideo = ytresult['entries'][0]
+            else:
+                ytvideo = ytresult
+
+            stream_url = self.process_ytl_stream(ytvideo["formats"])
+        getvid = vid.split("v=")[1].split("&")[0]
+        print(getvid)
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(getvid)
+        print(thumb)
         self.gui["videoThumb"] = thumb
-        self.lastSong = veid
-        video = pafy.new(veid)
-        playstream = video.streams[0]
-        playurl = playstream.url
+        self.lastSong = vid
         self.gui["status"] = str("play")
-        self.gui["video"] = str(playurl)
+        self.gui["video"] = str(stream_url)
         self.gui["currenturl"] = str(vid)
-        self.gui["currenttitle"] = video.title
-        self.gui["setTitle"] = video.title
-        self.gui["viewCount"] = video.viewcount
-        self.gui["publishedDate"] = video.published
-        self.gui["videoAuthor"] = video.username
+        self.gui["currenttitle"] = abc['videos'][0]['title']
+        self.gui["setTitle"] = abc['videos'][0]['title']
+        self.gui["viewCount"] = abc['videos'][0]['views']
+        self.gui["publishedDate"] = abc['videos'][0]['published_time']
+        self.gui["videoAuthor"] = abc['videos'][0]['channel_name']
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
         self.gui["nextSongBlob"] = ""
-        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+        self.gui.show_page("YoutubePlayer.qml", override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
-        uploadDateToString = self.build_upload_date(video.published)
-        viewCountWithString = self.add_view_string(video.viewcount)
-        recentVideoDict = {"videoID": getvid, "videoTitle": video.title, "videoImage": video.bigthumb, "videoChannel": video.username, "videoViews": viewCountWithString, "videoUploadDate": uploadDateToString, "videoDuration": video.duration}
+        #uploadDateToString = self.build_upload_date(video.published)
+        LOG.info("Video Published On")
+        #LOG.info(video.published)
+        #viewCountWithString = self.add_view_string(video.viewcount)
+        recentVideoDict = {"videoID": getvid, "videoTitle": abc['videos'][0]['title'], "videoImage": thumb, "videoChannel": abc['videos'][0]['channel_name'], "videoViews": abc['videos'][0]['views'], "videoUploadDate": abc['videos'][0]['published_time'], "videoDuration": "none"}
         self.buildHistoryModel(recentVideoDict)
         self.gui["recentListBlob"] = self.recent_db
         self.youtubesearchpagesimple(getvid)
-        self.isTitle = video.title
+        self.isTitle = abc['videos'][0]['title']
         self.gui["recentListBlob"] = self.recent_db
-        
+
+    def process_ytl_stream(self, streams):
+        _videostreams = []
+        for z in range(len(streams)):
+            if streams[z].get("vcodec") != "none":
+               if streams[z].get("acodec") != "none":
+                   _videostreams.append(streams[z])
+
+        for a in range(len(_videostreams)):
+            if _videostreams[a]["format_note"] == "720p":
+                return _videostreams[a]["url"]
+            elif _videostreams[a]["format_note"] == "480p":
+                return _videostreams[a]["url"]
+            elif _videostreams[a]["format_note"] == "360p":
+                return _videostreams[a]["url"]
+            elif _videostreams[a]["format_note"] == "240p":
+                return _videostreams[a]["url"]
+            elif _videostreams[a]["format_note"] == "144p":
+                return _videostreams[a]["url"]
+
     def youtubepause(self, message):
         self.gui["status"] = str("pause")
         self.gui.show_page("YoutubePlayer.qml")
@@ -530,9 +546,11 @@ class YoutubeSkill(MycroftSkill):
         
     def refreshWatchList(self, message):
         try:
-            self.youtubesearchpagesimple(self.lastSong)
+            print("broken")
+            #self.youtubesearchpagesimple(self.lastSong)
         except:
-            self.youtubesearchpagesimple(self.lastSong)
+            print("broken")
+            #self.youtubesearchpagesimple(self.lastSong)
         
     @intent_file_handler('youtube-repeat.intent')
     def youtube_repeat_last(self):
@@ -567,7 +585,7 @@ class YoutubeSkill(MycroftSkill):
             videoTitle = vidslist['videos'][x]['title']
             videoImage = vidslist['videos'][x]['thumbnails'][0]['url']
             videoUploadDate = vidslist['videos'][x]['published_time']
-            videoDuration = vidslist['videos'][x]['length_human']
+            videoDuration = vidslist['videos'][x]['length']
             videoViews = vidslist['videos'][x]['views']
             videoChannel = vidslist['videos'][x]['channel_name']
             videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
@@ -583,7 +601,7 @@ class YoutubeSkill(MycroftSkill):
             videoTitle = vidslist['page_videos'][x]['title']
             videoImage = vidslist['page_videos'][x]['thumbnails'][0]['url']
             videoUploadDate = vidslist['page_videos'][x]['published_time']
-            videoDuration = vidslist['page_videos'][x]['length_human']
+            videoDuration = vidslist['page_videos'][x]['length']
             videoViews = vidslist['page_videos'][x]['views']
             videoChannel = vidslist['page_videos'][x]['channel_name']
             videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
