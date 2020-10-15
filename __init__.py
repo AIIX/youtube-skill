@@ -287,7 +287,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
         self.gui["nextSongBlob"] = ""
-        self.gui.show_page("YoutubePlayer.qml", override_idle=True)
+        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
         LOG.info("Video Published On")
         recentVideoDict = {"videoID": getvid, "videoTitle": abc['videos'][0]['title'], "videoImage": thumb, "videoChannel": abc['videos'][0]['channel_name'], "videoViews": abc['videos'][0]['views'], "videoUploadDate": abc['videos'][0]['published_time'], "videoDuration": abc['videos'][0]['length']}
@@ -560,10 +560,12 @@ class YoutubeSkill(MycroftSkill):
         self.gui["nextSongBlob"] = self.nextSongList
         
     def refreshWatchList(self, message):
-        try:
-            self.youtubesearchpagesimple(self.lastSong)
-        except:
-            self.youtubesearchpagesimple(self.lastSong)
+        print("Currently Disabled, Skipping Step")        
+        #try:
+            #print("todo")
+            #self.youtubesearchpagesimple(self.lastSong)
+        #except:
+            #self.youtubesearchpagesimple(self.lastSong)
         
     @intent_file_handler('youtube-repeat.intent')
     def youtube_repeat_last(self):
