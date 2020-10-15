@@ -126,7 +126,7 @@ Item {
                         height: Kirigami.Units.gridUnit * 2
                         visible: true
                         Layout.alignment: Qt.AlignRight
-                        text: setPublishedDate(videoPublishDate)
+                        text: "Published: " + videoPublishDate
                         z: 100
                     }
                 }
