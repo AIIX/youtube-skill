@@ -296,6 +296,25 @@ class YoutubeSkill(MycroftSkill):
         self.youtubesearchpagesimple(getvid)
         self.isTitle = abc['videos'][0]['title']
         self.gui["recentListBlob"] = self.recent_db
+
+    def process_ytl_stream(self, streams):
+        _videostreams = []
+        for z in range(len(streams)):
+            if streams[z].get("vcodec") != "none":
+               if streams[z].get("acodec") != "none":
+                   _videostreams.append(streams[z])
+
+        for a in range(len(_videostreams)):
+            if _videostreams[a]["format_note"] == "720p":
+                return _videostreams[a]["url"]
+            elif _videostreams[a]["format_note"] == "480p":
+                return _videostreams[a]["url"]
+            elif _videostreams[a]["format_note"] == "360p":
+                return _videostreams[a]["url"]
+            elif _videostreams[a]["format_note"] == "240p":
+                return _videostreams[a]["url"]
+            elif _videostreams[a]["format_note"] == "144p":
+                return _videostreams[a]["url"]
         
     def youtubepause(self, message):
         self.gui["status"] = str("pause")
