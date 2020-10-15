@@ -11,6 +11,7 @@ import re
 import timeago, datetime
 import dateutil.parser
 import requests
+import youtube_dl
 if sys.version_info[0] < 3:
     from urllib import quote
     from urllib2 import urlopen
@@ -55,6 +56,7 @@ class YoutubeSkill(MycroftSkill):
         pafy.set_api_key(self.ytkey)
         self.quackAPIWorker="J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="
         self.quackagent = {'User-Agent' : base64.b64decode(self.quackAPIWorker)}
+        self.yts = YoutubeSearcher()
 
     def initialize(self):
         self.load_data_files(dirname(__file__))
@@ -254,46 +256,45 @@ class YoutubeSkill(MycroftSkill):
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
         self.gui["videoThumb"] = ""
-        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
-        rfind = soup.findAll(attrs={'class': 'yt-uix-tile-link'})
-        try:
-            vid = str(rfind[0].attrs['href'])
-            veid = "https://www.youtube.com{0}".format(vid)
-            LOG.info(veid)
-            getvid = vid.split("v=")[1].split("&")[0]
-        except:
-            vid = str(rfind[1].attrs['href'])
-            veid = "https://www.youtube.com{0}".format(vid)
-            LOG.info(veid)
-            getvid = vid.split("v=")[1].split("&")[0]
+        video_query_str = str(quote(utterance))
+        print(video_query_str)
+        abc = self.yts.search_youtube(video_query_str, render="videos")
+        vid = abc['videos'][0]['url']
+        ydl = youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
+        with ydl:
+            ytresult = ydl.extract_info(
+                vid,
+                download=False # We just want to extract the info
+            )
+            if 'entries' in ytresult:
+                ytvideo = ytresult['entries'][0]
+            else:
+                ytvideo = ytresult
+
+            stream_url = self.process_ytl_stream(ytvideo["formats"])
+        getvid = vid.split("v=")[1].split("&")[0]
         thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(getvid)
         self.gui["videoThumb"] = thumb
-        self.lastSong = veid
-        video = pafy.new(veid)
-        playstream = video.streams[0]
-        playurl = playstream.url
+        self.lastSong = vid
         self.gui["status"] = str("play")
-        self.gui["video"] = str(playurl)
+        self.gui["video"] = str(stream_url)
         self.gui["currenturl"] = str(vid)
-        self.gui["currenttitle"] = video.title
-        self.gui["setTitle"] = video.title
-        self.gui["viewCount"] = video.viewcount
-        self.gui["publishedDate"] = video.published
-        self.gui["videoAuthor"] = video.username
+        self.gui["currenttitle"] = abc['videos'][0]['title']
+        self.gui["setTitle"] = abc['videos'][0]['title']
+        self.gui["viewCount"] = abc['videos'][0]['views']
+        self.gui["publishedDate"] = abc['videos'][0]['published_time']
+        self.gui["videoAuthor"] = abc['videos'][0]['channel_name']
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
         self.gui["nextSongBlob"] = ""
-        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+        self.gui.show_page("YoutubePlayer.qml", override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
-        uploadDateToString = self.build_upload_date(video.published)
         LOG.info("Video Published On")
-        LOG.info(video.published)
-        viewCountWithString = self.add_view_string(video.viewcount)
-        recentVideoDict = {"videoID": getvid, "videoTitle": video.title, "videoImage": video.bigthumb, "videoChannel": video.username, "videoViews": viewCountWithString, "videoUploadDate": uploadDateToString, "videoDuration": video.duration}
+        recentVideoDict = {"videoID": getvid, "videoTitle": abc['videos'][0]['title'], "videoImage": thumb, "videoChannel": abc['videos'][0]['channel_name'], "videoViews": abc['videos'][0]['views'], "videoUploadDate": abc['videos'][0]['published_time'], "videoDuration": abc['videos'][0]['length']}
         self.buildHistoryModel(recentVideoDict)
         self.gui["recentListBlob"] = self.recent_db
         self.youtubesearchpagesimple(getvid)
-        self.isTitle = video.title
+        self.isTitle = abc['videos'][0]['title']
         self.gui["recentListBlob"] = self.recent_db
         
     def youtubepause(self, message):

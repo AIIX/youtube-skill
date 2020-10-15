@@ -1,7 +1,6 @@
 import bs4
 import re
 import json
-import requests
 from .session.session import session
 
 class YoutubeSearcher:
@@ -38,11 +37,27 @@ class YoutubeSearcher:
         self.primary_contents_page = None
     
     def search_youtube(self, query, render="all"):
+        self.featured_channel = {"videos": [], "playlists": []}
+        self.data = {}
+        self.videos = []
+        self.playlists = []
+        self.related_to_search = []
+        self.related_queries = []
+        self.radio = []
+        self.movies = []
+        self.promoted = []
+        self.videos_on_page = []
+        self.corrected_query = None
+        self.contents = None
+        self.primary_contents = None
+        self.secondary_contents = None
+        self.primary_contents_page = None
+
         params = {"search_query": query,
                   "gl": self.location_code}
         
         # TODO dont cache if no results found
-        html = requests.get(self.base_url + "/results",
+        html = session.get(self.base_url + "/results",
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
@@ -105,7 +120,7 @@ class YoutubeSearcher:
         else:
             page = "feed/trending"
         
-        html = requests.get(self.base_url + "/" + page,
+        html = session.get(self.base_url + "/" + page,
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
@@ -228,13 +243,10 @@ class YoutubeSearcher:
                 thumb = vid["thumbnail"]['thumbnails']
                 
                 #Get video view count or live watch count
-                if "shortViewCountText" in vid:
-                    if "simpleText" in vid["shortViewCountText"]:
-                        views = vid["shortViewCountText"]["simpleText"]
-                    else:
-                        views = vid["shortViewCountText"]["runs"][0]["text"] + " " +  vid["shortViewCountText"]["runs"][1]["text"]
+                if "simpleText" in vid["shortViewCountText"]:
+                    views = vid["shortViewCountText"]["simpleText"]
                 else:
-                    views = "Unknown"
+                    views = vid["shortViewCountText"]["runs"][0]["text"] + " " +  vid["shortViewCountText"]["runs"][1]["text"]
                 
                 #Get video published_time assume if not available video is Live
                 if "publishedTimeText" in vid:
