@@ -273,7 +273,7 @@ class YoutubeSkill(MycroftSkill):
 
             stream_url = self.process_ytl_stream(ytvideo["formats"])
         getvid = vid.split("v=")[1].split("&")[0]
-        thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(getvid)
+        thumb = "https://img.youtube.com/vi/{0}/0.jpg".format(getvid)
         self.gui["videoThumb"] = thumb
         self.lastSong = vid
         self.gui["status"] = str("play")
@@ -352,13 +352,12 @@ class YoutubeSkill(MycroftSkill):
         for x in range(len(vidslist['watchlist_videos'])):
             videoID = vidslist['watchlist_videos'][x]['videoId']
             videoTitle = vidslist['watchlist_videos'][x]['title']
-            videoImage = vidslist['watchlist_videos'][x]['thumbnails'][0]['url']
-            vidFixImg = str(videoImage).strip("?")[0]
+            videoImage = "https://img.youtube.com/vi/{0}/0.jpg".format(videoID)
             videoUploadDate = vidslist['watchlist_videos'][x]['published_time']
             videoDuration = vidslist['watchlist_videos'][x]['length']
             videoViews = vidslist['watchlist_videos'][x]['views']
             videoChannel = vidslist['watchlist_videos'][x]['channel_name']
-            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": vidFixImg, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
+            videoList.append({"videoID": videoID, "videoTitle": videoTitle, "videoImage": videoImage, "videoChannel": videoChannel, "videoViews": videoViews, "videoUploadDate": videoUploadDate, "videoDuration": videoDuration})
         
         videoPageObject['videoList'] = videoList
         self.gui["videoListBlob"] = videoPageObject
