@@ -3,3 +3,6 @@ pafy
 youtube-dl
 bs4
 json_database
+timeago
+python-dateutil
+requests_cache

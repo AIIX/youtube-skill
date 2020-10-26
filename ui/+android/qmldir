@@ -1,0 +1,9 @@
+YoutubeLogo 1.0 YoutubeLogo.qml
+TopBarTabButton 1.0 TopBarTabButton.qml
+CategoryBoxHistoryView 1.0 CategoryBoxHistoryView.qml
+CategoryBoxHomeView 1.0 CategoryBoxHomeView.qml
+CategoryBoxSearchView 1.0 CategoryBoxSearchView.qml
+YoutubeLiveSearch 1.0 YoutubeLiveSearch.qml
+YoutubePlayer 1.0 YoutubePlayer.qml
+SeekControl 1.0 SeekControl.qml
+YoutubeSearch 1.0 YoutubeSearch.qml 

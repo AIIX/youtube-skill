@@ -26,7 +26,7 @@ import org.kde.kirigami 2.5 as Kirigami
 
 GridView {
     id: view
-    cellWidth: parent.width >= 1500 ? parent.width / 4 : parent.width / 3
+    cellWidth: parent.width >= 1500 ? parent.width / 5 : parent.width / 3
     cellHeight: parent.width >= 1500 ? parent.height / 2 : parent.height / 3
     
     Layout.fillWidth: true
