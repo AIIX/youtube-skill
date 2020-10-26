@@ -83,7 +83,14 @@ Item {
                     Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    icon.name: "go-previous-symbolic"
+                    
+                    Image {
+                        anchors.centerIn: parent
+                        width: parent.width * 0.50
+                        height: width
+                        source: "images/back.png"
+                    }
+                    
                     z: 1000
                     onClicked: {
                         Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
@@ -105,7 +112,14 @@ Item {
                     Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
+                    
+                    Image {
+                        anchors.centerIn: parent
+                        width: parent.width * 0.50
+                        height: width
+                        source: videoControl.playbackState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/simple-pause.svg") : Qt.resolvedUrl("images/simple-play.svg")
+                    }
+                    
                     z: 1000
                     onClicked: {
                         video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
@@ -245,8 +259,15 @@ Item {
                     Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    icon.name: "documentinfo"
                     z: 1000
+                    
+                    Image {
+                        anchors.centerIn: parent
+                        width: parent.width * 0.50
+                        height: width
+                        source: "images/information.png"
+                    }                    
+                    
                     onClicked: {
                         videoInformationPop.open()
                         hideTimer.restart();

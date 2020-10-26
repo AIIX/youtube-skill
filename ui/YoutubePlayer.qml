@@ -50,10 +50,6 @@ Mycroft.Delegate {
         }
     }
     
-    onFocusChanged: {
-        video.forceActiveFocus()
-    }
-    
     Connections {
         target: window
         onVisibleChanged: {
@@ -123,8 +119,6 @@ Mycroft.Delegate {
     controlBar: Local.SeekControl {
         id: seekControl
         anchors {
-//             left: parent.left
-//             right: parent.right
             bottom: parent.bottom
         }
         title: videoTitle  
@@ -185,8 +179,6 @@ Mycroft.Delegate {
             autoPlay: false
             Keys.onSpacePressed: video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
             KeyNavigation.up: closeButton
-            //Keys.onLeftPressed: video.seek(video.position - 5000)
-            //Keys.onRightPressed: video.seek(video.position + 5000)
             source: videoSource
             readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
             
