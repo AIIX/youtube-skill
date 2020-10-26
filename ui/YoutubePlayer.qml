@@ -51,13 +51,7 @@ Mycroft.Delegate {
     }
     
     onFocusChanged: {
-        console.log("here")
-        if(focus && suggestions.visible){
-            console.log("in suggestFocus 1")
-            suggestions.forceActiveFocus();
-        } else if(focus && !suggestions.visbile) {
-            video.forceActiveFocus();
-        }
+        video.forceActiveFocus()
     }
     
     Connections {
@@ -196,16 +190,6 @@ Mycroft.Delegate {
             source: videoSource
             readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
             
-            onFocusChanged: {
-                if(focus){
-                    console.log("focus in video")
-                    if(suggestions.visbile){
-                        console.log("in suggestFocus 2")
-                        suggestions.forceActiveFocus();
-                    }
-                }
-            }
-
             onCurrentStatusChanged: {print("OOO"+currentStatus)
                 switch(currentStatus){
                     case "stop":
