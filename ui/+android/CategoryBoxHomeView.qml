@@ -25,15 +25,15 @@ import "+android/views" as Views
 import "+android/delegates" as Delegates
 
 Item {
-    property var trendListModel: sessionData.trendListBlob.videoList
+    property var recentHomeModel: sessionData.recentHomeListBlob.recentList
+    property var historyListModel: sessionData.recentListBlob.recentList
     property var newsListModel: sessionData.newsListBlob.videoList
     property var musicListModel: sessionData.musicListBlob.videoList
     property var techListModel: sessionData.techListBlob.videoList
     property var polListModel: sessionData.polListBlob.videoList
     property var gamingListModel: sessionData.gamingListBlob.videoList
     property var searchListModel: sessionData.searchListBlob.videoList
-    property var recentHomeModel: sessionData.recentHomeListBlob.recentList
-    property var historyListModel: sessionData.recentListBlob.recentList
+    property var trendListModel: sessionData.trendListBlob.videoList
     Layout.fillWidth: true
     Layout.fillHeight: true
     

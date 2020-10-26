@@ -1,4 +1,4 @@
-import QtMultimedia 5.13
+import QtMultimedia 5.12
 import QtQuick.Layouts 1.4
 import QtQuick 2.9
 import QtQuick.Controls 2.12 as Controls
@@ -51,13 +51,7 @@ Mycroft.Delegate {
     }
     
     onFocusChanged: {
-        console.log("here")
-        if(focus && suggestions.visible){
-            console.log("in suggestFocus 1")
-            suggestions.forceActiveFocus();
-        } else if(focus && !suggestions.visbile) {
-            video.forceActiveFocus();
-        }
+        video.forceActiveFocus()
     }
     
     Connections {
@@ -129,8 +123,8 @@ Mycroft.Delegate {
     controlBar: Local.SeekControl {
         id: seekControl
         anchors {
-            left: parent.left
-            right: parent.right
+//             left: parent.left
+//             right: parent.right
             bottom: parent.bottom
         }
         title: videoTitle  
@@ -161,13 +155,15 @@ Mycroft.Delegate {
                 })
             }
             
-            Kirigami.Heading {
+            Controls.Label {
                 id: vidTitle
-                level: 2
-                height: Kirigami.Units.gridUnit * 2
                 visible: true
+                maximumLineCount: 2
+                wrapMode: Text.Wrap
+                anchors.left: parent.left
+                anchors.leftMargin: Kirigami.Units.largeSpacing
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Title: " + videoTitle
+                text: videoTitle
                 z: 100
             }
          }
@@ -179,20 +175,6 @@ Mycroft.Delegate {
             source: root.videoThumb 
             enabled: root.videoStatus == "stop" ? 1 : 0
             visible: root.videoStatus == "stop" ? 1 : 0
-        }
-        
-        SuggestionArea {
-            id: suggestions
-            visible: false
-            videoSuggestionList: videoListModel
-            nxtSongBlob: nextSongBlob
-            onVisibleChanged: {
-                if(visible) {
-                    suggestionListFocus = true
-                } else {
-                    video.focus = true
-                }
-            }
         }
         
         Video {
@@ -208,16 +190,6 @@ Mycroft.Delegate {
             source: videoSource
             readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
             
-            onFocusChanged: {
-                if(focus){
-                    console.log("focus in video")
-                    if(suggestions.visbile){
-                        console.log("in suggestFocus 2")
-                        suggestions.forceActiveFocus();
-                    }
-                }
-            }
-
             onCurrentStatusChanged: {print("OOO"+currentStatus)
                 switch(currentStatus){
                     case "stop":
@@ -254,9 +226,6 @@ Mycroft.Delegate {
             onStatusChanged: {
                 if(status == MediaPlayer.EndOfMedia) {
                     triggerGuiEvent("YoutubeSkill.NextAutoPlaySong", {})
-                    suggestions.visible = true
-                } else {
-                    suggestions.visible = false
                 }
             }
         }

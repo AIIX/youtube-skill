@@ -20,6 +20,7 @@ Item {
     property string title
 
     clip: true
+    implicitWidth: parent.width
     implicitHeight: mainLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
     opacity: opened
 
@@ -52,12 +53,10 @@ Item {
     }
     
     Rectangle {
-        anchors {
-            left: parent.left
-            right: parent.right
-        }
+        width: parent.width
         height: parent.height
         color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
+        //color: "white"
         y: opened ? 0 : parent.height
 
         Behavior on y {
@@ -69,92 +68,21 @@ Item {
         
         ColumnLayout {
             id: mainLayout
+            
             anchors {
                 fill: parent
                 margins: Kirigami.Units.largeSpacing
             }
             
             RowLayout {
-                id: infoLayout
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                
-                ColumnLayout {
-                    Layout.preferredWidth: parent.width / 2
-                    Layout.fillHeight: true
-                    Layout.alignment: Qt.AlignLeft
-                    Layout.leftMargin: Kirigami.Units.largeSpacing
-                    
-                    Kirigami.Heading {
-                        id: vidTitle
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
-                        visible: true
-                        text: "Title: " + videoTitle
-                        z: 100
-                    }
-                    
-                    Kirigami.Heading {
-                        id: vidAuthor
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
-                        visible: true
-                        text: "Published By: " + videoAuthor
-                        z: 100
-                    }
-                }
-                
-                ColumnLayout {
-                    Layout.preferredWidth: parent.width / 2
-                    Layout.fillHeight: true
-                    Layout.alignment: Qt.AlignRight
-                    Layout.rightMargin: Kirigami.Units.largeSpacing
-                    
-                    Kirigami.Heading {
-                        id: vidCount
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
-                        visible: true
-                        Layout.alignment: Qt.AlignRight
-                        text: "Views: " + getViewCount(videoViewCount)
-                        z: 100
-                    }
-                    
-                    Kirigami.Heading {
-                        id: vidPublishDate
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
-                        visible: true
-                        Layout.alignment: Qt.AlignRight
-                        text: "Published: " + videoPublishDate
-                        z: 100
-                    }
-                }
-            }
-            
-            Kirigami.Separator {
-                Layout.fillWidth: true
-                height: 1
-            }
-            
-            RowLayout {
                 id: mainLayout2
-                Layout.fillWidth: true
                 Layout.fillHeight: true
                 Controls.RoundButton {
-                    id: backButton
-                    Layout.preferredWidth: Kirigami.Units.iconSizes.large
+                    id: backButton                        
+                    height: Kirigami.Units.gridUnit * 2
+                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    
-                    background: Rectangle {
-                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                        color: backButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
-                        radius: width / 2
-                        border.color: Kirigami.Theme.textColor
-                        border.width: 1
-                    }
-                    
                     icon.name: "go-previous-symbolic"
                     z: 1000
                     onClicked: {
@@ -174,18 +102,9 @@ Item {
                 }
                 Controls.RoundButton {
                     id: button
-                    Layout.preferredWidth: Kirigami.Units.iconSizes.large
+                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
-                    
-                    background: Rectangle {
-                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                        color: button.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
-                        radius: width / 2
-                        border.color: Kirigami.Theme.textColor
-                        border.width: 1
-                    }
-                    
                     icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
                     z: 1000
                     onClicked: {
@@ -318,6 +237,106 @@ Item {
                             video.seek(video.position + 5000)
                         }
                     }
+                }
+                
+                Controls.RoundButton {
+                    id: infoButton                        
+                    height: Kirigami.Units.gridUnit * 2
+                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
+                    Layout.preferredHeight: Layout.preferredWidth
+                    highlighted: focus ? 1 : 0
+                    icon.name: "documentinfo"
+                    z: 1000
+                    onClicked: {
+                        videoInformationPop.open()
+                        hideTimer.restart();
+                    }
+                    KeyNavigation.up: video
+                    KeyNavigation.left: slider
+                    Keys.onReturnPressed: {
+                        clicked()
+                    }
+                    onFocusChanged: {
+                        hideTimer.restart();
+                    }
+                }
+            }
+        }
+    }
+    
+    Controls.Popup {
+        id: videoInformationPop
+        width: parent.width - Kirigami.Units.gridUnit * 4
+        height: width
+        parent: root
+        x: Math.round((parent.width - width) / 2)
+        y: Math.round((parent.height - height) / 2)
+        dim: true
+        
+        background: Rectangle {
+            color: Qt.rgba(0,0,0,0.8)
+        }
+        
+        contentItem: Item {
+            ColumnLayout {
+                id: informationColumn
+                width: parent.width
+                spacing: Kirigami.Units.largeSpacing
+                
+                Controls.Label {
+                    id: vidTitle
+                    visible: true
+                    maximumLineCount: 2
+                    wrapMode: Text.Wrap
+                    Layout.maximumWidth: parent.width
+                    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                    text: "Title: " + videoTitle
+                    z: 100
+                }
+                
+                Controls.Label {
+                    id: vidAuthor
+                    visible: true
+                    maximumLineCount: 2
+                    wrapMode: Text.Wrap
+                    Layout.maximumWidth: parent.width
+                    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                    text: "Published By: " + videoAuthor
+                    z: 100
+                }
+                
+                Controls.Label {
+                    id: vidCount
+                    visible: true
+                    maximumLineCount: 2
+                    wrapMode: Text.Wrap
+                    Layout.maximumWidth: parent.width
+                    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                    text: "Views: " + getViewCount(videoViewCount)
+                    z: 100
+                }
+                
+                Controls.Label {
+                    id: vidPublishDate
+                    visible: true
+                    maximumLineCount: 2
+                    wrapMode: Text.Wrap
+                    Layout.maximumWidth: parent.width
+                    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                    text: setPublishedDate(videoPublishDate)
+                    z: 100
+                }
+            }
+            
+            Controls.Button {
+                id: closeInformationBarButton
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: parent.height * 0.15
+                text: "Close"
+                icon.name: "dialog-close"
+                onClicked: {
+                    videoInformationPop.close()
                 }
             }
         }

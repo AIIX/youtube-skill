@@ -1,4 +1,4 @@
-import QtMultimedia 5.13
+import QtMultimedia 5.12
 import QtQuick.Layouts 1.4
 import QtQuick 2.9
 import QtQuick.Controls 2.12 as Controls
@@ -20,10 +20,8 @@ Mycroft.Delegate {
     property var videoViewCount: sessionData.viewCount
     property var videoPublishDate: sessionData.publishedDate
     property var videoListModel: sessionData.videoListBlob.videoList
-    property var nextSongTitle: sessionData.nextSongTitle
-    property var nextSongImage: sessionData.nextSongImage
-    property var nextSongID: sessionData.nextSongID
-    
+    property var nextSongBlob: sessionData.nextSongBlob
+
     //The player is always fullscreen
     fillWidth: true
     background: Rectangle {
@@ -47,7 +45,9 @@ Mycroft.Delegate {
         
     onVideoTitleChanged: {
         triggerGuiEvent("YoutubeSkill.RefreshWatchList", {"title": videoTitle})
-        infomationBar.visible = true
+        if(videoTitle != ""){
+            infomationBar.visible = true
+        }
     }
     
     onFocusChanged: {
@@ -129,8 +129,8 @@ Mycroft.Delegate {
     controlBar: Local.SeekControl {
         id: seekControl
         anchors {
-            left: parent.left
-            right: parent.right
+//             left: parent.left
+//             right: parent.right
             bottom: parent.bottom
         }
         title: videoTitle  
@@ -150,6 +150,7 @@ Mycroft.Delegate {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
+            visible: false
             color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
             implicitHeight: vidTitle.implicitHeight + Kirigami.Units.largeSpacing * 2
             z: 1001
@@ -160,13 +161,15 @@ Mycroft.Delegate {
                 })
             }
             
-            Kirigami.Heading {
+            Controls.Label {
                 id: vidTitle
-                level: 2
-                height: Kirigami.Units.gridUnit * 2
                 visible: true
+                maximumLineCount: 2
+                wrapMode: Text.Wrap
+                anchors.left: parent.left
+                anchors.leftMargin: Kirigami.Units.largeSpacing
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Title: " + videoTitle
+                text: videoTitle
                 z: 100
             }
          }
@@ -184,9 +187,7 @@ Mycroft.Delegate {
             id: suggestions
             visible: false
             videoSuggestionList: videoListModel
-            nxtSongTitle: nextSongTitle
-            nxtSongImage: nextSongImage
-            nxtSongID: nextSongID
+            nxtSongBlob: nextSongBlob
             onVisibleChanged: {
                 if(visible) {
                     suggestionListFocus = true
