@@ -51,9 +51,7 @@ Mycroft.Delegate {
     }
     
     onFocusChanged: {
-        console.log("here")
         if(focus && suggestions.visible){
-            console.log("in suggestFocus 1")
             suggestions.forceActiveFocus();
         } else if(focus && !suggestions.visbile) {
             video.forceActiveFocus();
@@ -94,7 +92,6 @@ Mycroft.Delegate {
         } else {
             var result = "Published: " + days + " days ago"
         }
-        //var result = "Published: " + days + " days, " + hrs + " hours, " + mins + " minutes ago"
         return result
     }
 
@@ -235,6 +232,7 @@ Mycroft.Delegate {
                         break;
                     case "play":
                         video.play()
+                        seekControl.backRequested = false;
                         delay(6000, function() {
                             infomationBar.visible = false;
                         })

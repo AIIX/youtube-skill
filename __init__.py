@@ -472,6 +472,7 @@ class YoutubeSkill(MycroftSkill):
         recentVideoDict = {"videoID": message.data['vidID'], "videoTitle": message.data['vidTitle'], "videoImage": message.data['vidImage'], "videoChannel": message.data['vidChannel'], "videoViews": message.data['vidViews'], "videoUploadDate": message.data['vidUploadDate'], "videoDuration": message.data['vidDuration']}
         self.buildHistoryModel(recentVideoDict)
         self.gui["recentListBlob"] = self.recent_db
+        self.youtubesearchpagesimple(message.data['vidID'])
         self.isTitle = video.title
 
     def stop(self):
