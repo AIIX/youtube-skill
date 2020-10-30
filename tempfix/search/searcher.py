@@ -1,6 +1,7 @@
 import bs4
 import re
 import json
+import datetime
 from .session.session import session
 
 class YoutubeSearcher:
@@ -541,15 +542,11 @@ class YoutubeSearcher:
                         vid = page_items[x]['videoRenderer']
                         thumb = vid["thumbnail"]['thumbnails']
                         
-                        try:
-                            #Get video view count or live watch count
-                            if "simpleText" in vid["shortViewCountText"]:
-                                views = vid["shortViewCountText"]["simpleText"]
-                            else:
-                                views = vid["shortViewCountText"]["runs"][0]["text"] + " " +  vid["shortViewCountText"]["runs"][1]["text"]
-                        except:
-                            views = "Live"
-                        
+                        #Get video view count or live watch count
+                        if "simpleText" in vid["shortViewCountText"]:
+                            views = vid["shortViewCountText"]["simpleText"]
+                        else:
+                            views = vid["shortViewCountText"]["runs"][0]["text"] + " " +  vid["shortViewCountText"]["runs"][1]["text"]
                             
                         #Get video published_time assume if not available video is Live
                         if "publishedTimeText" in vid:
@@ -658,3 +655,31 @@ class YoutubeSearcher:
                                 "description": desc
                             }
                         )
+
+    def extract_video_meta(self, url):
+        params = {"gl": "US"}
+        html = session.get(url,
+                           headers=self.headers, params=params).text
+        soup = bs4.BeautifulSoup(html, 'html.parser')
+        results = self.santize_soup_result(soup)
+        contents = results['contents']['twoColumnWatchNextResults']['results']['results']['contents'][0]['videoPrimaryInfoRenderer']
+        secondaryContents = results['contents']['twoColumnWatchNextResults']['results']['results']['contents'][1]['videoSecondaryInfoRenderer']
+        title = contents['title']['runs'][0]['text']
+        try:
+            viewCount = contents['viewCount']['videoViewCountRenderer']['viewCount']['simpleText']
+        except:
+            viewCount = "Live"
+        author = secondaryContents['owner']['videoOwnerRenderer']['title']['runs'][0]['text']
+        try:
+            actualDate = contents['dateText']['simpleText'] + "  12:00AM"
+            publishedDate = datetime.datetime.strptime(actualDate, '%d %b %Y %I:%M%p')
+        except:
+            publishedDate = "Live"
+        
+        vidmetadata = {
+            "title": title,
+            "views": viewCount,
+            "published_time": publishedDate,
+            "channel_name": author
+        }
+        return vidmetadata
