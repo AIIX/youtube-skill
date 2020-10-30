@@ -3,7 +3,6 @@
 import time
 import urllib
 from os.path import dirname
-import pafy
 import sys
 import json
 import base64
@@ -11,7 +10,6 @@ import re
 import timeago, datetime
 import dateutil.parser
 import requests
-import youtube_dl
 if sys.version_info[0] < 3:
     from urllib import quote
     from urllib2 import urlopen
@@ -26,6 +24,7 @@ from mycroft.util.log import LOG
 from collections import deque
 from json_database import JsonStorage
 from .tempfix.search.searcher import YoutubeSearcher
+from pytube import YouTube as pyyt
 
 __author__ = 'aix'
 
@@ -52,8 +51,6 @@ class YoutubeSkill(MycroftSkill):
         self.recentWatchListObj = {}
         self.storeDB = dirname(__file__) + '-recent.db'
         self.recent_db = JsonStorage(self.storeDB)
-        self.ytkey = base64.b64decode("QUl6YVN5RE9tSXhSemI0RzFhaXFzYnBaQ3IwQTlFN1NrT0pVRURr")
-        pafy.set_api_key(self.ytkey)
         self.quackAPIWorker="J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="
         self.quackagent = {'User-Agent' : base64.b64decode(self.quackAPIWorker)}
         self.yts = YoutubeSearcher()
@@ -260,18 +257,9 @@ class YoutubeSkill(MycroftSkill):
         print(video_query_str)
         abc = self.yts.search_youtube(video_query_str, render="videos")
         vid = abc['videos'][0]['url']
-        ydl = youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
-        with ydl:
-            ytresult = ydl.extract_info(
-                vid,
-                download=False # We just want to extract the info
-            )
-            if 'entries' in ytresult:
-                ytvideo = ytresult['entries'][0]
-            else:
-                ytvideo = ytresult
-
-            stream_url = self.process_ytl_stream(ytvideo["formats"])
+        ydl = pyyt(vid)
+        ytl_streams = ydl.streams.filter(subtype='mp4', progressive=True).all()
+        stream_url = ytl_streams[0].url
         getvid = vid.split("v=")[1].split("&")[0]
         thumb = "https://img.youtube.com/vi/{0}/0.jpg".format(getvid)
         self.gui["videoThumb"] = thumb
@@ -453,18 +441,20 @@ class YoutubeSkill(MycroftSkill):
     def play_event(self, message):
         urlvideo = "http://www.youtube.com/watch?v={0}".format(message.data['vidID'])
         self.lastSong = message.data['vidID']
-        video = pafy.new(urlvideo)
-        playstream = video.getbest(preftype="mp4", ftypestrict=True)
-        playurl = playstream.url
+        video = self.yts.extract_video_meta(urlvideo)
+        playyt = pyyt(urlvideo)
+        playstream = playyt.streams.filter(subtype='mp4', progressive=True).all()
+        playurl = playstream[0].url
         self.speak("Playing")
         self.gui["video"] = str(playurl)
         self.gui["status"] = str("play")
         self.gui["currenturl"] = str(message.data['vidID'])
         self.gui["currenttitle"] = str(message.data['vidTitle'])
-        self.gui["setTitle"] = video.title
-        self.gui["viewCount"] = video.viewcount
-        self.gui["publishedDate"] = video.published
-        self.gui["videoAuthor"] = video.username
+        print(video.keys())
+        self.gui["setTitle"] = video.get('title')
+        self.gui["viewCount"] = video.get('views')
+        self.gui["publishedDate"] = self.build_upload_date_non_vui(video.get('published_time'))
+        self.gui["videoAuthor"] = video.get('channel_name')
         self.gui["nextSongBlob"] = ""
         videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
@@ -473,7 +463,7 @@ class YoutubeSkill(MycroftSkill):
         self.buildHistoryModel(recentVideoDict)
         self.gui["recentListBlob"] = self.recent_db
         self.youtubesearchpagesimple(message.data['vidID'])
-        self.isTitle = video.title
+        self.isTitle = video.get('title')
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
@@ -569,18 +559,19 @@ class YoutubeSkill(MycroftSkill):
         
     @intent_file_handler('youtube-repeat.intent')
     def youtube_repeat_last(self):
-        video = pafy.new(self.lastSong)
-        thumb = video.thumb
-        playstream = video.streams[0]
-        playurl = playstream.url
+        urlvideo = "http://www.youtube.com/watch?v={0}".format(self.lastSong)        
+        video = self.yts.extract_video_meta(urlvideo)
+        playyt = pyyt(urlvideo)
+        playstream = playyt.streams.filter(subtype='mp4', progressive=True).all()
+        playurl = playstream[0].url        
         self.gui["status"] = str("play")
         self.gui["video"] = str(playurl)
         self.gui["currenturl"] = ""
-        self.gui["currenttitle"] = video.title
-        self.gui["setTitle"] = video.title
-        self.gui["viewCount"] = video.viewcount
-        self.gui["publishedDate"] = video.published
-        self.gui["videoAuthor"] = video.username
+        self.gui["currenttitle"] = video.get('title')
+        self.gui["setTitle"] = video.get('title')
+        self.gui["viewCount"] = video.get('views')
+        self.gui["publishedDate"] = self.build_upload_date_non_vui(video.get('published_time'))
+        self.gui["videoAuthor"] = video.get('channel_name')
         self.gui["videoListBlob"] = ""
         self.gui["recentListBlob"] = ""
         self.gui["nextSongTitle"] = ""
@@ -588,7 +579,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["nextSongID"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
         self.youtubesearchpagesimple(self.lastSong)
-        self.isTitle = video.title
+        self.isTitle = video.get('title')
 
     def build_category_list(self, category):
         LOG.info("Building For Category" + category)
@@ -685,6 +676,13 @@ class YoutubeSkill(MycroftSkill):
     def build_upload_date(self, update):
         now = datetime.datetime.now() + datetime.timedelta(seconds = 60 * 3.4)
         date = dateutil.parser.parse(update)
+        naive = date.replace(tzinfo=None)
+        dtstring = timeago.format(naive, now)
+        return dtstring
+    
+    def build_upload_date_non_vui(self, update):
+        now = datetime.datetime.now() + datetime.timedelta(seconds = 60 * 3.4)
+        date = update
         naive = date.replace(tzinfo=None)
         dtstring = timeago.format(naive, now)
         return dtstring
