@@ -681,11 +681,14 @@ class YoutubeSkill(MycroftSkill):
         return dtstring
     
     def build_upload_date_non_vui(self, update):
-        now = datetime.datetime.now() + datetime.timedelta(seconds = 60 * 3.4)
-        date = update
-        naive = date.replace(tzinfo=None)
-        dtstring = timeago.format(naive, now)
-        return dtstring
+        if update == "Live":
+            return update
+        else:
+            now = datetime.datetime.now() + datetime.timedelta(seconds = 60 * 3.4)
+            date = update
+            naive = date.replace(tzinfo=None)
+            dtstring = timeago.format(naive, now)
+            return dtstring
     
     def add_view_string(self, viewcount):
         val = viewcount
