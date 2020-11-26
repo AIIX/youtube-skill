@@ -73,6 +73,7 @@ Controls.Popup {
             anchors.right: parent.right
             anchors.topMargin: Kirigami.Units.largeSpacing
             anchors.leftMargin: Kirigami.Units.largeSpacing
+            anchors.rightMargin: Kirigami.Units.largeSpacing
             text: "Press 'esc' or the [←] Back button to close"
             horizontalAlignment: Text.AlignRight
             Layout.alignment: Qt.AlignRight
