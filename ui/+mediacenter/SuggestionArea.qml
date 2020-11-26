@@ -71,13 +71,17 @@ Controls.Popup {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
+            anchors.topMargin: Kirigami.Units.largeSpacing
+            anchors.leftMargin: Kirigami.Units.largeSpacing
             text: "Press 'esc' or the [←] Back button to close"
+            horizontalAlignment: Text.AlignRight
             Layout.alignment: Qt.AlignRight
         }
             
         Kirigami.Separator {
             id: headrSeptBml
             anchors.top: headerAreaSuggestPg.bottom
+            anchors.topMargin: Kirigami.Units.largeSpacing
             width: parent.width
             height: 1
         }
