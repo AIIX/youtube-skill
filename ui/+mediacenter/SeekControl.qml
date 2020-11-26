@@ -332,6 +332,8 @@ Item {
                         hideTimer.restart();
                         if(navSliderItem) {
                             video.seek(video.position + 5000)
+                        } else {
+                            root.movePageRight()
                         }
                     }
                 }

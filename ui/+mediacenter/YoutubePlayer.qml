@@ -59,6 +59,8 @@ Mycroft.Delegate {
     onFocusChanged: {
         if(focus){
             root.forceActiveFocus();
+        } else if(suggestions.opened) {
+            suggestions.forceActiveFocus()
         }
     }
     

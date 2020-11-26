@@ -45,7 +45,7 @@ Controls.Popup {
         repeat: true
         onTriggered: {
             suggestionBox.seconds--;
-            autoplayTimeHeading.text = "Next Video In: " + suggestionBox.seconds
+            autoplayTimeHeading.text = "Playing In: " + suggestionBox.seconds
             if(suggestionBox.seconds == 0) {
                 running = false;
                 suggestionBox.seconds = suggestionBox.countdownSeconds
@@ -55,15 +55,41 @@ Controls.Popup {
     }
     
     background: Rectangle {
-         color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
+        color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.5)
+        layer.enabled: true
+        layer.effect: DropShadow {
+            transparentBorder: true
+            horizontalOffset: 2
+            verticalOffset: 2
+        }
     }
             
-    contentItem: Item {    
+    contentItem: Item {
+        
+        Controls.Label {
+            id: headerAreaSuggestPg
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            id: backbtnlabelHeading
+            text: "Press 'esc' or the [←] Back button to close"
+            Layout.alignment: Qt.AlignRight
+        }
+            
+        Kirigami.Separator {
+            id: headrSeptBml
+            anchors.top: headerAreaSuggestPg.bottom
+            width: parent.width
+            height: 1
+        }
+        
         Item {
             anchors {
                 left: parent.left
                 right: parent.right
-                top: parent.top
+                top: headrSeptBml.bottom
+                anchors.leftMargin: Kirigami.Units.largeSpacing
+                anchors.rightMargin: Kirigami.Units.largeSpacing
                 bottom: btnAreaSuggestions.top
             }
             
