@@ -71,7 +71,6 @@ Controls.Popup {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            id: backbtnlabelHeading
             text: "Press 'esc' or the [←] Back button to close"
             Layout.alignment: Qt.AlignRight
         }
