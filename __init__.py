@@ -276,6 +276,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["recentListBlob"] = ""
         self.gui["nextSongBlob"] = ""
         self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+        #self.gui.show_page("YoutubeSearch.qml", override_idle=True)
         self.gui["currenttitle"] = self.getTitle(utterance)
         LOG.info("Video Published On")
         recentVideoDict = {"videoID": getvid, "videoTitle": abc['videos'][0]['title'], "videoImage": thumb, "videoChannel": abc['videos'][0]['channel_name'], "videoViews": abc['videos'][0]['views'], "videoUploadDate": abc['videos'][0]['published_time'], "videoDuration": abc['videos'][0]['length']}

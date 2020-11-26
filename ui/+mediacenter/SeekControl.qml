@@ -88,13 +88,16 @@ Item {
                 GridLayout {
                     id: infoLayout
                     anchors.fill: parent
+                    anchors.margins: Kirigami.Units.largeSpacing
                     columns: smallMode ? 1 : 2
                         
                     Kirigami.Heading {
                         id: vidTitle
                         level: smallMode ? 3 : 2
-                        Layout.minimumWidth: parent.width / 2
-                        Layout.preferredHeight: Kirigami.Units.gridUnit * 2
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.preferredWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.minimumHeight: Kirigami.Units.gridUnit * 2
                         visible: true
                         text: "Title: " + videoTitle
                         z: 100
@@ -103,8 +106,10 @@ Item {
                     Kirigami.Heading {
                         id: vidCount
                         level: smallMode ? 3 : 2
-                        Layout.minimumWidth: parent.width / 2
-                        Layout.preferredHeight: Kirigami.Units.gridUnit * 2
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.preferredWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.minimumHeight: Kirigami.Units.gridUnit * 2                        
                         visible: true
                         Layout.alignment: smallMode ? Qt.AlignLeft : Qt.AlignRight
                         horizontalAlignment: smallMode ? Qt.AlignLeft : Qt.AlignRight
@@ -115,8 +120,10 @@ Item {
                     Kirigami.Heading {
                         id: vidAuthor
                         level: smallMode ? 3 : 2
-                        Layout.minimumWidth: parent.width / 2
-                        Layout.preferredHeight: Kirigami.Units.gridUnit * 2
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.preferredWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.minimumHeight: Kirigami.Units.gridUnit * 2  
                         visible: true
                         text: "Published By: " + videoAuthor
                         z: 100
@@ -125,8 +132,10 @@ Item {
                     Kirigami.Heading {
                         id: vidPublishDate
                         level: smallMode ? 3 : 2
-                        Layout.minimumWidth: parent.width / 2
-                        Layout.preferredHeight: Kirigami.Units.gridUnit * 2
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.preferredWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.minimumHeight: Kirigami.Units.gridUnit * 2
                         visible: true
                         Layout.alignment: smallMode ? Qt.AlignLeft : Qt.AlignRight
                         horizontalAlignment: smallMode ? Qt.AlignLeft : Qt.AlignRight
@@ -166,7 +175,7 @@ Item {
                         root.parent.backRequested();
                         video.stop();
                     }
-                    KeyNavigation.up: video
+                    KeyNavigation.up: root
                     KeyNavigation.right: button
                     Keys.onReturnPressed: {
                         clicked()
@@ -198,7 +207,7 @@ Item {
                         video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                         hideTimer.restart();
                     }
-                    KeyNavigation.up: video
+                    KeyNavigation.up: root
                     KeyNavigation.left: backButton
                     KeyNavigation.right: slider
                     Keys.onReturnPressed: {
@@ -298,7 +307,7 @@ Item {
                             text: formatTime(duration)
                         }
                     }
-                KeyNavigation.up: video
+                KeyNavigation.up: root
                 KeyNavigation.left: button
                 Keys.onReturnPressed: {
                     hideTimer.restart();

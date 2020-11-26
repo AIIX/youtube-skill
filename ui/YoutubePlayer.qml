@@ -11,7 +11,6 @@ import "." as Local
 
 Mycroft.Delegate {
     id: root
-
     property var videoSource: sessionData.video
     property var videoStatus: sessionData.status
     property var videoThumb: sessionData.videoThumb
@@ -20,9 +19,7 @@ Mycroft.Delegate {
     property var videoViewCount: sessionData.viewCount
     property var videoPublishDate: sessionData.publishedDate
     property var videoListModel: sessionData.videoListBlob.videoList
-    property var nextSongBlob: sessionData.nextSongBlob
-
-    //The player is always fullscreen
+    property var nextSongBlob: sessionData.videoListBlob.videoList[1]
     fillWidth: true
     background: Rectangle {
         color: "black"
@@ -34,6 +31,7 @@ Mycroft.Delegate {
 
     onEnabledChanged: syncStatusTimer.restart()
     onVideoSourceChanged: syncStatusTimer.restart()
+    
     Component.onCompleted: {
         syncStatusTimer.restart()
     }
@@ -42,21 +40,25 @@ Mycroft.Delegate {
         controlBarItem.opened = true
         controlBarItem.forceActiveFocus()
     }
-        
+    
+    Keys.onUpPressed: {
+        if(suggestions.opened){
+            suggestions.forceActiveFocus()
+        } else {
+            root.forceActiveFocus()
+        }
+    }
+    
     onVideoTitleChanged: {
-        triggerGuiEvent("YoutubeSkill.RefreshWatchList", {"title": videoTitle})
+        triggerGuiEvent("YoutubeSkill.RefreshWatchList", {})
         if(videoTitle != ""){
             infomationBar.visible = true
         }
     }
     
     onFocusChanged: {
-        console.log("here")
-        if(focus && suggestions.visible){
-            console.log("in suggestFocus 1")
-            suggestions.forceActiveFocus();
-        } else if(focus && !suggestions.visbile) {
-            video.forceActiveFocus();
+        if(focus){
+            root.forceActiveFocus();
         }
     }
     
@@ -67,6 +69,18 @@ Mycroft.Delegate {
                 video.stop()
             }
         }
+    }
+    
+    function movePageLeft(){
+        if(parent.parent.parent.currentIndex != 0){
+            parent.parent.parent.currentIndex--
+            parent.parent.parent.currentItem.contentItem.forceActiveFocus()
+        }
+    }
+    
+    function movePageRight(){
+            parent.parent.parent.currentIndex++
+            parent.parent.parent.currentItem.contentItem.forceActiveFocus()
     }
     
     function getViewCount(value){
@@ -87,7 +101,13 @@ Mycroft.Delegate {
         mins = mins % 60;
         hrs = hrs % 24;
         days = days % 365;
-        var result = "Published: " + days + " days, " + hrs + " hours, " + mins + " minutes ago"
+        if(days == 0 && hrs != 0) {
+            var result = "Published: " + hrs + " hours ago"    
+        } else if (days == 0 && hrs == 0) {
+            var result = "Published: " + mins + " minutes ago"
+        } else {
+            var result = "Published: " + days + " days ago"
+        }
         return result
     }
 
@@ -183,16 +203,9 @@ Mycroft.Delegate {
         
         SuggestionArea {
             id: suggestions
-            visible: false
-            videoSuggestionList: videoListModel
             nxtSongBlob: nextSongBlob
-            onVisibleChanged: {
-                if(visible) {
-                    suggestionListFocus = true
-                } else {
-                    video.focus = true
-                }
-            }
+            width: parent.width / 2
+            height: parent.height / 2
         }
         
         Video {
@@ -203,22 +216,10 @@ Mycroft.Delegate {
             autoPlay: false
             Keys.onSpacePressed: video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
             KeyNavigation.up: closeButton
-            //Keys.onLeftPressed: video.seek(video.position - 5000)
-            //Keys.onRightPressed: video.seek(video.position + 5000)
             source: videoSource
             readonly property string currentStatus: root.enabled ? root.videoStatus : "pause"
             
-            onFocusChanged: {
-                if(focus){
-                    console.log("focus in video")
-                    if(suggestions.visbile){
-                        console.log("in suggestFocus 2")
-                        suggestions.forceActiveFocus();
-                    }
-                }
-            }
-
-            onCurrentStatusChanged: {print("OOO"+currentStatus)
+            onCurrentStatusChanged: {
                 switch(currentStatus){
                     case "stop":
                         video.stop();
@@ -246,7 +247,7 @@ Mycroft.Delegate {
             
             MouseArea {
                 anchors.fill: parent
-                onClicked: { 
+                onClicked: {
                     controlBarItem.opened = !controlBarItem.opened 
                 }
             }
@@ -254,9 +255,9 @@ Mycroft.Delegate {
             onStatusChanged: {
                 if(status == MediaPlayer.EndOfMedia) {
                     triggerGuiEvent("YoutubeSkill.NextAutoPlaySong", {})
-                    suggestions.visible = true
+                    suggestions.open()
                 } else {
-                    suggestions.visible = false
+                    suggestions.close()
                 }
             }
         }

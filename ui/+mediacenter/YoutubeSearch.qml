@@ -77,6 +77,7 @@ Mycroft.Delegate {
             bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
             Layout.fillWidth: true
             Layout.fillHeight: true
+            clip: true
             spacing: Kirigami.Units.largeSpacing
             currentIndex: 0
             highlightRangeMode: ListView.StrictlyEnforceRange

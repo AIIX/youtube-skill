@@ -8,41 +8,37 @@ import "+mediacenter/views" as Views
 import "+mediacenter/delegates" as Delegates
 import org.kde.mycroft.bigscreen 1.0 as BigScreen
 
-Rectangle {
+Controls.Popup {
     id: suggestionBox
-    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
-    property var videoSuggestionList
-    property alias suggestionListFocus: suggestListView.focus
     property var nxtSongBlob
     property int countdownSeconds: 15
     property int seconds: countdownSeconds
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.verticalCenter: parent.verticalCenter
-    implicitHeight: suggestBoxLayout.implicitHeight + Kirigami.Units.largeSpacing * 4
+    x: (parent.width - width) / 2
+    y: (parent.height - height) / 2
     
-    onFocusChanged: {
-        if(visible && focus){
-                suggestListView.forceActiveFocus()
+    onVisibleChanged: {
+        if(visible) {
+            autoPlayTimer.start()
+            replayButton.forceActiveFocus()
+        } else {
+            autoPlayTimer.stop()
+            root.forceActiveFocus()
         }
+    }
+    
+    onClosed: {
+        root.forceActiveFocus()
+    }
+    
+    onOpened: {
+        replayButton.forceActiveFocus()
     }
     
     onNxtSongBlobChanged: {
         nextSongCdBar.imageSource = nxtSongBlob.videoImage
         nextSongCdBar.nextSongTitle = nxtSongBlob.videoTitle
     }
-    
-    onVideoSuggestionListChanged: {
-        console.log(JSON.stringify(videoSuggestionList))
-        suggestListView.forceLayout()
-    }
-    
-    onVisibleChanged: {
-        if(visible) {
-            autoPlayTimer.start()
-        }
-    }
-
+        
     Timer {
         id: autoPlayTimer
         interval: 1000
@@ -58,44 +54,105 @@ Rectangle {
         }
     }
     
-    ColumnLayout {
-        id: suggestBoxLayout
-        anchors.fill: parent
-        BigScreen.TileView {
-            id: suggestListView
-            clip: true
-            model: videoSuggestionList
-            delegate: Delegates.ListVideoCard{}
-            title: "Watch Next"
-            Layout.margins: Kirigami.Units.largeSpacing * 2
-            cellWidth: parent.width / 4
-            navigationDown: stopNextAutoplay
-        }
-        Kirigami.Separator {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-        }
-        RowLayout{
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.alignment: Qt.AlignHCenter
+    background: Rectangle {
+         color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.6)
+    }
+            
+    contentItem: Item {    
+        Item {
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                bottom: btnAreaSuggestions.top
+            }
             
             Views.CountdownBar {
                 id: nextSongCdBar
-                Layout.preferredWidth: parent.width / 3
-                Layout.fillHeight: true
+                anchors.left: parent.left
+                width: parent.width / 2
+                height: parent.height
             }
-            Kirigami.Separator {
-                Layout.fillHeight: true
-                Layout.preferredWidth: 1
+            
+            Kirigami.Heading {
+                id: autoplayTimeHeading
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                width: parent.width / 2
+                height: parent.height
+                level: 3
             }
+        }
+        
+        Item {
+            id: btnAreaSuggestions
+            anchors {
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+            }
+            height: parent.height * 0.3
+            
+            Controls.Button {
+                id: replayButton
+                width: parent.width / 2
+                height: parent.height
+                anchors.left: parent.left
+                text: "Replay Video"
+                
+                KeyNavigation.right: stopNextAutoplay
+                KeyNavigation.up: stopNextAutoplay
+                KeyNavigation.down: stopNextAutoplay
+                
+                Keys.onLeftPressed: {
+                    root.movePageLeft()
+                }
+                
+                background: Rectangle {
+                    Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                    color: replayButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                    border.color: Kirigami.Theme.textColor
+                    border.width: 1
+                }
+                
+                onClicked: {
+                    if(autoplayTimeHeading.visible){
+                        autoPlayTimer.stop()
+                        autoplayTimeHeading.visible = false
+                        stopNextAutoplay.text = "Next Video"
+                        suggestionBox.seconds = suggestionBox.countdownSeconds
+                    }
+                    triggerGuiEvent("YoutubeSkill.ReplayLast", {})
+                }
+                
+                Keys.onReturnPressed: {
+                    clicked()
+                }
+            }
+            
             Controls.Button {
                 id: stopNextAutoplay
-                Layout.preferredWidth: parent.width / 3
-                Layout.fillHeight: true
+                width: parent.width / 2
+                height: parent.height
+                anchors.right: parent.right
                 text: "Cancel Autoplay"
                 
-                KeyNavigation.up: suggestListView
+                KeyNavigation.left: replayButton
+                KeyNavigation.up: replayButton
+                KeyNavigation.down: replayButton
+                
+                Keys.onRightPressed: {
+                    root.movePageRight()
+                }
+                
+                background: Rectangle {
+                    Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                    color: stopNextAutoplay.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                    border.color: Kirigami.Theme.textColor
+                    border.width: 1
+                }
                 
                 onClicked: {
                     if(autoplayTimeHeading.visible){
@@ -112,32 +169,8 @@ Rectangle {
                 }
                 
                 Keys.onReturnPressed: {
-                    if(autoplayTimeHeading.visible){
-                        autoPlayTimer.stop()
-                        autoplayTimeHeading.visible = false
-                        stopNextAutoplay.text = "Next Video"
-                        suggestionBox.seconds = suggestionBox.countdownSeconds
-                    } else {
-                        suggestionBox.seconds = suggestionBox.countdownSeconds
-                        autoPlayTimer.start()
-                        autoplayTimeHeading.visible = true
-                        stopNextAutoplay.text = "Cancel Autoplay"
-                    }
+                    clicked()
                 }
-            }
-            
-            Kirigami.Separator {
-                Layout.fillHeight: true
-                Layout.preferredWidth: 1
-            }
-            
-            Kirigami.Heading {
-                id: autoplayTimeHeading
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                Layout.preferredWidth: parent.width / 3
-                Layout.fillHeight: true
-                level: 3
             }
         }
     }

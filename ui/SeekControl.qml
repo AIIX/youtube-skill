@@ -16,9 +16,12 @@ Item {
     property int seekPosition: 0
     property bool enabled: true
     property bool seeking: false
+    property bool backRequested: false
     property var videoControl
     property string title
 
+    property bool smallMode: root.height > root.width ? 1 : 0
+    
     clip: true
     implicitHeight: mainLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
     opacity: opened
@@ -32,6 +35,7 @@ Item {
 
     onOpenedChanged: {
         if (opened) {
+            seekControl.backRequested = false;
             hideTimer.restart();
         }
     }
@@ -45,9 +49,12 @@ Item {
     Timer {
         id: hideTimer
         interval: 5000
-        onTriggered: { 
-            seekControl.opened = false;
-            videoRoot.forceActiveFocus();
+        onTriggered: {
+            console.log("hide timer triggered")
+            if(!seekControl.backRequested) {
+                seekControl.opened = false;
+                videoRoot.forceActiveFocus();
+            }
         }
     }
     
@@ -74,59 +81,65 @@ Item {
                 margins: Kirigami.Units.largeSpacing
             }
             
-            RowLayout {
-                id: infoLayout
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+        Item {
+            Layout.fillWidth: true
+            Layout.minimumHeight: infoLayout.implicitHeight
                 
-                ColumnLayout {
-                    Layout.preferredWidth: parent.width / 2
-                    Layout.fillHeight: true
-                    Layout.alignment: Qt.AlignLeft
-                    Layout.leftMargin: Kirigami.Units.largeSpacing
-                    
+                GridLayout {
+                    id: infoLayout
+                    anchors.fill: parent
+                    anchors.margins: Kirigami.Units.largeSpacing
+                    columns: smallMode ? 1 : 2
+                        
                     Kirigami.Heading {
                         id: vidTitle
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
+                        level: smallMode ? 3 : 2
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.preferredWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.minimumHeight: Kirigami.Units.gridUnit * 2
                         visible: true
                         text: "Title: " + videoTitle
                         z: 100
                     }
                     
                     Kirigami.Heading {
+                        id: vidCount
+                        level: smallMode ? 3 : 2
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.preferredWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.minimumHeight: Kirigami.Units.gridUnit * 2                        
+                        visible: true
+                        Layout.alignment: smallMode ? Qt.AlignLeft : Qt.AlignRight
+                        horizontalAlignment: smallMode ? Qt.AlignLeft : Qt.AlignRight
+                        text: "Views: " + getViewCount(videoViewCount)
+                        z: 100
+                    }
+                        
+                    Kirigami.Heading {
                         id: vidAuthor
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
+                        level: smallMode ? 3 : 2
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.preferredWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.minimumHeight: Kirigami.Units.gridUnit * 2  
                         visible: true
                         text: "Published By: " + videoAuthor
                         z: 100
                     }
-                }
-                
-                ColumnLayout {
-                    Layout.preferredWidth: parent.width / 2
-                    Layout.fillHeight: true
-                    Layout.alignment: Qt.AlignRight
-                    Layout.rightMargin: Kirigami.Units.largeSpacing
-                    
-                    Kirigami.Heading {
-                        id: vidCount
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
-                        visible: true
-                        Layout.alignment: Qt.AlignRight
-                        text: "Views: " + getViewCount(videoViewCount)
-                        z: 100
-                    }
-                    
+                        
                     Kirigami.Heading {
                         id: vidPublishDate
-                        level: 2
-                        height: Kirigami.Units.gridUnit * 2
+                        level: smallMode ? 3 : 2
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.preferredWidth: smallMode ? parent.width : parent.width / 2
+                        Layout.minimumHeight: Kirigami.Units.gridUnit * 2
                         visible: true
-                        Layout.alignment: Qt.AlignRight
-                        text: setPublishedDate(videoPublishDate)
+                        Layout.alignment: smallMode ? Qt.AlignLeft : Qt.AlignRight
+                        horizontalAlignment: smallMode ? Qt.AlignLeft : Qt.AlignRight
+                        text: "Published: " + videoPublishDate
                         z: 100
                     }
                 }
@@ -146,21 +159,31 @@ Item {
                     Layout.preferredWidth: Kirigami.Units.iconSizes.large
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
+                    
+                    background: Rectangle {
+                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                        color: backButton.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                        radius: width / 2
+                        border.color: Kirigami.Theme.textColor
+                        border.width: 1
+                    }
+                    
                     icon.name: "go-previous-symbolic"
                     z: 1000
                     onClicked: {
-                        Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
+                        seekControl.backRequested = true;
+                        root.parent.backRequested();
                         video.stop();
                     }
-                    KeyNavigation.up: video
+                    KeyNavigation.up: root
                     KeyNavigation.right: button
                     Keys.onReturnPressed: {
-                        hideTimer.restart();
-                        Mycroft.MycroftController.sendRequest("mycroft.gui.screen.close", {});
-                        video.stop(); 
+                        clicked()
                     }
                     onFocusChanged: {
-                        hideTimer.restart();
+                        if(!seekControl.backRequested){
+                            hideTimer.restart();
+                        }
                     }
                 }
                 Controls.RoundButton {
@@ -168,21 +191,32 @@ Item {
                     Layout.preferredWidth: Kirigami.Units.iconSizes.large
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
+                    
+                    background: Rectangle {
+                        Kirigami.Theme.colorSet: Kirigami.Theme.Button
+                        color: button.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                        radius: width / 2
+                        border.color: Kirigami.Theme.textColor
+                        border.width: 1
+                    }
+                    
                     icon.name: videoControl.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
                     z: 1000
                     onClicked: {
+                        seekControl.backRequested = false;
                         video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
                         hideTimer.restart();
                     }
-                    KeyNavigation.up: video
+                    KeyNavigation.up: root
                     KeyNavigation.left: backButton
                     KeyNavigation.right: slider
                     Keys.onReturnPressed: {
-                        video.playbackState === MediaPlayer.PlayingState ? video.pause() : video.play();
-                        hideTimer.restart();
+                        clicked()
                     }
                     onFocusChanged: {
-                        hideTimer.restart();
+                        if(!backRequested){
+                            hideTimer.restart();
+                        }
                     }
                 }
 
@@ -273,7 +307,7 @@ Item {
                             text: formatTime(duration)
                         }
                     }
-                KeyNavigation.up: video
+                KeyNavigation.up: root
                 KeyNavigation.left: button
                 Keys.onReturnPressed: {
                     hideTimer.restart();
