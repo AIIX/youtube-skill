@@ -87,8 +87,8 @@ Controls.Popup {
                 left: parent.left
                 right: parent.right
                 top: headrSeptBml.bottom
-                anchors.leftMargin: Kirigami.Units.largeSpacing
-                anchors.rightMargin: Kirigami.Units.largeSpacing
+                leftMargin: Kirigami.Units.largeSpacing
+                rightMargin: Kirigami.Units.largeSpacing
                 bottom: btnAreaSuggestions.top
             }
             
