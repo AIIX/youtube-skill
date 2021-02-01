@@ -323,7 +323,7 @@ Item {
                     wrapMode: Text.Wrap
                     Layout.maximumWidth: parent.width
                     Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-                    text: setPublishedDate(videoPublishDate)
+                    text: "Published: " + videoPublishDate
                     z: 100
                 }
             }
