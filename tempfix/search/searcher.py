@@ -58,7 +58,7 @@ class YoutubeSearcher:
                   "gl": self.location_code}
         
         # TODO dont cache if no results found
-        html = session.get(self.base_url + "/results",
+        html = session.get(self.base_url + "/results", cookies={'CONSENT': 'PENDING+999'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
@@ -121,7 +121,7 @@ class YoutubeSearcher:
         else:
             page = "feed/trending"
         
-        html = session.get(self.base_url + "/" + page,
+        html = session.get(self.base_url + "/" + page, cookies={'CONSENT': 'PENDING+999'}, 
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
@@ -143,7 +143,7 @@ class YoutubeSearcher:
         related_vids_on_page = []
         params = {"gl": self.location_code}
         base_url = "https://www.youtube.com/watch?v="
-        html = session.get(base_url + video_id,
+        html = session.get(base_url + video_id, cookies={'CONSENT': 'PENDING+999'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
@@ -664,7 +664,7 @@ class YoutubeSearcher:
 
     def extract_video_meta(self, url):
         params = {"gl": "US"}
-        html = session.get(url,
+        html = session.get(url, cookies={'CONSENT': 'PENDING+999'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
