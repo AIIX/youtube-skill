@@ -58,7 +58,7 @@ class YoutubeSearcher:
                   "gl": self.location_code}
         
         # TODO dont cache if no results found
-        html = session.get(self.base_url + "/results", cookies={'CONSENT': 'PENDING+999'},
+        html = session.get(self.base_url + "/results", cookies={'CONSENT': 'YES+42'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
@@ -121,9 +121,10 @@ class YoutubeSearcher:
         else:
             page = "feed/trending"
         
-        html = session.get(self.base_url + "/" + page, cookies={'CONSENT': 'PENDING+999'}, 
+        html = session.get(self.base_url + "/" + page, cookies={'CONSENT': 'YES+42'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
+        print(soup)
         results = self.santize_soup_result(soup)
         
         contents = results['contents']['twoColumnBrowseResultsRenderer']
@@ -143,7 +144,7 @@ class YoutubeSearcher:
         related_vids_on_page = []
         params = {"gl": self.location_code}
         base_url = "https://www.youtube.com/watch?v="
-        html = session.get(base_url + video_id, cookies={'CONSENT': 'PENDING+999'},
+        html = session.get(base_url + video_id, cookies={'CONSENT': 'YES+42'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
@@ -213,8 +214,10 @@ class YoutubeSearcher:
     def santize_soup_result(self, soup_blob):
         # Make sure we always get the correct blob and santize it
         blob = soup_blob.find('script', text=re.compile("ytInitialData"))
+        print(blob)
         json_data = str(blob)[str(blob).find('{\"responseContext\"'):str(blob).find('module={}')]
         json_data = re.split(r"\};", json_data)[0]
+        print(json_data)
         results = json.loads(json_data+"}")
         return results
 
@@ -664,7 +667,7 @@ class YoutubeSearcher:
 
     def extract_video_meta(self, url):
         params = {"gl": "US"}
-        html = session.get(url, cookies={'CONSENT': 'PENDING+999'},
+        html = session.get(url, cookies={'CONSENT': 'YES+42'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)

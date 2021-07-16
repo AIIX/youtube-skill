@@ -167,7 +167,6 @@ Controls.Popup {
                 width: parent.width / 2
                 height: parent.height
                 anchors.right: parent.right
-                text: "Cancel Autoplay"
                 
                 KeyNavigation.left: replayButton
                 KeyNavigation.up: replayButton
@@ -182,6 +181,13 @@ Controls.Popup {
                     color: stopNextAutoplay.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
                     border.color: Kirigami.Theme.textColor
                     border.width: 1
+                }
+
+                contentItem: Item {
+                    Controls.Label {
+                        anchors.centerIn: parent
+                        text: "Cancel Autoplay"
+                    }
                 }
                 
                 onClicked: {
