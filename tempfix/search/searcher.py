@@ -65,11 +65,15 @@ class YoutubeSearcher:
         data = {"query": query, "corrected_query": query}
         
         contents = results['contents']['twoColumnSearchResultsRenderer']
-        self.primary_contents = contents["primaryContents"]["sectionListRenderer"][
-            "contents"][0]['itemSectionRenderer']['contents']
+
+        content_checker = contents["primaryContents"]["sectionListRenderer"]["contents"][0]['itemSectionRenderer']['contents']
+        if "shelfRenderer" in content_checker:
+            self.primary_contents = contents["primaryContents"]["sectionListRenderer"]["contents"][0]['itemSectionRenderer']['contents'][0]['shelfRenderer']['content']['verticalListRenderer']['items']
+        else:
+            self.primary_contents = contents["primaryContents"]["sectionListRenderer"]["contents"][0]['itemSectionRenderer']['contents']
 
         self.contents = contents
-        
+
         if render == "all":
             self.prepare_feature_channel_info()
             self.prepare_videos_info()
