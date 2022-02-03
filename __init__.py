@@ -10,6 +10,7 @@ import re
 import timeago, datetime
 import dateutil.parser
 import requests
+import yt_dlp
 if sys.version_info[0] < 3:
     from urllib import quote
     from urllib2 import urlopen
@@ -24,7 +25,7 @@ from mycroft.util.log import LOG
 from collections import deque
 from json_database import JsonStorage
 from .tempfix.search.searcher import YoutubeSearcher
-from pytube import YouTube as pyyt
+from yt_dlp import YoutubeDL
 
 __author__ = 'aix'
 
@@ -87,7 +88,46 @@ class YoutubeSkill(MycroftSkill):
         self.gui.register_handler('YoutubeSkill.RefreshWatchList', self.refreshWatchList)
         self.gui.register_handler('YoutubeSkill.ClearDB', self.clear_db)
         self.gui.register_handler('YoutubeSkill.ReplayLast', self.youtube_repeat_last)
-        
+
+
+    def get_best_video_url(self, video_id):
+        # Use dlp to get the best video of type mp4 url from a video ID
+        ydl_opts = { 'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' }
+        try:
+            ydl = YoutubeDL(ydl_opts)
+            info = ydl.extract_info(video_id, download=False)
+            video_container = []
+            best_format = None
+            for f in info['formats']:
+                if f['acodec'] != 'none' and f['vcodec'] != 'none':
+                    video_container.append(f)
+            # sort video_container based on format_note using sorting table:
+            if 'format_note' in video_container[0]:    
+                sort_table = ["1080p", "720p", "480p", "360p", "240p", "144p"]
+                video_container = sorted(video_container, key=lambda f: sort_table.index(f['format_note']))
+                best_format = video_container[0].get('url')
+                return best_format
+            else: 
+            # sort video_container based on format_id using sorting table in descending order:
+                video_container = sorted(video_container, key=lambda f: f['format_id'], reverse=True)
+                best_format = video_container[0].get('url')
+                return best_format
+        except Exception as e:
+            LOG.error("Error: " + str(e))
+            return None
+
+    def extract_video_meta_from_dlp(self, video_id):
+        # extract video information like title, views, published time and channel name
+        ydl_opts = { 'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' }
+        ydl = YoutubeDL(ydl_opts)
+        info = ydl.extract_info(video_id, download=False)
+        video_info = {}
+        video_info['title'] = info['title']
+        video_info['views'] = info['view_count']
+        video_info['published'] = info['upload_date']
+        video_info['channel'] = info['uploader']
+        return video_info
+
     def launcherId(self, message):
         self.show_homepage({})
     
@@ -254,37 +294,38 @@ class YoutubeSkill(MycroftSkill):
         self.gui["recentListBlob"] = ""
         self.gui["videoThumb"] = ""
         video_query_str = str(quote(utterance))
-        print(video_query_str)
+        #print(video_query_str)
         abc = self.yts.search_youtube(video_query_str, render="videos")
         vid = abc['videos'][0]['url']
-        ydl = pyyt(vid)
-        ytl_streams = ydl.streams.filter(subtype='mp4', progressive=True).all()
-        stream_url = ytl_streams[0].url
-        getvid = vid.split("v=")[1].split("&")[0]
-        thumb = "https://img.youtube.com/vi/{0}/0.jpg".format(getvid)
-        self.gui["videoThumb"] = thumb
-        self.lastSong = vid
-        self.gui["status"] = str("play")
-        self.gui["video"] = str(stream_url)
-        self.gui["currenturl"] = str(vid)
-        self.gui["currenttitle"] = abc['videos'][0]['title']
-        self.gui["setTitle"] = abc['videos'][0]['title']
-        self.gui["viewCount"] = abc['videos'][0]['views']
-        self.gui["publishedDate"] = abc['videos'][0]['published_time']
-        self.gui["videoAuthor"] = abc['videos'][0]['channel_name']
-        self.gui["videoListBlob"] = ""
-        self.gui["recentListBlob"] = ""
-        self.gui["nextSongBlob"] = ""
-        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
-        #self.gui.show_page("YoutubeSearch.qml", override_idle=True)
-        self.gui["currenttitle"] = self.getTitle(utterance)
-        LOG.info("Video Published On")
-        recentVideoDict = {"videoID": getvid, "videoTitle": abc['videos'][0]['title'], "videoImage": thumb, "videoChannel": abc['videos'][0]['channel_name'], "videoViews": abc['videos'][0]['views'], "videoUploadDate": abc['videos'][0]['published_time'], "videoDuration": abc['videos'][0]['length']}
-        self.buildHistoryModel(recentVideoDict)
-        self.gui["recentListBlob"] = self.recent_db
-        self.youtubesearchpagesimple(getvid)
-        self.isTitle = abc['videos'][0]['title']
-        self.gui["recentListBlob"] = self.recent_db
+        stream_url = self.get_best_video_url(vid)
+        if stream_url is not None:
+            getvid = vid.split("v=")[1].split("&")[0]
+            thumb = "https://img.youtube.com/vi/{0}/0.jpg".format(getvid)
+            self.gui["videoThumb"] = thumb
+            self.lastSong = vid
+            self.gui["status"] = str("play")
+            self.gui["video"] = str(stream_url)
+            self.gui["currenturl"] = str(vid)
+            self.gui["currenttitle"] = abc['videos'][0]['title']
+            self.gui["setTitle"] = abc['videos'][0]['title']
+            self.gui["viewCount"] = abc['videos'][0]['views']
+            self.gui["publishedDate"] = abc['videos'][0]['published_time']
+            self.gui["videoAuthor"] = abc['videos'][0]['channel_name']
+            self.gui["videoListBlob"] = ""
+            self.gui["recentListBlob"] = ""
+            self.gui["nextSongBlob"] = ""
+            self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+            #self.gui.show_page("YoutubeSearch.qml", override_idle=True)
+            self.gui["currenttitle"] = self.getTitle(utterance)
+            LOG.info("Video Published On")
+            recentVideoDict = {"videoID": getvid, "videoTitle": abc['videos'][0]['title'], "videoImage": thumb, "videoChannel": abc['videos'][0]['channel_name'], "videoViews": abc['videos'][0]['views'], "videoUploadDate": abc['videos'][0]['published_time'], "videoDuration": abc['videos'][0]['length']}
+            self.buildHistoryModel(recentVideoDict)
+            self.gui["recentListBlob"] = self.recent_db
+            self.youtubesearchpagesimple(getvid)
+            self.isTitle = abc['videos'][0]['title']
+            self.gui["recentListBlob"] = self.recent_db
+        else:
+            self.speak("Sorry, I can't find the video.")
 
     def process_ytl_stream(self, streams):
         _videostreams = []
@@ -442,29 +483,34 @@ class YoutubeSkill(MycroftSkill):
     def play_event(self, message):
         urlvideo = "http://www.youtube.com/watch?v={0}".format(message.data['vidID'])
         self.lastSong = message.data['vidID']
-        video = self.yts.extract_video_meta(urlvideo)
-        playyt = pyyt(urlvideo)
-        playstream = playyt.streams.filter(subtype='mp4', progressive=True).all()
-        playurl = playstream[0].url
-        self.speak("Playing")
-        self.gui["video"] = str(playurl)
-        self.gui["status"] = str("play")
-        self.gui["currenturl"] = str(message.data['vidID'])
-        self.gui["currenttitle"] = str(message.data['vidTitle'])
-        print(video.keys())
-        self.gui["setTitle"] = video.get('title')
-        self.gui["viewCount"] = video.get('views')
-        self.gui["publishedDate"] = self.build_upload_date_non_vui(video.get('published_time'))
-        self.gui["videoAuthor"] = video.get('channel_name')
-        self.gui["nextSongBlob"] = ""
-        videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
-        self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
-        thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(message.data['vidID'])
-        recentVideoDict = {"videoID": message.data['vidID'], "videoTitle": message.data['vidTitle'], "videoImage": message.data['vidImage'], "videoChannel": message.data['vidChannel'], "videoViews": message.data['vidViews'], "videoUploadDate": message.data['vidUploadDate'], "videoDuration": message.data['vidDuration']}
-        self.buildHistoryModel(recentVideoDict)
-        self.gui["recentListBlob"] = self.recent_db
-        self.youtubesearchpagesimple(message.data['vidID'])
-        self.isTitle = video.get('title')
+        try:
+            video = self.yts.extract_video_meta(urlvideo)
+            self.gui["publishedDate"] = self.build_upload_date_non_vui(video.get('published_time'))
+        except:
+            video = self.extract_video_meta_from_dlp(urlvideo)
+            self.gui["publishedDate"] = video.get('published')
+        playurl = self.get_best_video_url(urlvideo)
+        if playurl is not None:
+            self.speak("Playing")
+            self.gui["video"] = str(playurl)
+            self.gui["status"] = str("play")
+            self.gui["currenturl"] = str(message.data['vidID'])
+            self.gui["currenttitle"] = str(message.data['vidTitle'])
+            #print(video.keys())
+            self.gui["setTitle"] = video.get('title')
+            self.gui["viewCount"] = video.get('views')
+            self.gui["videoAuthor"] = video.get('channel_name')
+            self.gui["nextSongBlob"] = ""
+            videoTitleSearch = str(message.data['vidTitle']).join(str(message.data['vidTitle']).split()[:-1])
+            self.gui.show_pages(["YoutubePlayer.qml", "YoutubeSearch.qml"], 0, override_idle=True)
+            thumb = "https://img.youtube.com/vi/{0}/maxresdefault.jpg".format(message.data['vidID'])
+            recentVideoDict = {"videoID": message.data['vidID'], "videoTitle": message.data['vidTitle'], "videoImage": message.data['vidImage'], "videoChannel": message.data['vidChannel'], "videoViews": message.data['vidViews'], "videoUploadDate": message.data['vidUploadDate'], "videoDuration": message.data['vidDuration']}
+            self.buildHistoryModel(recentVideoDict)
+            self.gui["recentListBlob"] = self.recent_db
+            self.youtubesearchpagesimple(message.data['vidID'])
+            self.isTitle = video.get('title')
+        else:
+            self.speak("Sorry, I can't find the video.")
 
     def stop(self):
         self.enclosure.bus.emit(Message("metadata", {"type": "stop"}))
@@ -562,9 +608,7 @@ class YoutubeSkill(MycroftSkill):
     def youtube_repeat_last(self):
         urlvideo = "http://www.youtube.com/watch?v={0}".format(self.lastSong)        
         video = self.yts.extract_video_meta(urlvideo)
-        playyt = pyyt(urlvideo)
-        playstream = playyt.streams.filter(subtype='mp4', progressive=True).all()
-        playurl = playstream[0].url        
+        playurl = self.get_best_video_url(urlvideo)        
         self.gui["status"] = str("play")
         self.gui["video"] = str(playurl)
         self.gui["currenturl"] = ""
@@ -629,11 +673,11 @@ class YoutubeSkill(MycroftSkill):
             myCheck = self.checkIfHistoryItem(dictItem)
             if myCheck == True:
                 LOG.info("In true")
-                LOG.info(dictItem)
+                #LOG.info(dictItem)
                 self.moveHistoryEntry(dictItem)
             elif myCheck == False:
                 LOG.info("In false")
-                LOG.info(dictItem)
+                #LOG.info(dictItem)
                 self.addHistoryEntry(dictItem)
         
         else:

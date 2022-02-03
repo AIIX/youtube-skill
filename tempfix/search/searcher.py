@@ -128,7 +128,7 @@ class YoutubeSearcher:
         html = session.get(self.base_url + "/" + page, cookies={'CONSENT': 'YES+42'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
-        print(soup)
+        #print(soup)
         results = self.santize_soup_result(soup)
         
         contents = results['contents']['twoColumnBrowseResultsRenderer']
@@ -218,10 +218,10 @@ class YoutubeSearcher:
     def santize_soup_result(self, soup_blob):
         # Make sure we always get the correct blob and santize it
         blob = soup_blob.find('script', text=re.compile("ytInitialData"))
-        print(blob)
+        #print(blob)
         json_data = str(blob)[str(blob).find('{\"responseContext\"'):str(blob).find('module={}')]
         json_data = re.split(r"\};", json_data)[0]
-        print(json_data)
+        #print(json_data)
         results = json.loads(json_data+"}")
         return results
 
