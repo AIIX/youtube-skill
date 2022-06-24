@@ -403,7 +403,7 @@ class YoutubeSkill(MycroftSkill):
     def show_homepage(self, message):
         LOG.info("I AM IN HOME PAGE FUNCTION")
         self.gui["loadingStatus"] = ""
-        self.gui.show_page("YoutubeLogo.qml")
+        self.gui.show_page("YoutubeLogo.qml", override_idle=True)
         self.process_home_page()
 
     def process_home_page(self):
@@ -481,7 +481,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["nextAvailable"] = True
         self.gui["bgImage"] = self.live_category
         self.gui.show_page("YoutubeLiveSearch.qml", override_idle=True)
-        
+        self.gui.remove_page("YoutubeLogo.qml")
 
     def play_event(self, message):
         urlvideo = "http://www.youtube.com/watch?v={0}".format(message.data['vidID'])
