@@ -91,6 +91,11 @@ class YoutubeSkill(MycroftSkill):
         self.gui.register_handler('YoutubeSkill.ClearDB', self.clear_db)
         self.gui.register_handler('YoutubeSkill.ReplayLast', self.youtube_repeat_last)
 
+    def clear_skill_view(self):
+        self.gui.remove_page("YoutubeLogo.qml")
+        self.gui.remove_page("YoutubeLiveSearch.qml")
+        self.gui.remove_page("YoutubePlayer.qml")
+        self.gui.remove_page("YoutubeSearch.qml")
 
     def get_best_video_url(self, video_id):
         # Use dlp to get the best video of type mp4 url from a video ID
@@ -271,7 +276,7 @@ class YoutubeSkill(MycroftSkill):
     @intent_file_handler('youtube.intent')
     def youtube(self, message):
         self.stop()
-        self.gui.clear()
+        self.clear_skill_view()
 
         utterance = message.data['videoname'].lower()
         self.youtube_play_video(utterance)
@@ -397,8 +402,6 @@ class YoutubeSkill(MycroftSkill):
         
     def show_homepage(self, message):
         LOG.info("I AM IN HOME PAGE FUNCTION")
-        self.gui.clear()
-
         self.gui["loadingStatus"] = ""
         self.gui.show_page("YoutubeLogo.qml")
         self.process_home_page()
@@ -421,10 +424,8 @@ class YoutubeSkill(MycroftSkill):
             self.newsCategoryList['videoList'] = self.build_category_list("news")
         
         self.build_recent_watch_list(20)
-        self.gui.clear()
-
         self.show_search_page()
-        
+
         self.musicCategoryList['videoList'] = self.build_category_list("music")
         if self.musicCategoryList['videoList']:
             LOG.info("Music Not Empty")
