@@ -459,6 +459,7 @@ class YoutubeSkill(MycroftSkill):
         self.gui["gamingListBlob"] = self.gamingCategoryList
         
         LOG.info("I AM NOW IN REMOVE LOGO PAGE FUNCTION")
+        self.gui.remove_page("YoutubeLogo.qml")
 
     def show_search_page(self):
         LOG.info("I AM NOW IN SHOW SEARCH PAGE FUNCTION")
