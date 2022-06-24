@@ -403,9 +403,8 @@ class YoutubeSkill(MycroftSkill):
     def show_homepage(self, message):
         LOG.info("I AM IN HOME PAGE FUNCTION")
         self.gui["loadingStatus"] = ""
-        self.gui.show_page("YoutubeLogo.qml", override_idle=True)
-        sleep(2)
         self.clear_skill_view()
+        self.gui.show_page("YoutubeLogo.qml", override_idle=True)
         self.process_home_page()
 
     def process_home_page(self):
