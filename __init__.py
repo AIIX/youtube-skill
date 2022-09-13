@@ -2,7 +2,7 @@
 
 import time
 import urllib
-from os.path import dirname
+from os.path import dirname, join
 import sys
 import json
 import base64
@@ -49,15 +49,17 @@ class YoutubeSkill(MycroftSkill):
         self.searchCategoryList = {}
         self.recentCategoryList = {}
         self.recentWatchListObj = {}
-        self.storeDB = dirname(__file__) + '-recent.db'
-        self.recent_db = JsonStorage(self.storeDB)
+        self.storeDB = None
+        self.recent_db = None
         self.quackAPIWorker="J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="
         self.quackagent = {'User-Agent' : base64.b64decode(self.quackAPIWorker)}
         self.yts = YoutubeSearcher()
 
     def initialize(self):
         self.load_data_files(dirname(__file__))
-        
+        self.storeDB = join(self.file_system.path, 'youtube-recent.db')
+        self.recent_db = JsonStorage(self.storeDB)
+
         self.bus.on('youtube-skill.aiix.home', self.launcherId)
         
         youtubepause = IntentBuilder("YoutubePauseKeyword"). \
@@ -230,7 +232,6 @@ class YoutubeSkill(MycroftSkill):
     def youtube(self, message):
         self.stop()
         self.gui.clear()
-        self.enclosure.display_manager.remove_active()
         utterance = message.data['videoname'].lower()
         self.youtube_play_video(utterance)
     
@@ -354,7 +355,6 @@ class YoutubeSkill(MycroftSkill):
     def show_homepage(self, message):
         LOG.info("I AM IN HOME PAGE FUNCTION")
         self.gui.clear()
-        self.enclosure.display_manager.remove_active()
         self.gui["loadingStatus"] = ""
         self.gui.show_page("YoutubeLogo.qml")
         self.process_home_page()
@@ -378,7 +378,6 @@ class YoutubeSkill(MycroftSkill):
         
         self.build_recent_watch_list(20)
         self.gui.clear()
-        self.enclosure.display_manager.remove_active()
         self.show_search_page()
         
         self.musicCategoryList['videoList'] = self.build_category_list("music")

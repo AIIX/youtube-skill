@@ -58,18 +58,22 @@ class YoutubeSearcher:
                   "gl": self.location_code}
         
         # TODO dont cache if no results found
-        html = session.get(self.base_url + "/results",
+        html = session.get(self.base_url + "/results", cookies={'CONSENT': 'YES+42'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
         data = {"query": query, "corrected_query": query}
         
         contents = results['contents']['twoColumnSearchResultsRenderer']
-        self.primary_contents = contents["primaryContents"]["sectionListRenderer"][
-            "contents"][0]['itemSectionRenderer']['contents']
+
+        content_checker = contents["primaryContents"]["sectionListRenderer"]["contents"][0]['itemSectionRenderer']['contents']
+        if "shelfRenderer" in content_checker:
+            self.primary_contents = contents["primaryContents"]["sectionListRenderer"]["contents"][0]['itemSectionRenderer']['contents'][0]['shelfRenderer']['content']['verticalListRenderer']['items']
+        else:
+            self.primary_contents = contents["primaryContents"]["sectionListRenderer"]["contents"][0]['itemSectionRenderer']['contents']
 
         self.contents = contents
-        
+
         if render == "all":
             self.prepare_feature_channel_info()
             self.prepare_videos_info()
@@ -121,9 +125,10 @@ class YoutubeSearcher:
         else:
             page = "feed/trending"
         
-        html = session.get(self.base_url + "/" + page,
+        html = session.get(self.base_url + "/" + page, cookies={'CONSENT': 'YES+42'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
+        #print(soup)
         results = self.santize_soup_result(soup)
         
         contents = results['contents']['twoColumnBrowseResultsRenderer']
@@ -143,7 +148,7 @@ class YoutubeSearcher:
         related_vids_on_page = []
         params = {"gl": self.location_code}
         base_url = "https://www.youtube.com/watch?v="
-        html = session.get(base_url + video_id,
+        html = session.get(base_url + video_id, cookies={'CONSENT': 'YES+42'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
@@ -213,8 +218,10 @@ class YoutubeSearcher:
     def santize_soup_result(self, soup_blob):
         # Make sure we always get the correct blob and santize it
         blob = soup_blob.find('script', text=re.compile("ytInitialData"))
+        #print(blob)
         json_data = str(blob)[str(blob).find('{\"responseContext\"'):str(blob).find('module={}')]
         json_data = re.split(r"\};", json_data)[0]
+        #print(json_data)
         results = json.loads(json_data+"}")
         return results
 
@@ -243,11 +250,14 @@ class YoutubeSearcher:
                 vid = vid['videoRenderer']
                 thumb = vid["thumbnail"]['thumbnails']
                 
+                if "shortViewCountText" in vid:
                 #Get video view count or live watch count
-                if "simpleText" in vid["shortViewCountText"]:
-                    views = vid["shortViewCountText"]["simpleText"]
+                    if "simpleText" in vid["shortViewCountText"]:
+                        views = vid["shortViewCountText"]["simpleText"]
+                    else:
+                        views = vid["shortViewCountText"]["runs"][0]["text"] + " " +  vid["shortViewCountText"]["runs"][1]["text"]
                 else:
-                    views = vid["shortViewCountText"]["runs"][0]["text"] + " " +  vid["shortViewCountText"]["runs"][1]["text"]
+                    views = " "
                 
                 #Get video published_time assume if not available video is Live
                 if "publishedTimeText" in vid:
@@ -549,13 +559,16 @@ class YoutubeSearcher:
                             else:
                                 views = vid["shortViewCountText"]["runs"][0]["text"] + " " +  vid["shortViewCountText"]["runs"][1]["text"]
                         except:
-                            views = "live"
-    
+                            views = "Live"
+                            
                         #Get video published_time assume if not available video is Live
-                        if "publishedTimeText" in vid:
-                            published_time = vid["publishedTimeText"]["simpleText"]
-                        else:
-                            published_time = "Live"
+                        try:
+                            if "publishedTimeText" in vid:
+                                published_time = vid["publishedTimeText"]["simpleText"]
+                            else:
+                                published_time = "Live"
+                        except:
+                            published_time = "Now Streaming"
                         
                         title = " ".join([r["text"] for r in vid['title']["runs"]])
                         
@@ -661,7 +674,7 @@ class YoutubeSearcher:
 
     def extract_video_meta(self, url):
         params = {"gl": "US"}
-        html = session.get(url,
+        html = session.get(url, cookies={'CONSENT': 'YES+42'},
                            headers=self.headers, params=params).text
         soup = bs4.BeautifulSoup(html, 'html.parser')
         results = self.santize_soup_result(soup)
