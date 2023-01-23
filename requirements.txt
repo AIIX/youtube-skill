@@ -7,3 +7,4 @@ timeago
 python-dateutil
 requests_cache
 git+https://github.com/nficano/pytube
+nested-lookup
